@@ -1,12 +1,16 @@
 /**
- * Nodes Page - Node Management
+ * Nodes Page - Real Node Management
  */
 
-import { store } from '../lib/store.js';
+import { realStore } from '../lib/store-real.js';
+import { createPairingToken, getNodes } from '../lib/store.js';
+import { API_BASE_URL } from '../lib/api-config.js';
 
 export function renderNodes() {
-  const nodes = store.get('nodes');
+  const state = realStore.get();
+  const nodes = state.nodes || [];
   const hasNodes = nodes.length > 0;
+  const workspace = state.currentWorkspace;
   
   return `
     <div class="nodes-page">
@@ -21,8 +25,7 @@ export function renderNodes() {
         ${hasNodes ? renderNodesList(nodes) : renderEmptyState()}
       </main>
       
-      ${renderAddNodeModal()}
-      ${renderPairingModal()}
+      ${renderAddNodeModal(workspace)}
     </div>
   `;
 }
@@ -32,6 +35,9 @@ function renderNodesList(nodes) {
     <div class="nodes-toolbar">
       <button onclick="showAddNodeModal()" class="btn btn-primary">
         <span>+</span> Add Node
+      </button>
+      <button onclick="refreshNodes()" class="btn btn-secondary">
+        🔄 Refresh
       </button>
     </div>
     
@@ -46,7 +52,7 @@ function renderNodeCard(node) {
     connected: 'badge-success',
     disconnected: 'badge-error',
     pending: 'badge-warning',
-    error: 'badge-error'
+    offline: 'badge-error'
   };
   
   const typeIcons = {
@@ -54,6 +60,8 @@ function renderNodeCard(node) {
     local: '💻',
     server: '🖥️'
   };
+  
+  const isOnline = node.status === 'connected' || node.online;
   
   return `
     <div class="node-card card">
@@ -63,12 +71,10 @@ function renderNodeCard(node) {
           <div>
             <h3 class="node-name">${node.name}</h3>
             <span class="badge ${statusColors[node.status] || 'badge-warning'}">${node.status}</span>
+            ${isOnline ? '<span class="badge badge-success">● Online</span>' : '<span class="badge badge-error">○ Offline</span>'}
           </div>
         </div>
         <div class="node-actions">
-          ${node.status !== 'connected' ? `
-            <button onclick="connectNode('${node.id}')" class="btn btn-small btn-primary">Connect</button>
-          ` : ''}
           <button onclick="testNode('${node.id}')" class="btn btn-small btn-secondary">Test</button>
           <button onclick="deleteNode('${node.id}')" class="btn btn-small btn-danger">Delete</button>
         </div>
@@ -85,7 +91,7 @@ function renderNodeCard(node) {
         </div>
         <div class="node-detail">
           <span class="detail-label">Last Seen</span>
-          <span class="detail-value">${node.lastHeartbeat ? new Date(node.lastHeartbeat).toLocaleString() : 'Never'}</span>
+          <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}</span>
         </div>
         ${node.capabilities?.length ? `
           <div class="node-detail">
@@ -115,7 +121,7 @@ function renderEmptyState() {
   `;
 }
 
-function renderAddNodeModal() {
+function renderAddNodeModal(workspace) {
   return `
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
@@ -155,40 +161,20 @@ function renderAddNodeModal() {
           </div>
         </div>
         
-        <div class="modal-actions">
-          <button onclick="addNode()" class="btn btn-primary">Add Node</button>
-          <button onclick="hideAddNodeModal()" class="btn btn-secondary">Cancel</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderPairingModal() {
-  return `
-    <div id="pairing-modal" class="modal hidden">
-      <div class="modal-overlay" onclick="hidePairingModal()"></div>
-      <div class="modal-content">
-        <h2>Connect Node</h2>
-        <p class="text-muted">Use this pairing token to authenticate your node</p>
-        
-        <div class="pairing-token-display">
-          <code id="pairing-token" class="pairing-token">------</code>
-          <button onclick="copyPairingToken()" class="btn btn-small btn-secondary">Copy</button>
-        </div>
-        
-        <div class="pairing-instructions">
-          <h4>Instructions:</h4>
-          <ol>
-            <li>Install the KDashX3 agent on your node</li>
-            <li>Run: <code>kdashx2-agent pair</code></li>
-            <li>Enter the pairing token above</li>
-          </ol>
+        <div id="pairing-section" class="hidden">
+          <div class="alert alert-info">
+            <strong>Pairing Token Created!</strong>
+            <p>Run this command on your node:</p>
+            <code class="command-block" id="pairing-command"></code>
+            <button onclick="copyPairingCommand()" class="btn btn-small btn-secondary">Copy</button>
+          </div>
         </div>
         
         <div class="modal-actions">
-          <button onclick="simulateNodeConnected()" class="btn btn-primary">Simulate Connected</button>
-          <button onclick="hidePairingModal()" class="btn btn-secondary">Close</button>
+          <button onclick="createPairing()" class="btn btn-primary" id="create-pairing-btn">
+            Create Pairing Token
+          </button>
+          <button onclick="hideAddNodeModal()" class="btn btn-secondary">Close</button>
         </div>
       </div>
     </div>
@@ -198,123 +184,81 @@ function renderPairingModal() {
 // Modal functions
 window.showAddNodeModal = function() {
   document.getElementById('add-node-modal').classList.remove('hidden');
+  document.getElementById('pairing-section').classList.add('hidden');
+  document.getElementById('create-pairing-btn').textContent = 'Create Pairing Token';
+  document.getElementById('create-pairing-btn').disabled = false;
 };
 
 window.hideAddNodeModal = function() {
   document.getElementById('add-node-modal').classList.add('hidden');
 };
 
-window.showPairingModal = function(nodeId) {
-  window.__pairingNodeId = nodeId;
-  const token = generatePairingToken();
-  document.getElementById('pairing-token').textContent = token;
-  document.getElementById('pairing-modal').classList.remove('hidden');
-};
-
-window.hidePairingModal = function() {
-  document.getElementById('pairing-modal').classList.add('hidden');
-};
-
-window.generatePairingToken = function() {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
-};
-
-window.copyPairingToken = function() {
-  const token = document.getElementById('pairing-token').textContent;
-  navigator.clipboard.writeText(token).then(() => {
-    alert('Token copied to clipboard');
-  });
-};
-
-// Node actions
-window.addNode = function() {
-  const name = document.getElementById('node-name').value;
-  const type = document.getElementById('node-type').value;
-  const os = document.getElementById('node-os').value;
-  
-  if (!name.trim()) {
-    alert('Please enter a node name');
+window.createPairing = async function() {
+  const workspace = realStore.get().currentWorkspace;
+  if (!workspace) {
+    alert('No workspace selected');
     return;
   }
   
-  // Get capabilities
+  const name = document.getElementById('node-name').value || 'New Node';
+  const type = document.getElementById('node-type').value;
+  const os = document.getElementById('node-os').value;
+  
   const capabilities = [];
   if (document.getElementById('cap-docker').checked) capabilities.push('docker');
   if (document.getElementById('cap-gpu').checked) capabilities.push('gpu');
   if (document.getElementById('cap-python').checked) capabilities.push('python');
   if (document.getElementById('cap-nodejs').checked) capabilities.push('nodejs');
   
-  const newNode = {
-    id: 'node-' + Date.now(),
-    name: name.trim(),
-    type,
-    os,
-    status: 'pending',
-    lastHeartbeat: null,
-    capabilities,
-    allowedFolders: [],
-    defaultOutputFolder: './outputs'
-  };
+  const btn = document.getElementById('create-pairing-btn');
+  btn.disabled = true;
+  btn.textContent = 'Creating...';
   
-  const nodes = store.get('nodes');
-  nodes.push(newNode);
-  store.set('nodes', nodes);
-  
-  // Mark nodes module as in-progress
-  store.set('setup.nodes.completed', false);
-  
-  hideAddNodeModal();
-  window.navigate('/nodes');
-  
-  // Show pairing modal for the new node
-  setTimeout(() => showPairingModal(newNode.id), 100);
-};
-
-window.connectNode = function(nodeId) {
-  showPairingModal(nodeId);
-};
-
-window.simulateNodeConnected = function() {
-  const nodeId = window.__pairingNodeId;
-  if (!nodeId) return;
-  
-  const nodes = store.get('nodes');
-  const node = nodes.find(n => n.id === nodeId);
-  
-  if (node) {
-    node.status = 'connected';
-    node.lastHeartbeat = new Date().toISOString();
-    store.set('nodes', nodes);
+  try {
+    const result = await createPairingToken(workspace.id);
     
-    // Check if we have at least one connected node
-    const hasConnected = nodes.some(n => n.status === 'connected');
-    if (hasConnected) {
-      store.set('setup.nodes.completed', true);
-    }
+    const command = `mc-node --api "${API_BASE_URL}" --token "${result.token}" --name "${name}" --type "${type}" --capabilities "${capabilities.join(',')}"`;
+    
+    document.getElementById('pairing-command').textContent = command;
+    document.getElementById('pairing-section').classList.remove('hidden');
+    btn.textContent = 'Token Created';
+    
+  } catch (err) {
+    alert('Failed to create pairing token: ' + err.message);
+    btn.disabled = false;
+    btn.textContent = 'Create Pairing Token';
   }
-  
-  hidePairingModal();
+};
+
+window.copyPairingCommand = function() {
+  const command = document.getElementById('pairing-command').textContent;
+  navigator.clipboard.writeText(command).then(() => {
+    alert('Command copied to clipboard');
+  });
+};
+
+window.refreshNodes = function() {
+  realStore.loadNodes();
   window.navigate('/nodes');
 };
 
 window.testNode = function(nodeId) {
-  const nodes = store.get('nodes');
-  const node = nodes.find(n => n.id === nodeId);
-  
+  const node = realStore.get().nodes.find(n => n.id === nodeId);
   if (!node) return;
   
-  alert(`Testing node "${node.name}"...\nStatus: ${node.status}\nLast heartbeat: ${node.lastHeartbeat ? new Date(node.lastHeartbeat).toLocaleString() : 'Never'}`);
+  alert(`Node: ${node.name}\nStatus: ${node.status}\nOnline: ${node.online ? 'Yes' : 'No'}\nLast heartbeat: ${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}`);
 };
 
-window.deleteNode = function(nodeId) {
-  if (!confirm('Are you sure you want to delete this node?')) return;
+window.deleteNode = async function(nodeId) {
+  if (!confirm('Delete this node?')) return;
   
-  const nodes = store.get('nodes').filter(n => n.id !== nodeId);
-  store.set('nodes', nodes);
-  
-  // Update setup completion
-  const hasConnected = nodes.some(n => n.status === 'connected');
-  store.set('setup.nodes.completed', hasConnected);
-  
-  window.navigate('/nodes');
+  // TODO: Implement delete API call
+  alert('Node deletion not yet implemented in backend');
 };
+
+// Auto-refresh on page load
+window.addEventListener('load', () => {
+  if (window.location.hash === '#/nodes') {
+    realStore.loadNodes();
+  }
+});

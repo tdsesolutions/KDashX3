@@ -1,13 +1,14 @@
 /**
- * Tasks Page - Task List, Creation, and Detail
+ * Tasks Page - Real Task Management
  */
 
-import { store } from '../lib/store.js';
-import { routeTask } from '../llm/routingBrain.js';
+import { realStore } from '../lib/store-real.js';
+import { createTask, getTasks, getTaskEvents, dispatchTask } from '../lib/store.js';
 
 export function renderTasks() {
-  const tasks = store.get('tasks');
-  const hasNodes = store.hasConnectedNodes();
+  const state = realStore.get();
+  const tasks = state.tasks || [];
+  const hasNodes = realStore.hasConnectedNodes();
   
   return `
     <div class="tasks-page">
@@ -38,6 +39,9 @@ function renderTasksToolbar(hasNodes) {
           Add a node to create tasks
         </span>
       ` : ''}
+      <button onclick="refreshTasks()" class="btn btn-secondary">
+        🔄 Refresh
+      </button>
     </div>
   `;
 }
@@ -75,16 +79,16 @@ function renderTasksList(tasks, hasNodes) {
 function renderTaskCard(task) {
   const statusBadges = {
     pending: { class: 'badge-warning', text: 'Pending' },
-    routing: { class: 'badge-info', text: 'Routing' },
     assigned: { class: 'badge-info', text: 'Assigned' },
     executing: { class: 'badge-info', text: 'Executing' },
     completed: { class: 'badge-success', text: 'Completed' },
     failed: { class: 'badge-error', text: 'Failed' },
-    retrying: { class: 'badge-warning', text: 'Retrying' }
+    cancelled: { class: 'badge-error', text: 'Cancelled' }
   };
   
   const badge = statusBadges[task.status] || statusBadges.pending;
-  const node = store.get('nodes').find(n => n.id === task.assignedNodeId);
+  const nodes = realStore.get().nodes || [];
+  const node = nodes.find(n => n.id === task.node_id);
   
   return `
     <div class="task-card card">
@@ -94,13 +98,13 @@ function renderTaskCard(task) {
           <div class="task-meta">
             <span class="badge ${badge.class}">${badge.text}</span>
             ${node ? `<span class="task-node">on ${node.name}</span>` : ''}
-            <span class="task-time">${new Date(task.createdAt).toLocaleString()}</span>
+            <span class="task-time">${new Date(task.created_at).toLocaleString()}</span>
           </div>
         </div>
         <div class="task-actions">
           <a href="#/tasks/${task.id}" class="btn btn-small btn-secondary">View</a>
-          ${task.status === 'failed' ? `
-            <button onclick="retryTask('${task.id}')" class="btn btn-small btn-primary">Retry</button>
+          ${task.status === 'pending' ? `
+            <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-small btn-primary">Dispatch</button>
           ` : ''}
         </div>
       </div>
@@ -111,25 +115,25 @@ function renderTaskCard(task) {
           <span>${task.error}</span>
         </div>
       ` : ''}
-      
-      ${task.result ? `
-        <div class="task-result-preview">
-          <span class="result-label">Result:</span>
-          <span class="result-output">${task.result.output.substring(0, 100)}${task.result.output.length > 100 ? '...' : ''}</span>
-        </div>
-      ` : ''}
     </div>
   `;
 }
 
 // New Task Page
 export function renderNewTask() {
-  const hasNodes = store.hasConnectedNodes();
-  const hasProviders = store.hasWorkingProvider();
-  const savedIntent = localStorage.getItem('kdashx2-new-task-intent') || '';
+  const hasNodes = realStore.hasConnectedNodes();
   
   if (!hasNodes) {
-    return renderBlockedState('NODE_REQUIRED');
+    return `
+      <div class="blocked-page">
+        <div class="blocked-content">
+          <div class="lock-icon">🔒</div>
+          <h1>Cannot Create Task</h1>
+          <p>No connected nodes available.</p>
+          <a href="#/nodes" class="btn btn-primary">Add Node</a>
+        </div>
+      </div>
+    `;
   }
   
   return `
@@ -143,14 +147,6 @@ export function renderNewTask() {
       
       <main class="container">
         <div class="task-form card">
-          ${!hasProviders ? `
-            <div class="warning-banner">
-              <span class="warning-icon">⚠️</span>
-              <span>No working providers configured. AI features may be limited.</span>
-              <a href="#/providers" class="btn btn-small btn-secondary">Configure</a>
-            </div>
-          ` : ''}
-          
           <div class="form-group">
             <label class="form-label">What do you want to do?</label>
             <textarea 
@@ -158,8 +154,7 @@ export function renderNewTask() {
               class="form-textarea" 
               placeholder="Describe your task in detail... e.g., Deploy a Python Flask app to Docker"
               rows="4"
-            >${savedIntent}</textarea>
-            <p class="form-hint">Be specific about what you want to accomplish</p>
+            ></textarea>
           </div>
           
           <div class="form-group">
@@ -175,40 +170,20 @@ export function renderNewTask() {
           <div id="task-error" class="form-error hidden"></div>
           
           <div class="form-actions">
-            <button onclick="createTask()" class="btn btn-primary" id="create-task-btn">
+            <button onclick="submitTask()" class="btn btn-primary" id="create-task-btn">
               Create Task
             </button>
             <a href="#/tasks" class="btn btn-secondary">Cancel</a>
           </div>
-        </div>
-        
-        <div id="routing-preview" class="routing-preview hidden">
-          <!-- Routing preview rendered here -->
         </div>
       </main>
     </div>
   `;
 }
 
-function renderBlockedState(blockId) {
-  const blocks = store.getBlocks();
-  const block = blocks.find(b => b.id === blockId);
-  
-  return `
-    <div class="blocked-page">
-      <div class="blocked-content">
-        <div class="lock-icon">🔒</div>
-        <h1>Cannot Create Task</h1>
-        <p class="block-message">${block?.message || 'Setup required'}</p>
-        <a href="${block?.cta?.href || '#/setup'}" class="btn btn-primary">${block?.cta?.text || 'Go to Setup'}</a>
-      </div>
-    </div>
-  `;
-}
-
 // Task Detail Page
 export function renderTaskDetail(taskId) {
-  const tasks = store.get('tasks');
+  const tasks = realStore.get().tasks || [];
   const task = tasks.find(t => t.id === taskId);
   
   if (!task) {
@@ -221,8 +196,8 @@ export function renderTaskDetail(taskId) {
     `;
   }
   
-  const node = store.get('nodes').find(n => n.id === task.assignedNodeId);
-  const provider = store.get('providers').find(p => p.id === task.selectedProviderId);
+  const nodes = realStore.get().nodes || [];
+  const node = nodes.find(n => n.id === task.node_id);
   
   return `
     <div class="task-detail-page">
@@ -241,11 +216,15 @@ export function renderTaskDetail(taskId) {
               <p class="intent-text">${task.intent}</p>
             </div>
             
-            ${task.routingDecision ? renderRoutingDecision(task.routingDecision) : ''}
-            
-            ${task.result ? renderTaskResult(task.result) : ''}
-            
-            ${task.error ? renderTaskError(task.error) : ''}
+            <div class="task-events card">
+              <h3>Events</h3>
+              <div id="task-events-list">
+                <p class="text-muted">Loading events...</p>
+              </div>
+              <button onclick="loadTaskEvents('${task.id}')" class="btn btn-small btn-secondary">
+                Refresh Events
+              </button>
+            </div>
           </div>
           
           <div class="task-detail-sidebar">
@@ -254,61 +233,29 @@ export function renderTaskDetail(taskId) {
               <div class="meta-list">
                 <div class="meta-item">
                   <span class="meta-label">Status</span>
-                  <span class="badge ${getStatusBadgeClass(task.status)}">${task.status}</span>
+                  <span class="badge badge-${task.status === 'completed' ? 'success' : task.status === 'failed' ? 'error' : 'info'}">${task.status}</span>
                 </div>
                 <div class="meta-item">
                   <span class="meta-label">Created</span>
-                  <span class="meta-value">${new Date(task.createdAt).toLocaleString()}</span>
+                  <span class="meta-value">${new Date(task.created_at).toLocaleString()}</span>
                 </div>
-                ${task.startedAt ? `
-                  <div class="meta-item">
-                    <span class="meta-label">Started</span>
-                    <span class="meta-value">${new Date(task.startedAt).toLocaleString()}</span>
-                  </div>
-                ` : ''}
-                ${task.completedAt ? `
-                  <div class="meta-item">
-                    <span class="meta-label">Completed</span>
-                    <span class="meta-value">${new Date(task.completedAt).toLocaleString()}</span>
-                  </div>
-                ` : ''}
                 ${node ? `
                   <div class="meta-item">
                     <span class="meta-label">Node</span>
                     <span class="meta-value">${node.name}</span>
                   </div>
                 ` : ''}
-                ${provider ? `
-                  <div class="meta-item">
-                    <span class="meta-label">Provider</span>
-                    <span class="meta-value">${provider.name}</span>
-                  </div>
-                ` : ''}
               </div>
             </div>
             
-            ${task.result?.artifacts?.length ? `
-              <div class="task-artifacts card">
-                <h3>Artifacts</h3>
-                <ul class="artifacts-list">
-                  ${task.result.artifacts.map(a => `
-                    <li class="artifact-item">
-                      <span class="artifact-path">${a}</span>
-                    </li>
-                  `).join('')}
-                </ul>
+            ${task.status === 'pending' ? `
+              <div class="task-actions-card card">
+                <h3>Actions</h3>
+                <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-primary btn-full">
+                  Dispatch to Node
+                </button>
               </div>
             ` : ''}
-            
-            <div class="task-actions-card card">
-              <h3>Actions</h3>
-              <div class="action-buttons">
-                ${task.status === 'failed' ? `
-                  <button onclick="retryTask('${task.id}')" class="btn btn-primary btn-full">Retry Task</button>
-                ` : ''}
-                <button onclick="deleteTask('${task.id}')" class="btn btn-danger btn-full">Delete Task</button>
-              </div>
-            </div>
           </div>
         </div>
       </main>
@@ -316,77 +263,8 @@ export function renderTaskDetail(taskId) {
   `;
 }
 
-function renderRoutingDecision(decision) {
-  return `
-    <div class="routing-decision-card card">
-      <h3>Routing Decision</h3>
-      <div class="decision-details">
-        <div class="decision-item">
-          <span class="decision-label">Selected Node</span>
-          <span class="decision-value">${decision.selected_node_id}</span>
-        </div>
-        <div class="decision-item">
-          <span class="decision-label">Capabilities</span>
-          <span class="decision-value">${decision.required_capabilities.join(', ')}</span>
-        </div>
-        <div class="decision-item">
-          <span class="decision-label">Provider</span>
-          <span class="decision-value">${decision.provider_preference}</span>
-        </div>
-        <div class="decision-item">
-          <span class="decision-label">Risk Level</span>
-          <span class="badge ${decision.risk_level === 'critical' ? 'badge-error' : decision.risk_level === 'high' ? 'badge-warning' : 'badge-success'}">${decision.risk_level}</span>
-        </div>
-        <div class="decision-item">
-          <span class="decision-label">Approval Required</span>
-          <span class="decision-value">${decision.approval_required ? 'Yes' : 'No'}</span>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function renderTaskResult(result) {
-  return `
-    <div class="task-result-card card">
-      <h3>Result</h3>
-      <div class="result-output">
-        <pre>${result.output}</pre>
-      </div>
-      <div class="result-stats">
-        <span>Tokens: ${result.token_usage?.toLocaleString() || 'N/A'}</span>
-        <span>Cost: ${result.cost ? '$' + result.cost.toFixed(4) : 'N/A'}</span>
-      </div>
-    </div>
-  `;
-}
-
-function renderTaskError(error) {
-  return `
-    <div class="task-error-card card">
-      <h3>Error</h3>
-      <div class="error-message">
-        <pre>${error}</pre>
-      </div>
-    </div>
-  `;
-}
-
-function getStatusBadgeClass(status) {
-  const classes = {
-    pending: 'badge-warning',
-    routing: 'badge-info',
-    assigned: 'badge-info',
-    executing: 'badge-info',
-    completed: 'badge-success',
-    failed: 'badge-error',
-    retrying: 'badge-warning'
-  };
-  return classes[status] || 'badge-info';
-}
-
 // Actions
-window.createTask = async function() {
+window.submitTask = async function() {
   const intent = document.getElementById('task-intent').value;
   const priority = document.getElementById('task-priority').value;
   const errorEl = document.getElementById('task-error');
@@ -398,57 +276,20 @@ window.createTask = async function() {
     return;
   }
   
+  const workspace = realStore.get().currentWorkspace;
+  if (!workspace) {
+    errorEl.textContent = 'No workspace selected';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  
   btn.disabled = true;
   btn.textContent = 'Creating...';
   
   try {
-    // Get routing decision
-    const nodes = store.getConnectedNodes();
-    const providers = store.getWorkingProviders();
-    
-    const routingDecision = await routeTask({
-      intent,
-      context: {
-        available_nodes: nodes,
-        configured_providers: providers
-      },
-      constraints: { priority }
-    });
-    
-    // Validate routing decision
-    if (!routingDecision.selected_node_id) {
-      throw new Error('No suitable node found for this task');
-    }
-    
-    // Create task
-    const task = {
-      id: 'task-' + Date.now(),
-      intent: intent.trim(),
-      status: 'pending',
-      priority,
-      assignedNodeId: routingDecision.selected_node_id,
-      selectedProviderId: routingDecision.fallback_order[0],
-      routingDecision,
-      createdAt: new Date().toISOString(),
-      startedAt: null,
-      completedAt: null,
-      result: null,
-      error: null
-    };
-    
-    const tasks = store.get('tasks');
-    tasks.unshift(task);
-    store.set('tasks', tasks);
-    
-    // Clear saved intent
-    localStorage.removeItem('kdashx2-new-task-intent');
-    
-    // Simulate task progression
-    simulateTaskExecution(task.id);
-    
-    // Navigate to task detail
-    window.navigate(`/tasks/${task.id}`);
-    
+    await createTask(workspace.id, intent.trim(), priority);
+    realStore.loadTasks();
+    window.navigate('/tasks');
   } catch (err) {
     errorEl.textContent = err.message || 'Failed to create task';
     errorEl.classList.remove('hidden');
@@ -457,65 +298,54 @@ window.createTask = async function() {
   }
 };
 
-window.simulateTaskExecution = async function(taskId) {
-  const tasks = store.get('tasks');
-  const task = tasks.find(t => t.id === taskId);
-  if (!task) return;
-  
-  // Update to routing
-  task.status = 'routing';
-  store.set('tasks', tasks);
-  
-  await new Promise(r => setTimeout(r, 1000));
-  
-  // Update to executing
-  task.status = 'executing';
-  task.startedAt = new Date().toISOString();
-  store.set('tasks', tasks);
-  
-  await new Promise(r => setTimeout(r, 3000));
-  
-  // Complete or fail randomly
-  const success = Math.random() > 0.2;
-  
-  if (success) {
-    task.status = 'completed';
-    task.result = {
-      output: `Successfully completed task: ${task.intent}\n\nExecuted on node: ${task.assignedNodeId}\nProvider used: ${task.selectedProviderId || 'default'}`,
-      artifacts: [
-        `${task.routingDecision.output_location.path}/output.log`,
-        `${task.routingDecision.output_location.path}/result.json`
-      ],
-      token_usage: Math.floor(Math.random() * 5000) + 1000,
-      cost: Math.random() * 0.1
-    };
-  } else {
-    task.status = 'failed';
-    task.error = 'Simulated failure: Provider timeout after 30s';
+window.dispatchTaskToNode = async function(taskId) {
+  const nodes = realStore.get().nodes.filter(n => n.status === 'connected' || n.online);
+  if (nodes.length === 0) {
+    alert('No connected nodes available');
+    return;
   }
   
-  task.completedAt = new Date().toISOString();
-  store.set('tasks', tasks);
+  // For now, dispatch to first available node
+  // In production, this would use the routing brain
+  const node = nodes[0];
+  
+  try {
+    await dispatchTask(taskId, node.id);
+    alert(`Task dispatched to ${node.name}`);
+    realStore.loadTasks();
+    window.navigate('/tasks');
+  } catch (err) {
+    alert('Failed to dispatch task: ' + err.message);
+  }
 };
 
-window.retryTask = async function(taskId) {
-  const tasks = store.get('tasks');
-  const task = tasks.find(t => t.id === taskId);
-  if (!task) return;
-  
-  task.status = 'retrying';
-  task.error = null;
-  task.result = null;
-  store.set('tasks', tasks);
-  
-  simulateTaskExecution(taskId);
-  window.navigate(`/tasks/${taskId}`);
-};
-
-window.deleteTask = function(taskId) {
-  if (!confirm('Delete this task? This cannot be undone.')) return;
-  
-  const tasks = store.get('tasks').filter(t => t.id !== taskId);
-  store.set('tasks', tasks);
+window.refreshTasks = function() {
+  realStore.loadTasks();
   window.navigate('/tasks');
+};
+
+window.loadTaskEvents = async function(taskId) {
+  const container = document.getElementById('task-events-list');
+  container.innerHTML = '<p class="text-muted">Loading...</p>';
+  
+  try {
+    const events = await getTaskEvents(taskId);
+    if (events.length === 0) {
+      container.innerHTML = '<p class="text-muted">No events yet</p>';
+    } else {
+      container.innerHTML = `
+        <div class="events-list">
+          ${events.map(e => `
+            <div class="event-item">
+              <span class="event-type">${e.event_type}</span>
+              <span class="event-time">${new Date(e.created_at).toLocaleTimeString()}</span>
+              ${e.payload ? `<pre class="event-payload">${JSON.stringify(e.payload, null, 2)}</pre>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+  } catch (err) {
+    container.innerHTML = `<p class="text-error">Failed to load events: ${err.message}</p>`;
+  }
 };

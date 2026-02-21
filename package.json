@@ -11,8 +11,15 @@
   "dependencies": {
     "vite": "^5.0.0"
   },
-  "devDependencies": {},
-  "keywords": ["dashboard", "ai", "agents", "mission-control"],
+  "devDependencies": {
+    "@playwright/test": "^1.58.2"
+  },
+  "keywords": [
+    "dashboard",
+    "ai",
+    "agents",
+    "mission-control"
+  ],
   "author": "TDS Solutions",
   "license": "MIT"
 }

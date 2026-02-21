@@ -1,77 +1,65 @@
 /**
- * Login Page
+ * Login Page - Real Authentication
  */
 
-import { store } from '../lib/store.js';
+import { register, login } from '../lib/store.js';
+import { realStore } from '../lib/store-real.js';
 
 export function renderLogin() {
-  // Check if already authenticated
-  const auth = store.get('auth');
-  if (auth.isAuthenticated) {
-    window.navigate('/dashboard');
-    return '';
-  }
-
   return `
     <div class="login-page">
-      <div class="login-container">
+      <div class="login-container card">
         <div class="login-header">
-          <div class="login-logo">K</div>
           <h1>KDashX3</h1>
-          <p class="login-subtitle">Mission Control</p>
+          <p class="text-muted">Mission Control</p>
         </div>
         
-        <div class="login-card card">
-          <h2>Welcome</h2>
-          <p class="text-muted">Sign in to manage your AI agents</p>
-          
-          <div class="login-form">
-            <div class="form-group">
-              <label class="form-label">Email</label>
-              <input 
-                type="email" 
-                id="login-email" 
-                class="form-input" 
-                placeholder="you@example.com"
-                value="demo@example.com"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <input 
-                type="password" 
-                id="login-password" 
-                class="form-input" 
-                placeholder="••••••••"
-                value="password"
-              />
-            </div>
-            
-            <div id="login-error" class="login-error hidden"></div>
-            
-            <button onclick="handleLogin()" class="btn btn-primary btn-full" id="login-btn">
-              Sign In
-            </button>
-          </div>
-          
-          <div class="login-divider">
-            <span>or</span>
-          </div>
-          
-          <div class="login-social">
-            <button onclick="handleSocialLogin('google')" class="btn btn-secondary btn-full">
-              Continue with Google
-            </button>
-            <button onclick="handleSocialLogin('github')" class="btn btn-secondary btn-full">
-              Continue with GitHub
-            </button>
-          </div>
+        <div class="login-tabs">
+          <button class="tab-btn active" onclick="showTab('signin')" id="tab-signin">Sign In</button>
+          <button class="tab-btn" onclick="showTab('signup')" id="tab-signup">Sign Up</button>
         </div>
         
-        <div class="login-footer">
-          <p class="text-muted text-center">
-            Your API keys stay on your nodes. We never store them.
+        <!-- Sign In Form -->
+        <div id="signin-panel" class="login-panel active">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="login-email" class="form-input" placeholder="you@example.com" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-input" placeholder="••••••••" />
+          </div>
+          
+          <div id="login-error" class="form-error hidden"></div>
+          
+          <button onclick="handleLogin()" class="btn btn-primary btn-full" id="login-btn">
+            Sign In
+          </button>
+        </div>
+        
+        <!-- Sign Up Form -->
+        <div id="signup-panel" class="login-panel hidden">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" id="register-email" class="form-input" placeholder="you@example.com" />
+          </div>
+          
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" id="register-password" class="form-input" placeholder="••••••••" />
+          </div>
+          
+          <div id="register-error" class="form-error hidden"></div>
+          
+          <button onclick="handleRegister()" class="btn btn-primary btn-full" id="register-btn">
+            Create Account
+          </button>
+        </div>
+        
+        <div class="login-info">
+          <p class="text-muted text-small">
+            Backend: <a href="http://104.197.56.55:3001" target="_blank">Mission Control API</a>
           </p>
         </div>
       </div>
@@ -79,76 +67,73 @@ export function renderLogin() {
   `;
 }
 
-// Handle login
+window.showTab = function(tab) {
+  document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.login-panel').forEach(panel => panel.classList.remove('active'));
+  document.querySelectorAll('.login-panel').forEach(panel => panel.classList.add('hidden'));
+  
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  const panel = document.getElementById(`${tab}-panel`);
+  panel.classList.remove('hidden');
+  panel.classList.add('active');
+};
+
 window.handleLogin = async function() {
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   const btn = document.getElementById('login-btn');
   
-  // Basic validation
   if (!email || !password) {
     errorEl.textContent = 'Please enter email and password';
     errorEl.classList.remove('hidden');
     return;
   }
   
-  // Show loading
   btn.disabled = true;
   btn.textContent = 'Signing in...';
   
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    // Update store
-    store.set('auth', {
-      isAuthenticated: true,
-      user: {
-        id: 'user-' + Date.now(),
-        email: email,
-        name: email.split('@')[0]
-      },
-      token: 'mock-jwt-' + Date.now()
-    });
-    
-    // Navigate to dashboard or setup
-    const isSetupComplete = store.isSetupComplete();
-    window.navigate(isSetupComplete ? '/dashboard' : '/setup');
-    
+    const result = await login(email, password);
+    realStore.setAuth(result.token, result.user);
+    window.navigate('/setup');
   } catch (err) {
-    errorEl.textContent = err.message || 'Sign in failed. Please try again.';
+    errorEl.textContent = err.message || 'Login failed';
     errorEl.classList.remove('hidden');
     btn.disabled = false;
     btn.textContent = 'Sign In';
   }
 };
 
-// Handle social login
-window.handleSocialLogin = async function(provider) {
-  const btn = event.target;
+window.handleRegister = async function() {
+  const email = document.getElementById('register-email').value;
+  const password = document.getElementById('register-password').value;
+  const errorEl = document.getElementById('register-error');
+  const btn = document.getElementById('register-btn');
+  
+  if (!email || !password) {
+    errorEl.textContent = 'Please enter email and password';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  
+  if (password.length < 6) {
+    errorEl.textContent = 'Password must be at least 6 characters';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  
   btn.disabled = true;
-  btn.textContent = `Connecting to ${provider}...`;
+  btn.textContent = 'Creating account...';
   
   try {
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    store.set('auth', {
-      isAuthenticated: true,
-      user: {
-        id: 'user-' + Date.now(),
-        email: `user@${provider}.com`,
-        name: `${provider} User`
-      },
-      token: 'mock-jwt-' + Date.now()
-    });
-    
-    const isSetupComplete = store.isSetupComplete();
-    window.navigate(isSetupComplete ? '/dashboard' : '/setup');
-    
+    const result = await register(email, password);
+    realStore.setAuth(result.token, result.user);
+    window.navigate('/setup');
   } catch (err) {
+    errorEl.textContent = err.message || 'Registration failed';
+    errorEl.classList.remove('hidden');
     btn.disabled = false;
-    btn.textContent = `Continue with ${provider.charAt(0).toUpperCase() + provider.slice(1)}`;
-    alert(`Failed to sign in with ${provider}`);
+    btn.textContent = 'Create Account';
   }
 };
