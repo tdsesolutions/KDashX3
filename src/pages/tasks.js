@@ -2,13 +2,13 @@
  * Tasks Page - Real Task Management
  */
 
-import { realStore } from '../lib/store-real.js';
-import { createTask, getTasks, getTaskEvents, dispatchTask } from '../lib/store.js';
+import { store } from '../lib/store.js';
+import { createTask, getTasks, getTaskEvents, dispatchTask } from '../lib/api.js';
 
 export function renderTasks() {
-  const state = realStore.get();
+  const state = store.get();
   const tasks = state.tasks || [];
-  const hasNodes = realStore.hasConnectedNodes();
+  const hasNodes = store.hasConnectedNodes();
   
   return `
     <div class="tasks-page">
@@ -87,7 +87,7 @@ function renderTaskCard(task) {
   };
   
   const badge = statusBadges[task.status] || statusBadges.pending;
-  const nodes = realStore.get().nodes || [];
+  const nodes = store.get().nodes || [];
   const node = nodes.find(n => n.id === task.node_id);
   
   return `
@@ -121,7 +121,7 @@ function renderTaskCard(task) {
 
 // New Task Page
 export function renderNewTask() {
-  const hasNodes = realStore.hasConnectedNodes();
+  const hasNodes = store.hasConnectedNodes();
   
   if (!hasNodes) {
     return `
@@ -183,7 +183,7 @@ export function renderNewTask() {
 
 // Task Detail Page
 export function renderTaskDetail(taskId) {
-  const tasks = realStore.get().tasks || [];
+  const tasks = store.get().tasks || [];
   const task = tasks.find(t => t.id === taskId);
   
   if (!task) {
@@ -196,7 +196,7 @@ export function renderTaskDetail(taskId) {
     `;
   }
   
-  const nodes = realStore.get().nodes || [];
+  const nodes = store.get().nodes || [];
   const node = nodes.find(n => n.id === task.node_id);
   
   return `
@@ -276,7 +276,7 @@ window.submitTask = async function() {
     return;
   }
   
-  const workspace = realStore.get().currentWorkspace;
+  const workspace = store.get().currentWorkspace;
   if (!workspace) {
     errorEl.textContent = 'No workspace selected';
     errorEl.classList.remove('hidden');
@@ -288,7 +288,7 @@ window.submitTask = async function() {
   
   try {
     await createTask(workspace.id, intent.trim(), priority);
-    realStore.loadTasks();
+    store.loadTasks();
     window.navigate('/tasks');
   } catch (err) {
     errorEl.textContent = err.message || 'Failed to create task';
@@ -299,7 +299,7 @@ window.submitTask = async function() {
 };
 
 window.dispatchTaskToNode = async function(taskId) {
-  const nodes = realStore.get().nodes.filter(n => n.status === 'connected' || n.online);
+  const nodes = store.get().nodes.filter(n => n.status === 'connected' || n.online);
   if (nodes.length === 0) {
     alert('No connected nodes available');
     return;
@@ -312,7 +312,7 @@ window.dispatchTaskToNode = async function(taskId) {
   try {
     await dispatchTask(taskId, node.id);
     alert(`Task dispatched to ${node.name}`);
-    realStore.loadTasks();
+    store.loadTasks();
     window.navigate('/tasks');
   } catch (err) {
     alert('Failed to dispatch task: ' + err.message);
@@ -320,7 +320,7 @@ window.dispatchTaskToNode = async function(taskId) {
 };
 
 window.refreshTasks = function() {
-  realStore.loadTasks();
+  store.loadTasks();
   window.navigate('/tasks');
 };
 
