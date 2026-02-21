@@ -1,16 +1,17 @@
 /**
- * Nodes Page - Real Node Management
+ * Nodes Page - Real Node Management with Backend
  */
 
-import { realStore } from '../lib/store-real.js';
-import { createPairingToken, getNodes } from '../lib/store.js';
-import { API_BASE_URL } from '../lib/api-config.js';
+import { store } from '../lib/store.js';
+import { createPairingToken } from '../lib/api.js';
+import { API_BASE_URL } from '../lib/config.js';
 
 export function renderNodes() {
-  const state = realStore.get();
-  const nodes = state.nodes || [];
+  const nodes = store.get('nodes') || [];
   const hasNodes = nodes.length > 0;
-  const workspace = state.currentWorkspace;
+  
+  // Sync nodes on load
+  store.syncNodes();
   
   return `
     <div class="nodes-page">
@@ -22,25 +23,25 @@ export function renderNodes() {
       </header>
       
       <main class="container">
+        <div class="nodes-toolbar">
+          <button onclick="showAddNodeModal()" class="btn btn-primary">
+            <span>+</span> Add Node
+          </button>
+          <button onclick="refreshNodes()" class="btn btn-secondary">
+            🔄 Refresh
+          </button>
+        </div>
+        
         ${hasNodes ? renderNodesList(nodes) : renderEmptyState()}
       </main>
       
-      ${renderAddNodeModal(workspace)}
+      ${renderAddNodeModal()}
     </div>
   `;
 }
 
 function renderNodesList(nodes) {
   return `
-    <div class="nodes-toolbar">
-      <button onclick="showAddNodeModal()" class="btn btn-primary">
-        <span>+</span> Add Node
-      </button>
-      <button onclick="refreshNodes()" class="btn btn-secondary">
-        🔄 Refresh
-      </button>
-    </div>
-    
     <div class="nodes-list">
       ${nodes.map(node => renderNodeCard(node)).join('')}
     </div>
@@ -51,8 +52,7 @@ function renderNodeCard(node) {
   const statusColors = {
     connected: 'badge-success',
     disconnected: 'badge-error',
-    pending: 'badge-warning',
-    offline: 'badge-error'
+    pending: 'badge-warning'
   };
   
   const typeIcons = {
@@ -61,7 +61,7 @@ function renderNodeCard(node) {
     server: '🖥️'
   };
   
-  const isOnline = node.status === 'connected' || node.online;
+  const isOnline = node.online || node.status === 'connected';
   
   return `
     <div class="node-card card">
@@ -76,7 +76,6 @@ function renderNodeCard(node) {
         </div>
         <div class="node-actions">
           <button onclick="testNode('${node.id}')" class="btn btn-small btn-secondary">Test</button>
-          <button onclick="deleteNode('${node.id}')" class="btn btn-small btn-danger">Delete</button>
         </div>
       </div>
       
@@ -90,7 +89,7 @@ function renderNodeCard(node) {
           <span class="detail-value node-id">${node.id}</span>
         </div>
         <div class="node-detail">
-          <span class="detail-label">Last Seen</span>
+          <span class="detail-label">Last Heartbeat</span>
           <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}</span>
         </div>
         ${node.capabilities?.length ? `
@@ -121,58 +120,44 @@ function renderEmptyState() {
   `;
 }
 
-function renderAddNodeModal(workspace) {
+function renderAddNodeModal() {
   return `
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
         <h2>Add New Node</h2>
+        <p class="text-muted">Create a pairing token to connect a new node.</p>
         
         <div class="form-group">
           <label class="form-label">Node Name</label>
-          <input type="text" id="node-name" class="form-input" placeholder="My Node" />
+          <input type="text" id="node-name" class="form-input" placeholder="My Node" value="Production VM" />
         </div>
         
         <div class="form-group">
           <label class="form-label">Node Type</label>
           <select id="node-type" class="form-select">
+            <option value="vm" selected>Cloud VM</option>
             <option value="local">Local Machine</option>
-            <option value="vm">Cloud VM</option>
             <option value="server">Dedicated Server</option>
           </select>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Operating System</label>
-          <select id="node-os" class="form-select">
-            <option value="linux">Linux</option>
-            <option value="macos">macOS</option>
-            <option value="windows">Windows</option>
-          </select>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">Capabilities</label>
-          <div class="checkbox-group">
-            <label class="checkbox-label"><input type="checkbox" id="cap-docker" value="docker" /> Docker</label>
-            <label class="checkbox-label"><input type="checkbox" id="cap-gpu" value="gpu" /> GPU</label>
-            <label class="checkbox-label"><input type="checkbox" id="cap-python" value="python" checked /> Python</label>
-            <label class="checkbox-label"><input type="checkbox" id="cap-nodejs" value="nodejs" /> Node.js</label>
-          </div>
         </div>
         
         <div id="pairing-section" class="hidden">
           <div class="alert alert-info">
             <strong>Pairing Token Created!</strong>
             <p>Run this command on your node:</p>
-            <code class="command-block" id="pairing-command"></code>
-            <button onclick="copyPairingCommand()" class="btn btn-small btn-secondary">Copy</button>
+            <pre class="command-block" id="pairing-command"></pre>
+            <button onclick="copyPairingCommand()" class="btn btn-small btn-secondary">Copy Command</button>
+          </div>
+          
+          <div class="alert alert-warning">
+            <strong>Important:</strong> The token expires in 10 minutes and can only be used once.
           </div>
         </div>
         
         <div class="modal-actions">
-          <button onclick="createPairing()" class="btn btn-primary" id="create-pairing-btn">
-            Create Pairing Token
+          <button onclick="generatePairingToken()" class="btn btn-primary" id="create-pairing-btn">
+            Generate Pairing Token
           </button>
           <button onclick="hideAddNodeModal()" class="btn btn-secondary">Close</button>
         </div>
@@ -181,11 +166,12 @@ function renderAddNodeModal(workspace) {
   `;
 }
 
-// Modal functions
+// Actions
 window.showAddNodeModal = function() {
   document.getElementById('add-node-modal').classList.remove('hidden');
   document.getElementById('pairing-section').classList.add('hidden');
-  document.getElementById('create-pairing-btn').textContent = 'Create Pairing Token';
+  document.getElementById('create-pairing-btn').classList.remove('hidden');
+  document.getElementById('create-pairing-btn').textContent = 'Generate Pairing Token';
   document.getElementById('create-pairing-btn').disabled = false;
 };
 
@@ -193,72 +179,55 @@ window.hideAddNodeModal = function() {
   document.getElementById('add-node-modal').classList.add('hidden');
 };
 
-window.createPairing = async function() {
-  const workspace = realStore.get().currentWorkspace;
-  if (!workspace) {
-    alert('No workspace selected');
-    return;
-  }
-  
+window.generatePairingToken = async function() {
+  const btn = document.getElementById('create-pairing-btn');
   const name = document.getElementById('node-name').value || 'New Node';
   const type = document.getElementById('node-type').value;
-  const os = document.getElementById('node-os').value;
   
-  const capabilities = [];
-  if (document.getElementById('cap-docker').checked) capabilities.push('docker');
-  if (document.getElementById('cap-gpu').checked) capabilities.push('gpu');
-  if (document.getElementById('cap-python').checked) capabilities.push('python');
-  if (document.getElementById('cap-nodejs').checked) capabilities.push('nodejs');
-  
-  const btn = document.getElementById('create-pairing-btn');
   btn.disabled = true;
-  btn.textContent = 'Creating...';
+  btn.textContent = 'Generating...';
   
   try {
-    const result = await createPairingToken(workspace.id);
+    const result = await createPairingToken();
     
-    const command = `mc-node --api "${API_BASE_URL}" --token "${result.token}" --name "${name}" --type "${type}" --capabilities "${capabilities.join(',')}"`;
+    const command = `mc-node connect --api ${API_BASE_URL} --token ${result.token} --name "${name}" --type ${type}`;
     
     document.getElementById('pairing-command').textContent = command;
     document.getElementById('pairing-section').classList.remove('hidden');
-    btn.textContent = 'Token Created';
+    btn.classList.add('hidden');
     
   } catch (err) {
     alert('Failed to create pairing token: ' + err.message);
     btn.disabled = false;
-    btn.textContent = 'Create Pairing Token';
+    btn.textContent = 'Generate Pairing Token';
   }
 };
 
 window.copyPairingCommand = function() {
   const command = document.getElementById('pairing-command').textContent;
   navigator.clipboard.writeText(command).then(() => {
-    alert('Command copied to clipboard');
+    alert('Command copied! Run this on your node to connect.');
   });
 };
 
-window.refreshNodes = function() {
-  realStore.loadNodes();
+window.refreshNodes = async function() {
+  await store.syncNodes();
   window.navigate('/nodes');
 };
 
 window.testNode = function(nodeId) {
-  const node = realStore.get().nodes.find(n => n.id === nodeId);
+  const node = store.get('nodes').find(n => n.id === nodeId);
   if (!node) return;
   
-  alert(`Node: ${node.name}\nStatus: ${node.status}\nOnline: ${node.online ? 'Yes' : 'No'}\nLast heartbeat: ${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}`);
+  alert(`Node: ${node.name}
+Status: ${node.status}
+Online: ${node.online ? 'Yes' : 'No'}
+Last heartbeat: ${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}`);
 };
 
-window.deleteNode = async function(nodeId) {
-  if (!confirm('Delete this node?')) return;
-  
-  // TODO: Implement delete API call
-  alert('Node deletion not yet implemented in backend');
-};
-
-// Auto-refresh on page load
-window.addEventListener('load', () => {
+// Auto-refresh nodes every 10 seconds when on nodes page
+setInterval(() => {
   if (window.location.hash === '#/nodes') {
-    realStore.loadNodes();
+    store.syncNodes();
   }
-});
+}, 10000);

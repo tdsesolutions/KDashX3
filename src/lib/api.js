@@ -1,78 +1,110 @@
 /**
- * API Layer - Stubbed
- * 
- * These are placeholder functions that will be implemented
- * when the backend is ready. For now, they return mock data.
+ * KDashX3 API Layer - Real Backend Integration
  */
 
-// Setup Module Status
-export async function getSetupStatus() {
-  // Mock implementation
-  return {
-    workspace: { completed: true, completed_at: "2026-02-20T10:00:00Z" },
-    nodes: { completed: false, pending_actions: ["pair_first_node"] },
-    storage: { completed: false, pending_actions: [] },
-    providers: { completed: false, pending_actions: [] },
-    routing: { completed: false, pending_actions: [] },
-    health_checks: { completed: false, pending_actions: [] }
-  };
+import { API_BASE_URL } from './config.js';
+
+// Helper to get auth token
+function getToken() {
+  return localStorage.getItem('kdashx3-token');
 }
 
-// Nodes
+// Helper for API calls
+async function apiCall(endpoint, options = {}) {
+  const url = `${API_BASE_URL}${endpoint}`;
+  const token = getToken();
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...options.headers
+  };
+  
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
+  const response = await fetch(url, {
+    ...options,
+    headers
+  });
+  
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(error.error || `HTTP ${response.status}`);
+  }
+  
+  return response.json();
+}
+
+// ==================== AUTH ====================
+
+export async function register(email, password) {
+  return apiCall('/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ email, password })
+  });
+}
+
+export async function login(email, password) {
+  return apiCall('/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password })
+  });
+}
+
+export async function getMe() {
+  return apiCall('/me');
+}
+
+// ==================== WORKSPACES ====================
+
+export async function getWorkspaces() {
+  return apiCall('/workspaces');
+}
+
+export async function createWorkspace(name, timezone = 'UTC') {
+  return apiCall('/workspaces', {
+    method: 'POST',
+    body: JSON.stringify({ name, timezone })
+  });
+}
+
+// ==================== PAIRING TOKENS ====================
+
+export async function createPairingToken() {
+  return apiCall('/pairing-tokens', { method: 'POST' });
+}
+
+// ==================== NODES ====================
+
 export async function getNodes() {
-  return [
-    { id: "node-1", name: "Local Dev", status: "connected", last_heartbeat: new Date().toISOString() }
-  ];
+  return apiCall('/nodes');
 }
 
-export async function initiatePairing() {
-  return { pairing_code: "123456", expires_in: 300 };
-}
+// ==================== TASKS ====================
 
-// Tasks
 export async function getTasks() {
-  return [];
+  return apiCall('/tasks');
 }
 
-export async function createTask(intent) {
-  console.log("[STUB] Creating task:", intent);
-  return { id: "task-" + Date.now(), status: "pending" };
+export async function createTask(intent, priority = 'normal') {
+  return apiCall('/tasks', {
+    method: 'POST',
+    body: JSON.stringify({ intent, priority })
+  });
 }
 
-export async function getTask(id) {
-  return { id, status: "pending", intent: "Sample task" };
+export async function getTask(taskId) {
+  return apiCall(`/tasks/${taskId}`);
 }
 
-// Routing
-export async function getRoutingConfig() {
-  return {
-    rules: [],
-    fallback_enabled: true
-  };
+export async function dispatchTask(taskId, nodeId) {
+  return apiCall(`/tasks/${taskId}/dispatch`, {
+    method: 'POST',
+    body: JSON.stringify({ node_id: nodeId })
+  });
 }
 
-export async function updateRoutingConfig(config) {
-  console.log("[STUB] Updating routing:", config);
-  return config;
-}
-
-// Auth
-export async function login(provider) {
-  console.log("[STUB] Login with:", provider);
-  return { token: "mock-jwt-token", user: { id: "user-1", email: "user@example.com" } };
-}
-
-export async function logout() {
-  console.log("[STUB] Logout");
-  return { success: true };
-}
-
-// Gates
-export async function checkGates() {
-  const nodes = await getNodes();
-  return {
-    can_execute_tasks: nodes.length > 0,
-    has_provider_configured: false,
-    blocks: nodes.length === 0 ? ["NODE_REQUIRED"] : []
-  };
+export async function getTaskEvents(taskId) {
+  return apiCall(`/tasks/${taskId}/events`);
 }

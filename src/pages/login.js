@@ -2,8 +2,7 @@
  * Login Page - Real Authentication
  */
 
-import { register, login } from '../lib/store.js';
-import { realStore } from '../lib/store-real.js';
+import { store } from '../lib/store.js';
 
 export function renderLogin() {
   return `
@@ -59,7 +58,7 @@ export function renderLogin() {
         
         <div class="login-info">
           <p class="text-muted text-small">
-            Backend: <a href="http://104.197.56.55:3001" target="_blank">Mission Control API</a>
+            Backend: <a href="http://104.197.56.55:4010" target="_blank">Mission Control API</a>
           </p>
         </div>
       </div>
@@ -94,8 +93,7 @@ window.handleLogin = async function() {
   btn.textContent = 'Signing in...';
   
   try {
-    const result = await login(email, password);
-    realStore.setAuth(result.token, result.user);
+    await store.login(email, password);
     window.navigate('/setup');
   } catch (err) {
     errorEl.textContent = err.message || 'Login failed';
@@ -127,8 +125,7 @@ window.handleRegister = async function() {
   btn.textContent = 'Creating account...';
   
   try {
-    const result = await register(email, password);
-    realStore.setAuth(result.token, result.user);
+    await store.register(email, password);
     window.navigate('/setup');
   } catch (err) {
     errorEl.textContent = err.message || 'Registration failed';
