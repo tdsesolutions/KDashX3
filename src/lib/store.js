@@ -147,7 +147,7 @@ class Store {
   // Load from localStorage (cache only)
   loadFromCache() {
     try {
-      const cached = localStorage.getItem('kdashx2-store');
+      const cached = localStorage.getItem('kdashx3-store');
       if (cached) {
         const parsed = JSON.parse(cached);
         this.state = deepMerge(initialState, parsed);
@@ -160,7 +160,7 @@ class Store {
   // Persist to localStorage (cache only)
   persistToCache() {
     try {
-      localStorage.setItem('kdashx2-store', JSON.stringify(this.state));
+      localStorage.setItem('kdashx3-store', JSON.stringify(this.state));
     } catch (err) {
       console.warn('Failed to persist to cache:', err);
     }
