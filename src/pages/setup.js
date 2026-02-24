@@ -203,20 +203,20 @@ function getModuleInstructions(moduleName) {
         <div class="instruction-steps">
           <h5>🚀 How to Add a Node:</h5>
           <ol>
+            <li><strong>Click "Add Node" below</strong> to generate a pairing token</li>
             <li>
-              <strong>Install OpenClaw Node on your server:</strong>
-              <code>curl -fsSL https://openclaw.ai/install.sh | bash</code>
-            </li>
-            <li><strong>Generate pairing token</strong> (click "Add Node" below and copy the token)</li>
-            <li>
-              <strong>Run pair command on your node:</strong>
-              <code>openclaw-node pair --token [your-token]</code>
+              <strong>On your server/computer,</strong> download the node connector:
+              <code>curl -o connector.js https://kdashx3.io/connector.js</code>
             </li>
             <li>
-              <strong>Add API keys directly on the node:</strong>
-              <code>claw provider add openai --key sk-...</code>
+              <strong>Run the connector with your token:</strong>
+              <code>node connector.js --token [YOUR_TOKEN] --name "My Node"</code>
             </li>
-            <li><strong>Verify connection</strong> - node appears as "Connected" in Mission Control</li>
+            <li>
+              <strong>Add API keys on your node:</strong>
+              <code>export OPENAI_API_KEY=sk-...</code> or create ~/.claw/providers/openai.json
+            </li>
+            <li><strong>Done!</strong> Node appears as "Connected" in Mission Control</li>
           </ol>
         </div>
         

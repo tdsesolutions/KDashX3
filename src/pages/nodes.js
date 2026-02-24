@@ -146,14 +146,22 @@ function renderAddNodeModal() {
         
         <div id="pairing-section" class="hidden">
           <div class="alert alert-info">
-            <strong>Pairing Token Created!</strong>
-            <p>Run this command on your node:</p>
+            <strong>✓ Pairing Token Created!</strong>
+            <p style="margin: 10px 0;"><strong>Step 1:</strong> Download the node connector to your computer/server:</p>
+            <pre class="command-block" id="download-command"></pre>
+            
+            <p style="margin: 10px 0;"><strong>Step 2:</strong> Run the connector with your token:</p>
             <pre class="command-block" id="pairing-command"></pre>
-            <button onclick="copyPairingCommand()" class="btn btn-small btn-secondary">Copy Command</button>
+            
+            <button onclick="copyPairingCommand()" class="btn btn-small btn-secondary">Copy Step 2 Command</button>
           </div>
           
           <div class="alert alert-warning">
-            <strong>Important:</strong> The token expires in 10 minutes and can only be used once.
+            <strong>⚠️ Important:</strong> The token expires in 10 minutes and can only be used once.
+          </div>
+          
+          <div class="alert alert-info" style="margin-top: 10px;">
+            <strong>💡 What is this?</strong> You're running a small program on YOUR computer that connects to Mission Control. It stays running and waits for tasks.
           </div>
         </div>
         
@@ -185,19 +193,21 @@ window.generatePairingToken = async function() {
   const btn = document.getElementById('create-pairing-btn');
   const name = document.getElementById('node-name').value || 'New Node';
   const type = document.getElementById('node-type').value;
-  
+
   btn.disabled = true;
   btn.textContent = 'Generating...';
-  
+
   try {
     const result = await createPairingToken();
-    
-    const command = `mc-node connect --api ${API_BASE_URL} --token ${result.token} --name "${name}" --type ${type}`;
-    
-    document.getElementById('pairing-command').textContent = command;
+
+    const downloadCmd = `curl -o connector.js ${API_BASE_URL}/connector.js`;
+    const runCmd = `node connector.js --api ${API_BASE_URL} --token ${result.token} --name "${name}" --type ${type}`;
+
+    document.getElementById('download-command').textContent = downloadCmd;
+    document.getElementById('pairing-command').textContent = runCmd;
     document.getElementById('pairing-section').classList.remove('hidden');
     btn.classList.add('hidden');
-    
+
   } catch (err) {
     alert('Failed to create pairing token: ' + err.message);
     btn.disabled = false;
