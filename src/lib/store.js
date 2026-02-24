@@ -59,6 +59,7 @@ class Store {
       },
       workspace: null,
       nodes: [],
+      providers: [],
       tasks: [],
       ui: { loading: {}, errors: {} }
     };
@@ -139,6 +140,38 @@ class Store {
   isSetupComplete() {
     // Check if user has workspace and at least one node
     return this.state.workspace && this.state.nodes.length > 0;
+  }
+
+  // Provider checks
+  hasWorkingProvider() {
+    return this.state.providers && this.state.providers.some(p => p.status === 'configured');
+  }
+
+  getWorkingProviders() {
+    return this.state.providers ? this.state.providers.filter(p => p.status === 'configured') : [];
+  }
+
+  // Get blocking conditions for route guards
+  getBlocks() {
+    const blocks = [];
+    
+    if (!this.hasConnectedNodes()) {
+      blocks.push({
+        id: 'NODE_REQUIRED',
+        message: 'Connect at least one node to execute tasks',
+        cta: { text: 'Add Node', href: '#/nodes' }
+      });
+    }
+    
+    if (!this.hasWorkingProvider()) {
+      blocks.push({
+        id: 'PROVIDER_REQUIRED',
+        message: 'Configure at least one provider to use AI features',
+        cta: { text: 'Configure Providers', href: '#/providers' }
+      });
+    }
+    
+    return blocks;
   }
 }
 
