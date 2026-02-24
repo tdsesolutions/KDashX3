@@ -765,7 +765,7 @@ export function renderHealthChecks() {
 
 window.testBackendConnection = async function() {
   try {
-    const response = await fetch('https://eagle-funky-twice-drugs.trycloudflare.com/health');
+    const response = await fetch('https://mixture-moses-professional-collections.trycloudflare.com/health');
     if (response.ok) {
       alert('✓ Backend connection successful');
     } else {
