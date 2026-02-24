@@ -180,9 +180,10 @@ async function renderRoute(path) {
   app.innerHTML = '<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';
   
   try {
-    // Check if setup is needed
+    // Check if setup is needed (allow /setup and all /setup/* sub-routes)
     const auth = store.get('auth');
-    if (auth.isAuthenticated && !store.isSetupComplete() && path !== '/setup' && path !== '/login') {
+    const isSetupRoute = path === '/setup' || path.startsWith('/setup/');
+    if (auth.isAuthenticated && !store.isSetupComplete() && !isSetupRoute && path !== '/login') {
       // Show setup banner but still render the page
       const content = await route.render();
       app.innerHTML = renderSetupBanner() + content;
