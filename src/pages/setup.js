@@ -452,7 +452,7 @@ window.toggleInstructions = function(instructionsId) {
 
 // Sub-page: Workspace setup
 export function renderWorkspaceSetup() {
-  const workspace = store.get('setup.workspace.data');
+  const workspace = store.get('setup.workspace.data') || { orgName: '', timezone: 'UTC', notifications: { email: true, webhook: false } };
   
   return `
     <div class="setup-subpage">
@@ -552,7 +552,7 @@ window.saveWorkspace = function() {
 
 // Sub-page: Storage setup
 export function renderStorageSetup() {
-  const storage = store.get('setup.storage.data');
+  const storage = store.get('setup.storage.data') || { allowedFolders: [], defaultOutputFolder: '', maxFileSize: 104857600 };
 
   return `
     <div class="setup-subpage">
