@@ -528,7 +528,7 @@
         </div>
       </main>
     </div>
-  `}window.saveStorage=function(){const t=document.getElementById("allowed-folders").value,e=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=t.split(",").map(i=>i.trim()).filter(i=>i.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}o.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:e||n[0],maxFileSize:s*1024*1024}),o.set("setup.storage.completed",!0),window.navigate("/setup")};function K(){const t=o.get("nodes")||[];return`
+  `}window.saveStorage=function(){const t=document.getElementById("allowed-folders").value,e=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=t.split(",").map(i=>i.trim()).filter(i=>i.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}o.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:e||n[0],maxFileSize:s*1024*1024}),o.set("setup.storage.completed",!0),window.navigate("/setup")};function V(){const t=o.get("nodes")||[];return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -711,7 +711,7 @@
               ${n.map(d=>`
                 <a href="#/tasks/${d.id}" class="task-row">
                   <span class="task-intent">${d.intent.substring(0,50)}${d.intent.length>50?"...":""}</span>
-                  <span class="badge ${V(d.status)}">${d.status}</span>
+                  <span class="badge ${K(d.status)}">${d.status}</span>
                 </a>
               `).join("")}
             </div>
@@ -742,7 +742,7 @@
         </div>
       </main>
     </div>
-  `}function V(t){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[t]||"badge-info"}function Y(){const t=o.get("nodes")||[],e=t.length>0;return o.syncNodes(),`
+  `}function K(t){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[t]||"badge-info"}function Y(){const t=o.get("nodes")||[],e=t.length>0;return o.syncNodes(),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -764,7 +764,7 @@
         ${e?j(t):J()}
       </main>
       
-      ${X()}
+      ${Z()}
     </div>
   `}function j(t){return`
     <div class="nodes-list">
@@ -820,7 +820,7 @@
         Add Your First Node
       </button>
     </div>
-  `}function X(){return`
+  `}function Z(){return`
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
@@ -865,7 +865,7 @@
   `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const t=document.getElementById("create-pairing-btn"),e=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;t.disabled=!0,t.textContent="Generating...";try{const n=await N(),i=`mc-node connect --api ${I} --token ${n.token} --name "${e}" --type ${s}`;document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),t.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),t.disabled=!1,t.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const t=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(t).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(t){const e=o.get("nodes").find(s=>s.id===t);e&&alert(`Node: ${e.name}
 Status: ${e.status}
 Online: ${e.online?"Yes":"No"}
-Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"Never"}`)};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function Z(){const t=o.getConnectedNodes();return t.length>0?`
+Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"Never"}`)};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function X(){const t=o.getConnectedNodes();return t.length>0?`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1513,7 +1513,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
 
 This cannot be undone.
 
-Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}o.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:C,requiresAuth:!0},"/login":{render:O,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:q,requiresAuth:!0},"/setup/workspace":{render:H,requiresAuth:!0},"/setup/storage":{render:G,requiresAuth:!0},"/setup/health":{render:K,requiresAuth:!0},"/dashboard":{render:C,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Y,requiresAuth:!0},"/providers":{render:Z,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ae,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:le,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:t=>ce(t),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:ke,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Ae,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Ee,requiresAuth:!0}};function Pe(t){const e=g[t]||g["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(e.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!e.requiresAuth&&s.isAuthenticated&&e.redirectIfAuthed)return{allowed:!1,redirect:e.redirectIfAuthed};if(e.requiresAuth&&!o.isSetupComplete()&&t!=="/setup")return{allowed:!1,redirect:"/setup"};if(e.blockedBy&&o.isSetupComplete())for(const i of e.blockedBy){const a=n.find(r=>r.id===i);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Ee(){const e=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
+Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}o.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:C,requiresAuth:!0},"/login":{render:O,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:q,requiresAuth:!0},"/setup/workspace":{render:H,requiresAuth:!0},"/setup/storage":{render:G,requiresAuth:!0},"/setup/health":{render:V,requiresAuth:!0},"/dashboard":{render:C,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Y,requiresAuth:!0},"/providers":{render:X,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ae,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:le,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:t=>ce(t),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:ke,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Ae,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Ee,requiresAuth:!0}};function Pe(t){const e=g[t]||g["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(e.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!e.requiresAuth&&s.isAuthenticated&&e.redirectIfAuthed)return{allowed:!1,redirect:e.redirectIfAuthed};if(e.requiresAuth&&!o.isSetupComplete()&&t!=="/setup")return{allowed:!1,redirect:"/setup"};if(e.blockedBy&&o.isSetupComplete())for(const i of e.blockedBy){const a=n.find(r=>r.id===i);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Ee(){const e=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
     <div class="locked-page">
       <div class="locked-content">
         <div class="lock-icon">🔒</div>
@@ -1525,7 +1525,7 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </div>
-  `}async function p(t,e=!1){e||window.history.pushState({},"",t);const s=Pe(t);if(!s.allowed){if(s.redirect){p(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,$("/locked");return}}await $(t)}async function $(t){const e=document.getElementById("app"),s=g[t]||g["/dashboard"];e.innerHTML='<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';try{const n=o.get("auth"),i=t==="/setup"||t.startsWith("/setup/");if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&t!=="/login"){const a=await s.render();e.innerHTML=Ne()+a}else{const a=await s.render();e.innerHTML=a}Re()}catch(n){console.error("Render error:",n),e.innerHTML=`
+  `}async function p(t,e=!1){t.startsWith("/")||(t="/"+t),e||(window.location.hash=t);const s=Pe(t);if(!s.allowed){if(s.redirect){p(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,$("/locked");return}}await $(t)}async function $(t){const e=document.getElementById("app"),s=g[t]||g["/dashboard"];e.innerHTML='<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';try{const n=o.get("auth"),i=t==="/setup"||t.startsWith("/setup/");if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&t!=="/login"){const a=await s.render();e.innerHTML=Ne()+a}else{const a=await s.render();e.innerHTML=a}Re()}catch(n){console.error("Render error:",n),e.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
         <p>${n.message||"Something went wrong"}</p>
@@ -1545,4 +1545,4 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         <a href="#/setup" class="btn btn-small btn-primary">Continue Setup</a>
       </div>
     </div>
-  `}function Re(){document.querySelectorAll('a[href^="#"]').forEach(t=>{t.addEventListener("click",e=>{const s=t.getAttribute("href");s.startsWith("#")&&(e.preventDefault(),p(s.replace("#","")))})})}window.addEventListener("popstate",()=>{p(window.location.pathname.replace("/KDashX3","")||"/",!0)});document.addEventListener("DOMContentLoaded",()=>{const t=window.location.pathname.replace("/KDashX3","")||"/";p(t,!0)});window.navigate=p;window.store=o;
+  `}function Re(){document.querySelectorAll('a[href^="#/"]').forEach(t=>{t.addEventListener("click",e=>{const s=t.getAttribute("href");s.startsWith("#/")&&(e.preventDefault(),p(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const t=window.location.hash.slice(1)||"/";p(t,!0)});document.addEventListener("DOMContentLoaded",()=>{const t=window.location.hash.slice(1)||"/";p(t,!0)});window.navigate=p;window.store=o;

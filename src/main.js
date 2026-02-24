@@ -145,11 +145,16 @@ function renderLocked() {
   `;
 }
 
-// Navigate to a route
+// Navigate to a route (Hash-based for GitHub Pages)
 export async function navigate(path, skipHistory = false) {
-  // Update URL
+  // Ensure path starts with /
+  if (!path.startsWith('/')) {
+    path = '/' + path;
+  }
+  
+  // Update URL using hash (for GitHub Pages SPA support)
   if (!skipHistory) {
-    window.history.pushState({}, '', path);
+    window.location.hash = path;
   }
   
   // Check access
@@ -230,25 +235,27 @@ function renderSetupBanner() {
 
 // Attach click handlers to navigation links
 function attachNavHandlers() {
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
+  document.querySelectorAll('a[href^="#/"]').forEach(link => {
     link.addEventListener('click', (e) => {
       const href = link.getAttribute('href');
-      if (href.startsWith('#')) {
+      if (href.startsWith('#/')) {
         e.preventDefault();
-        navigate(href.replace('#', ''));
+        navigate(href.slice(1)); // Remove the # and navigate
       }
     });
   });
 }
 
-// Handle browser back/forward
-window.addEventListener('popstate', () => {
-  navigate(window.location.pathname.replace('/KDashX3', '') || '/', true);
+// Handle hash changes (for GitHub Pages SPA)
+window.addEventListener('hashchange', () => {
+  const path = window.location.hash.slice(1) || '/';
+  navigate(path, true);
 });
 
-// Initial render
+// Initial render - read from hash
 document.addEventListener('DOMContentLoaded', () => {
-  const path = window.location.pathname.replace('/KDashX3', '') || '/';
+  // Read path from hash, fallback to /
+  const path = window.location.hash.slice(1) || '/';
   navigate(path, true);
 });
 
