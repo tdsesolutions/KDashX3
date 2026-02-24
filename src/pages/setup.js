@@ -119,14 +119,14 @@ function renderModuleCardWithInstructions(module) {
             </div>
           </div>
           <div class="module-actions">
-            ${module.name !== 'nodes' && module.name !== 'routing' ? `
+            ${module.name !== 'nodes' && module.name !== 'routing' && module.name !== 'providers' ? `
               <button class="info-btn" onclick="toggleInstructions('${instructionsId}')" title="Show Instructions">
                 <span class="info-icon">ℹ️</span>
               </button>
             ` : ''}
             ${isCompleted 
               ? '<span class="status-check">✓</span>'
-              : (module.name === 'nodes' || module.name === 'routing') 
+              : (module.name === 'nodes' || module.name === 'routing' || module.name === 'providers') 
                 ? `<button onclick="showInstructionsForModule('${module.name}')" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</button>`
                 : `<a href="${config.route}" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</a>`
             }

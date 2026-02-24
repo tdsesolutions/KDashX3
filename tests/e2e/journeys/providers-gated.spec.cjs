@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 const BASE_URL = 'https://tdsesolutions.github.io/KDashX3';
 
 test.describe('JOURNEY B: Providers - Setup from setup page', () => {
-  test('Clicking Setup shows providers setup module', async ({ page }) => {
+  test('Clicking Setup shows providers instructions', async ({ page }) => {
     const consoleErrors = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -37,37 +37,32 @@ test.describe('JOURNEY B: Providers - Setup from setup page', () => {
     console.log('Has providers module:', hasProvidersModule);
     expect(hasProvidersModule, 'Setup page should show Providers module').toBe(true);
     
-    // Find and click Setup link from Providers module
-    const setupLink = page.locator('a[href="#/providers"]').first();
-    const isVisible = await setupLink.isVisible().catch(() => false);
-    console.log('Setup link visible:', isVisible);
-    expect(isVisible, 'Setup link should be visible').toBe(true);
+    // Find and click Setup BUTTON (not link anymore)
+    const setupBtn = page.locator('button:has-text("Setup")').first();
+    const isVisible = await setupBtn.isVisible().catch(() => false);
+    console.log('Setup button visible:', isVisible);
+    expect(isVisible, 'Setup button should be visible').toBe(true);
     
     // Click Setup
-    await setupLink.click();
+    await setupBtn.click();
     await page.waitForTimeout(2000);
     
     const urlAfter = page.url();
     console.log('URL after click:', urlAfter);
     await page.screenshot({ path: 'tests/e2e/screenshots/journey-b-after.png' });
     
-    // When setup is incomplete, clicking Setup may:
-    // 1. Stay on setup page (redirected back)
-    // 2. Navigate to providers and show gating
-    // Either is acceptable as long as UI is visible
+    // Check for providers-related content (instructions panel should be visible)
     const bodyTextAfter = await page.locator('body').textContent();
-    const showsProvidersUI = bodyTextAfter.includes('Provider') || bodyTextAfter.includes('API Key') || bodyTextAfter.includes('Configure LLM');
+    const showsProvidersInstructions = bodyTextAfter.includes('Provider') && (bodyTextAfter.includes('API Key') || bodyTextAfter.includes('How Providers Work'));
     const showsGating = bodyTextAfter.includes('No Nodes') || bodyTextAfter.includes('add at least one node');
-    const onSetupPage = urlAfter.includes('#/setup');
     
-    console.log('Shows providers UI:', showsProvidersUI);
+    console.log('Shows providers instructions:', showsProvidersInstructions);
     console.log('Shows gating:', showsGating);
-    console.log('On setup page:', onSetupPage);
     console.log('Console errors:', consoleErrors);
     
-    // Must show either providers UI or gating, and never error
-    const validOutcome = showsProvidersUI || showsGating || onSetupPage;
-    expect(validOutcome, 'Clicking Setup must show providers-related UI').toBe(true);
+    // Must show providers-related UI
+    const validOutcome = showsProvidersInstructions || showsGating;
+    expect(validOutcome, 'Clicking Setup must show providers instructions').toBe(true);
     expect(consoleErrors).toHaveLength(0);
     
     console.log('✅ JOURNEY B PASSED');
