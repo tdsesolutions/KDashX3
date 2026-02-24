@@ -107,8 +107,8 @@ function checkRouteAccess(path) {
     return { allowed: false, redirect: route.redirectIfAuthed };
   }
 
-  // If setup is not complete, redirect to setup (except for setup page itself)
-  if (route.requiresAuth && !store.isSetupComplete() && path !== '/setup') {
+  // If setup is not complete, redirect to setup (except for setup pages)
+  if (route.requiresAuth && !store.isSetupComplete() && !path.startsWith('/setup')) {
     return { allowed: false, redirect: '/setup' };
   }
 
@@ -152,8 +152,6 @@ export async function navigate(path, skipHistory = false) {
     path = '/' + path;
   }
   
-  console.log('[Router] Navigating to:', path);
-  
   // Update URL using hash (for GitHub Pages SPA support)
   if (!skipHistory) {
     window.location.hash = path;
@@ -161,7 +159,6 @@ export async function navigate(path, skipHistory = false) {
   
   // Check access
   const access = checkRouteAccess(path);
-  console.log('[Router] Access check:', access);
   
   if (!access.allowed) {
     if (access.redirect) {
@@ -181,11 +178,8 @@ export async function navigate(path, skipHistory = false) {
 
 // Render a specific route
 async function renderRoute(path) {
-  console.log('[Router] Rendering route:', path);
   const app = document.getElementById('app');
   const route = routes[path] || routes['/dashboard'];
-  
-  console.log('[Router] Route config:', route);
   
   // Show loading
   app.innerHTML = '<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';
@@ -194,26 +188,21 @@ async function renderRoute(path) {
     // Check if setup is needed (allow /setup and all /setup/* sub-routes)
     const auth = store.get('auth');
     const isSetupRoute = path === '/setup' || path.startsWith('/setup/');
-    console.log('[Router] Auth:', auth.isAuthenticated, 'isSetupRoute:', isSetupRoute, 'setupComplete:', store.isSetupComplete());
     
     if (auth.isAuthenticated && !store.isSetupComplete() && !isSetupRoute && path !== '/login') {
       // Show setup banner but still render the page
-      console.log('[Router] Rendering with banner');
       const content = await route.render();
       app.innerHTML = renderSetupBanner() + content;
     } else {
-      console.log('[Router] Rendering route content');
       const content = await route.render();
-      console.log('[Router] Content rendered, length:', content.length);
       app.innerHTML = content;
     }
     
     // Attach navigation handlers
     attachNavHandlers();
-    console.log('[Router] Render complete');
     
   } catch (err) {
-    console.error('[Router] Render error:', err);
+    console.error('Render error:', err);
     app.innerHTML = `
       <div class="error-screen">
         <h1>Error Loading Page</h1>
