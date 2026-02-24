@@ -3,7 +3,7 @@
  */
 
 import { store } from '../lib/store.js';
-import { createPairingToken } from '../lib/api.js';
+import { createPairingToken, disconnectNode, deleteNode } from '../lib/api.js';
 import { API_BASE_URL } from '../lib/config.js';
 
 export function renderNodes() {
@@ -76,6 +76,8 @@ function renderNodeCard(node) {
         </div>
         <div class="node-actions">
           <button onclick="testNode('${node.id}')" class="btn btn-small btn-secondary">Test</button>
+          ${isOnline ? `<button onclick="disconnectNodeById('${node.id}')" class="btn btn-small" style="background: #f59e0b; color: white;">Disconnect</button>` : ''}
+          <button onclick="deleteNodeById('${node.id}')" class="btn btn-small btn-danger">Remove</button>
         </div>
       </div>
       
@@ -223,6 +225,38 @@ window.testNode = function(nodeId) {
 Status: ${node.status}
 Online: ${node.online ? 'Yes' : 'No'}
 Last heartbeat: ${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}`);
+};
+
+window.disconnectNodeById = async function(nodeId) {
+  if (!confirm('Disconnect this node? It will go offline but can be reconnected later.')) {
+    return;
+  }
+  
+  try {
+    await disconnectNode(nodeId);
+    await store.syncNodes();
+    alert('Node disconnected');
+    window.navigate('/nodes');
+  } catch (err) {
+    alert('Failed to disconnect: ' + err.message);
+  }
+};
+
+window.deleteNodeById = async function(nodeId) {
+  if (!confirm('Permanently remove this node? This cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    await deleteNode(nodeId);
+    // Remove from local store
+    const nodes = store.get('nodes').filter(n => n.id !== nodeId);
+    store.set('nodes', nodes);
+    alert('Node removed');
+    window.navigate('/nodes');
+  } catch (err) {
+    alert('Failed to remove: ' + err.message);
+  }
 };
 
 // Auto-refresh nodes every 10 seconds when on nodes page

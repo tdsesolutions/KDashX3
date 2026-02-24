@@ -108,3 +108,13 @@ export async function dispatchTask(taskId, nodeId) {
 export async function getTaskEvents(taskId) {
   return apiCall(`/tasks/${taskId}/events`);
 }
+
+// ==================== NODE MANAGEMENT ====================
+
+export async function disconnectNode(nodeId) {
+  return apiCall(`/nodes/${nodeId}/disconnect`, { method: 'POST' });
+}
+
+export async function deleteNode(nodeId) {
+  return apiCall(`/nodes/${nodeId}`, { method: 'DELETE' });
+}
