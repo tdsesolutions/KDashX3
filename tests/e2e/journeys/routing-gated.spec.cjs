@@ -16,7 +16,7 @@ test.describe('JOURNEY C: Routing - Configure from setup page', () => {
       console.log('❌ PAGE ERROR:', err.message);
     });
     
-    // Login - will redirect to setup
+    // Login - now redirects to dashboard
     console.log('Logging in...');
     await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'networkidle' });
     await page.fill('#login-email', 'user@example.com');
@@ -24,12 +24,16 @@ test.describe('JOURNEY C: Routing - Configure from setup page', () => {
     await page.click('#login-btn');
     await page.waitForTimeout(3000);
     
-    // Should be on setup page
+    // Should be on dashboard
     const currentUrl = page.url();
     console.log('Current URL:', currentUrl);
-    expect(currentUrl).toContain('#/setup');
+    expect(currentUrl).toContain('#/dashboard');
     
     await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-before.png' });
+    
+    // Navigate to setup page
+    await page.goto(`${BASE_URL}/#/setup`);
+    await page.waitForTimeout(2000);
     
     // The setup page shows all modules including Routing
     const bodyText = await page.locator('body').textContent();
@@ -41,12 +45,7 @@ test.describe('JOURNEY C: Routing - Configure from setup page', () => {
     const configureBtn = page.locator('button:has-text("Configure")').filter({ hasText: 'Configure' }).first();
     const isVisible = await configureBtn.isVisible().catch(() => false);
     console.log('Configure button visible:', isVisible);
-    
-    if (!isVisible) {
-      console.log('❌ FAIL: Configure button not visible');
-      test.fail();
-      return;
-    }
+    expect(isVisible, 'Configure button should be visible').toBe(true);
     
     // Click Configure
     await configureBtn.click();

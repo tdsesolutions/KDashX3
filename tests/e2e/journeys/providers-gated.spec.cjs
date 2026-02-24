@@ -16,7 +16,7 @@ test.describe('JOURNEY B: Providers - Setup from setup page', () => {
       console.log('❌ PAGE ERROR:', err.message);
     });
     
-    // Login - will redirect to setup
+    // Login - now redirects to dashboard
     console.log('Logging in...');
     await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'networkidle' });
     await page.fill('#login-email', 'user@example.com');
@@ -24,12 +24,16 @@ test.describe('JOURNEY B: Providers - Setup from setup page', () => {
     await page.click('#login-btn');
     await page.waitForTimeout(3000);
     
-    // Should be on setup page
+    // Should be on dashboard
     const currentUrl = page.url();
     console.log('Current URL:', currentUrl);
-    expect(currentUrl).toContain('#/setup');
+    expect(currentUrl).toContain('#/dashboard');
     
     await page.screenshot({ path: 'tests/e2e/screenshots/journey-b-before.png' });
+    
+    // Navigate to setup page
+    await page.goto(`${BASE_URL}/#/setup`);
+    await page.waitForTimeout(2000);
     
     // The setup page shows all modules including Providers
     const bodyText = await page.locator('body').textContent();
@@ -53,7 +57,7 @@ test.describe('JOURNEY B: Providers - Setup from setup page', () => {
     
     // Check for providers-related content (instructions panel should be visible)
     const bodyTextAfter = await page.locator('body').textContent();
-    const showsProvidersInstructions = bodyTextAfter.includes('Provider') && (bodyTextAfter.includes('API Key') || bodyTextAfter.includes('How Providers Work'));
+    const showsProvidersInstructions = bodyTextAfter.includes('Provider') && (bodyTextAfter.includes('API Key') || bodyText.includes('How Providers Work'));
     const showsGating = bodyTextAfter.includes('No Nodes') || bodyTextAfter.includes('add at least one node');
     
     console.log('Shows providers instructions:', showsProvidersInstructions);

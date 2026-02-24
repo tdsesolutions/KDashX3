@@ -2,8 +2,8 @@ const { test, expect } = require('@playwright/test');
 
 const BASE_URL = 'https://tdsesolutions.github.io/KDashX3';
 
-test.describe('JOURNEY A: Nodes - Add Node Button from Setup', () => {
-  test('Click Add Node from setup page and assert pairing instructions appear', async ({ page }) => {
+test.describe('JOURNEY A: Nodes - Add Node Button from Dashboard', () => {
+  test('Click Add Node from dashboard and assert pairing instructions appear', async ({ page }) => {
     const consoleErrors = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -16,28 +16,32 @@ test.describe('JOURNEY A: Nodes - Add Node Button from Setup', () => {
       console.log('❌ PAGE ERROR:', err.message);
     });
     
-    // Login - will redirect to setup
-    console.log('Logging in (will redirect to setup)...');
+    // Login - now redirects to dashboard
+    console.log('Logging in (redirects to dashboard)...');
     await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'networkidle' });
     await page.fill('#login-email', 'user@example.com');
     await page.fill('#login-password', 'securepass123');
     await page.click('#login-btn');
     await page.waitForTimeout(3000);
     
-    // Should be on setup page
+    // Should be on dashboard (not redirected to setup anymore)
     const currentUrl = page.url();
     console.log('Current URL:', currentUrl);
-    expect(currentUrl).toContain('#/setup');
+    expect(currentUrl).toContain('#/dashboard');
     
     await page.screenshot({ path: 'tests/e2e/screenshots/journey-a-before.png' });
     
-    // Find and click Add Node BUTTON (not link anymore)
+    // Navigate to nodes page
+    await page.goto(`${BASE_URL}/#/nodes`);
+    await page.waitForTimeout(2000);
+    
+    // Find and click Add Node BUTTON
     const addNodeBtn = page.locator('button:has-text("Add Node")').first();
     const isVisible = await addNodeBtn.isVisible().catch(() => false);
     console.log('Add Node button visible:', isVisible);
     
     if (!isVisible) {
-      console.log('❌ FAIL: Add Node button not visible on setup page');
+      console.log('❌ FAIL: Add Node button not visible');
       await page.screenshot({ path: 'tests/e2e/screenshots/journey-a-fail.png' });
       test.fail();
       return;
@@ -53,7 +57,7 @@ test.describe('JOURNEY A: Nodes - Add Node Button from Setup', () => {
     
     // ASSERT: Instructions panel must appear (contains pairing info)
     const bodyText = await page.locator('body').textContent();
-    const hasPairingInstructions = bodyText.includes('Pairing') || bodyText.includes('How to Add a Node') || bodyText.includes('install.sh');
+    const hasPairingInstructions = bodyText.includes('Pairing') || bodyText.includes('How to Add a Node') || bodyText.includes('connector.js');
     
     console.log('Has pairing instructions:', hasPairingInstructions);
     console.log('Console errors:', consoleErrors);
