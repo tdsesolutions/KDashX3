@@ -765,7 +765,7 @@ export function renderHealthChecks() {
 
 window.testBackendConnection = async function() {
   try {
-    const response = await fetch('https://plug-corporate-population-helmet.trycloudflare.com/health');
+    const response = await fetch('https://authorized-totals-sauce-processes.trycloudflare.com/health');
     if (response.ok) {
       alert('✓ Backend connection successful');
     } else {
