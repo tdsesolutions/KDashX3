@@ -61,6 +61,14 @@ class Store {
       nodes: [],
       providers: [],
       tasks: [],
+      setup: {
+        workspace: { completed: false, data: {} },
+        nodes: { completed: false, data: {} },
+        storage: { completed: false, data: {} },
+        providers: { completed: false, data: {} },
+        routing: { completed: false, data: {} },
+        healthChecks: { completed: false, data: {} }
+      },
       ui: { loading: {}, errors: {} }
     };
   }
@@ -154,7 +162,7 @@ class Store {
   // Get blocking conditions for route guards
   getBlocks() {
     const blocks = [];
-    
+
     if (!this.hasConnectedNodes()) {
       blocks.push({
         id: 'NODE_REQUIRED',
@@ -162,7 +170,7 @@ class Store {
         cta: { text: 'Add Node', href: '#/nodes' }
       });
     }
-    
+
     if (!this.hasWorkingProvider()) {
       blocks.push({
         id: 'PROVIDER_REQUIRED',
@@ -170,8 +178,37 @@ class Store {
         cta: { text: 'Configure Providers', href: '#/providers' }
       });
     }
-    
+
     return blocks;
+  }
+
+  // Setup progress tracking
+  getSetupProgress() {
+    const modules = ['workspace', 'nodes', 'storage', 'providers', 'routing', 'healthChecks'];
+    const setup = this.state.setup || {};
+    const completed = modules.filter(m => setup[m]?.completed).length;
+    return {
+      completed,
+      total: modules.length,
+      percentage: Math.round((completed / modules.length) * 100),
+      modules: modules.map(m => ({
+        name: m,
+        completed: setup[m]?.completed || false,
+        label: this.getModuleLabel(m)
+      }))
+    };
+  }
+
+  getModuleLabel(module) {
+    const labels = {
+      workspace: 'Workspace',
+      nodes: 'Nodes',
+      storage: 'Storage & Permissions',
+      providers: 'Providers',
+      routing: 'Routing Rules',
+      healthChecks: 'Health Checks'
+    };
+    return labels[module] || module;
   }
 }
 
