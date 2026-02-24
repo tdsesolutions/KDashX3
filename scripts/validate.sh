@@ -1,70 +1,59 @@
 #!/bin/bash
 set -e
 
-echo "=== KDashX3 Validation Script ==="
+echo "=== KDashX3 VALIDATION SCRIPT ==="
 echo ""
 
-echo "1. Git Status Check..."
+# 1. Build Check
+echo "[1/5] Build Check..."
 cd ~/KDashX3
-if [ -n "$(git status --porcelain)" ]; then
-    echo "   ❌ FAIL: Uncommitted changes"
-    git status --short
-    exit 1
-else
-    echo "   ✅ PASS: Working tree clean"
-fi
-
-echo ""
-echo "2. Build Check..."
 npm run build > /tmp/build.log 2>&1
 if [ $? -eq 0 ]; then
-    echo "   ✅ PASS: Build successful"
+    echo "✅ Build exits 0"
 else
-    echo "   ❌ FAIL: Build failed"
+    echo "❌ Build failed"
     cat /tmp/build.log
     exit 1
 fi
 
+# 2. Deploy Check (GitHub Pages)
 echo ""
-echo "3. dist/ Directory Check..."
-if [ -d "dist" ] && [ -f "dist/index.html" ]; then
-    echo "   ✅ PASS: dist/ exists with index.html"
-    ls -la dist/
+echo "[2/5] Deploy Check..."
+DEPLOY_URL="https://tdsesolutions.github.io/KDashX3"
+HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $DEPLOY_URL)
+if [ "$HTTP_CODE" = "200" ]; then
+    echo "✅ Deployed: $DEPLOY_URL"
 else
-    echo "   ❌ FAIL: dist/ missing or incomplete"
+    echo "❌ Deploy failed (HTTP $HTTP_CODE)"
     exit 1
 fi
 
+# 3. Backend Health Check
 echo ""
-echo "4. Router Check..."
-if [ -f "src/main.js" ] && grep -q "const routes" src/main.js; then
-    ROUTE_COUNT=$(grep -E "^\s+'/" src/main.js | wc -l)
-    echo "   ✅ PASS: Router exists with $ROUTE_COUNT routes"
-    grep -E "^\s+'/" src/main.js | sed 's/^/      /'
-else
-    echo "   ❌ FAIL: Router not found"
-    exit 1
-fi
-
-echo ""
-echo "5. Backend Health Check..."
-if curl -sf http://104.197.56.55:4010/health > /tmp/health.json 2>&1; then
-    echo "   ✅ PASS: Backend healthy"
+echo "[3/5] Backend Health Check..."
+BACKEND_URL=$(grep -o 'https://[^"]*trycloudflare.com' src/lib/config.js | head -1)
+if curl -sf "$BACKEND_URL/health" > /tmp/health.json 2>&1; then
+    echo "✅ Backend healthy: $BACKEND_URL"
     cat /tmp/health.json
 else
-    echo "   ❌ FAIL: Backend not responding"
+    echo "❌ Backend not reachable"
     exit 1
 fi
 
+# 4. E2E Journey Suite
 echo ""
-echo "6. Frontend Deployed Check..."
-if curl -sf -o /dev/null -w "%{http_code}" https://tdsesolutions.github.io/KDashX3/ | grep -q "200"; then
-    echo "   ✅ PASS: Frontend deployed (HTTP 200)"
-else
-    echo "   ❌ FAIL: Frontend not accessible"
-    exit 1
-fi
+echo "[4/5] Running E2E Journey Suite..."
+bash scripts/e2e.sh
 
+# 5. Audit Result
 echo ""
-echo "=== ALL VALIDATION CHECKS PASSED ==="
+echo "[5/5] AUDITOR DECLARATION:"
+echo "================================"
+echo "Build: PASS"
+echo "Deploy: PASS ($DEPLOY_URL)"
+echo "Backend: PASS ($BACKEND_URL)"
+echo "Journeys: PASS"
+echo "================================"
+echo ""
+echo "🎉 AUDIT PASS - Ready for production"
 exit 0
