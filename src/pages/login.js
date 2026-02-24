@@ -57,8 +57,8 @@ export function renderLogin() {
         </div>
         
         <div class="login-info">
-          <p class="text-muted text-small">
-            Backend: <a href="http://104.197.56.55:4010" target="_blank">Mission Control API</a>
+          <p class="powered-by">
+            powered by TDS E Solutions
           </p>
         </div>
       </div>
