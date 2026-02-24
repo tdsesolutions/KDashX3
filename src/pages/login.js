@@ -8,9 +8,12 @@ export function renderLogin() {
   return `
     <div class="login-page">
       <div class="login-container card">
-        <div class="login-header">
-          <h1>KDashX3</h1>
-          <p class="text-muted">Mission Control</p>
+        <div class="login-brand">
+          <img src="assets/brand/KDashX3.png" alt="KDashX3" class="login-logo">
+          <div class="login-header-text">
+            <h1>KDashX3</h1>
+            <p>Mission Control</p>
+          </div>
         </div>
         
         <div class="login-tabs">

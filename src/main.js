@@ -91,6 +91,75 @@ const routes = {
   }
 };
 
+// Global Header Component
+function renderGlobalHeader(currentPath) {
+  const auth = store.get('auth');
+  if (!auth.isAuthenticated) return '';
+  
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/nodes', label: 'Nodes' },
+    { path: '/providers', label: 'Providers' },
+    { path: '/routing', label: 'Routing' },
+    { path: '/settings', label: 'Settings' }
+  ];
+  
+  const navLinks = navItems.map(item => {
+    const isActive = currentPath === item.path || currentPath.startsWith(item.path + '/');
+    return `<a href="#${item.path}" class="${isActive ? 'active' : ''}">${item.label}</a>`;
+  }).join('');
+  
+  return `
+    <header class="global-header">
+      <div class="container">
+        <div class="header-brand">
+          <img src="assets/brand/KDashX3.png" alt="KDashX3" class="header-logo">
+          <span class="header-title">KDashX3</span>
+        </div>
+        <nav class="header-nav">
+          ${navLinks}
+        </nav>
+        <div class="header-user">
+          <div class="user-menu">
+            <button class="user-menu-btn" onclick="toggleUserMenu()">
+              <span>👤</span>
+              <span>${auth.user?.email?.split('@')[0] || 'User'}</span>
+              <span>▼</span>
+            </button>
+            <div id="user-dropdown" class="user-dropdown hidden">
+              <button onclick="handleLogout()">🚪 Logout</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+  `;
+}
+
+// Toggle user menu dropdown
+window.toggleUserMenu = function() {
+  const dropdown = document.getElementById('user-dropdown');
+  if (dropdown) {
+    dropdown.classList.toggle('hidden');
+  }
+};
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+  const userMenu = document.querySelector('.user-menu');
+  const dropdown = document.getElementById('user-dropdown');
+  if (userMenu && dropdown && !userMenu.contains(e.target)) {
+    dropdown.classList.add('hidden');
+  }
+});
+
+// Logout handler
+window.handleLogout = function() {
+  store.logout();
+  window.location.hash = '/login';
+  navigate('/login', true);
+};
+
 // Route guard check
 function checkRouteAccess(path) {
   const route = routes[path] || routes['/dashboard'];
@@ -182,22 +251,35 @@ export async function navigate(path, skipHistory = false) {
 async function renderRoute(path) {
   const app = document.getElementById('app');
   const route = routes[path] || routes['/dashboard'];
+  const auth = store.get('auth');
   
-  // Show loading
-  app.innerHTML = '<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';
+  // Show loading with logo
+  app.innerHTML = `
+    <div class="loading-screen">
+      <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
+      <div class="spinner"></div>
+      <p>Loading...</p>
+    </div>
+  `;
+  
+  // Small delay to show loading animation
+  await new Promise(resolve => setTimeout(resolve, 300));
   
   try {
     // Check if setup is needed (allow /setup and all /setup/* sub-routes)
-    const auth = store.get('auth');
     const isSetupRoute = path === '/setup' || path.startsWith('/setup/');
+    const isLoginPage = path === '/login';
     
-    if (auth.isAuthenticated && !store.isSetupComplete() && !isSetupRoute && path !== '/login') {
+    // Render global header for authenticated pages
+    const globalHeader = !isLoginPage ? renderGlobalHeader(path) : '';
+    
+    if (auth.isAuthenticated && !store.isSetupComplete() && !isSetupRoute && !isLoginPage) {
       // Show setup banner but still render the page
       const content = await route.render();
-      app.innerHTML = renderSetupBanner() + content;
+      app.innerHTML = globalHeader + renderSetupBanner() + content;
     } else {
       const content = await route.render();
-      app.innerHTML = content;
+      app.innerHTML = globalHeader + content;
     }
     
     // Attach navigation handlers
