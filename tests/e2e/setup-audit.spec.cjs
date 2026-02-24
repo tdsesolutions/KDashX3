@@ -71,34 +71,23 @@ test.describe('Setup Page Interactive Audit', () => {
     
     const isWorkspaceVisible = await workspaceButton.isVisible().catch(() => false);
     console.log('Workspace button visible:', isWorkspaceVisible);
+    expect(isWorkspaceVisible).toBe(true);
     
-    if (isWorkspaceVisible) {
-      await workspaceButton.click();
-      await page.waitForTimeout(2000);
-      
-      const workspaceUrl = page.url();
-      console.log('URL after Workspace click:', workspaceUrl);
-      console.log('Expected URL to contain: #/setup/workspace');
-      
-      const workspaceHeading = await page.locator('h1').first().textContent();
-      console.log('Heading after click:', workspaceHeading);
-      
-      await page.screenshot({ path: 'tests/e2e/screenshots/04-workspace-form.png' });
-      
-      // Verify navigation worked
-      if (!workspaceUrl.includes('#/setup/workspace')) {
-        console.log('❌ FAIL: URL did not change to workspace route');
-        test.fail();
-      }
-      if (!workspaceHeading.includes('Workspace')) {
-        console.log('❌ FAIL: Heading does not contain Workspace');
-        test.fail();
-      }
-    } else {
-      console.log('❌ FAIL: Workspace button not found');
-      await page.screenshot({ path: 'tests/e2e/screenshots/04-workspace-not-found.png' });
-      test.fail();
-    }
+    await workspaceButton.click();
+    await page.waitForTimeout(2000);
+    
+    const workspaceUrl = page.url();
+    console.log('URL after Workspace click:', workspaceUrl);
+    console.log('Expected URL to contain: #/setup/workspace');
+    
+    const workspaceHeading = await page.locator('h1').first().textContent();
+    console.log('Heading after click:', workspaceHeading);
+    
+    await page.screenshot({ path: 'tests/e2e/screenshots/04-workspace-form.png' });
+    
+    // Verify navigation worked
+    expect(workspaceUrl).toContain('#/setup/workspace');
+    expect(workspaceHeading).toContain('Create');
     
     // Step 5: Go back and test Storage
     console.log('\n=== STEP 5: Click Storage button ===');
@@ -110,27 +99,21 @@ test.describe('Setup Page Interactive Audit', () => {
     
     const isStorageVisible = await storageButton.isVisible().catch(() => false);
     console.log('Storage button visible:', isStorageVisible);
+    expect(isStorageVisible).toBe(true);
     
-    if (isStorageVisible) {
-      await storageButton.click();
-      await page.waitForTimeout(2000);
-      
-      const storageUrl = page.url();
-      console.log('URL after Storage click:', storageUrl);
-      
-      const storageHeading = await page.locator('h1').first().textContent();
-      console.log('Heading after click:', storageHeading);
-      
-      await page.screenshot({ path: 'tests/e2e/screenshots/05-storage-form.png' });
-      
-      if (!storageUrl.includes('#/setup/storage')) {
-        console.log('❌ FAIL: URL did not change to storage route');
-        test.fail();
-      }
-    } else {
-      console.log('❌ FAIL: Storage button not found');
-      test.fail();
-    }
+    await storageButton.click();
+    await page.waitForTimeout(2000);
+    
+    const storageUrl = page.url();
+    console.log('URL after Storage click:', storageUrl);
+    
+    const storageHeading = await page.locator('h1').first().textContent();
+    console.log('Heading after click:', storageHeading);
+    
+    await page.screenshot({ path: 'tests/e2e/screenshots/05-storage-form.png' });
+    
+    expect(storageUrl).toContain('#/setup/storage');
+    expect(storageHeading).toContain('Storage');
     
     // Step 6: Go back and test Health Checks
     console.log('\n=== STEP 6: Click Health Checks button ===');
@@ -142,27 +125,21 @@ test.describe('Setup Page Interactive Audit', () => {
     
     const isHealthVisible = await healthButton.isVisible().catch(() => false);
     console.log('Health button visible:', isHealthVisible);
+    expect(isHealthVisible).toBe(true);
     
-    if (isHealthVisible) {
-      await healthButton.click();
-      await page.waitForTimeout(2000);
-      
-      const healthUrl = page.url();
-      console.log('URL after Health click:', healthUrl);
-      
-      const healthHeading = await page.locator('h1').first().textContent();
-      console.log('Heading after click:', healthHeading);
-      
-      await page.screenshot({ path: 'tests/e2e/screenshots/06-health-form.png' });
-      
-      if (!healthUrl.includes('#/setup/health')) {
-        console.log('❌ FAIL: URL did not change to health route');
-        test.fail();
-      }
-    } else {
-      console.log('❌ FAIL: Health button not found');
-      test.fail();
-    }
+    await healthButton.click();
+    await page.waitForTimeout(2000);
+    
+    const healthUrl = page.url();
+    console.log('URL after Health click:', healthUrl);
+    
+    const healthHeading = await page.locator('h1').first().textContent();
+    console.log('Heading after click:', healthHeading);
+    
+    await page.screenshot({ path: 'tests/e2e/screenshots/06-health-form.png' });
+    
+    expect(healthUrl).toContain('#/setup/health');
+    expect(healthHeading).toContain('Health');
     
     // Final summary
     console.log('\n=== AUDIT SUMMARY ===');
