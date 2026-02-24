@@ -8,11 +8,17 @@ export function renderDashboard() {
   const tasks = store.get('tasks');
   const nodes = store.get('nodes');
   const progress = store.getSetupProgress();
+  const isSetupComplete = store.isSetupComplete();
   
   const recentTasks = tasks.slice(0, 5);
   const executingCount = tasks.filter(t => t.status === 'executing').length;
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const failedCount = tasks.filter(t => t.status === 'failed').length;
+  
+  // Show gating message if setup incomplete
+  if (!isSetupComplete) {
+    return renderGatedDashboard(progress);
+  }
   
   return `
     <div class="dashboard-page">
@@ -158,4 +164,45 @@ function getStatusBadgeClass(status) {
     failed: 'badge-error'
   };
   return classes[status] || 'badge-info';
+}
+
+// Gated view shown when setup is incomplete
+function renderGatedDashboard(progress) {
+  return `
+    <div class="dashboard-page">
+      <header class="page-header">
+        <div class="container">
+          <h1>Mission Control</h1>
+          <p class="text-muted">Overview of your AI agent operations</p>
+        </div>
+      </header>
+      
+      <main class="container">
+        <!-- Setup Warning Banner -->
+        <div class="setup-warning-banner">
+          <span class="setup-warning-icon">⚠️</span>
+          <div class="setup-warning-content">
+            <div class="setup-warning-title">Setup Required</div>
+            <p class="setup-warning-text">Complete setup to start using Mission Control. ${progress.completed} of ${progress.total} modules finished.</p>
+          </div>
+          <div class="setup-warning-actions">
+            <a href="#/setup" class="btn btn-primary">Continue Setup</a>
+          </div>
+        </div>
+        
+        <!-- Gated Content -->
+        <div class="gated-section">
+          <div class="gated-icon">🚀</div>
+          <h2 class="gated-title">Dashboard Ready After Setup</h2>
+          <p class="gated-message">
+            Your Mission Control dashboard will display real-time statistics, task status, and node health once you complete the setup process.
+          </p>
+          <div class="gated-actions">
+            <a href="#/setup" class="btn btn-primary">Complete Setup</a>
+            <a href="#/setup/workspace" class="btn btn-secondary">Start with Workspace</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  `;
 }

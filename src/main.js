@@ -176,13 +176,8 @@ function checkRouteAccess(path) {
     return { allowed: false, redirect: route.redirectIfAuthed };
   }
 
-  // If setup is not complete, redirect to setup (except for setup pages)
-  if (route.requiresAuth && !store.isSetupComplete() && !path.startsWith('/setup')) {
-    return { allowed: false, redirect: '/setup' };
-  }
-
-  // Check blocks (only after setup is complete)
-  if (route.blockedBy && store.isSetupComplete()) {
+  // Check blocks (gating now shown inline, not redirected)
+  if (route.blockedBy) {
     for (const blockId of route.blockedBy) {
       const block = blocks.find(b => b.id === blockId);
       if (block) {

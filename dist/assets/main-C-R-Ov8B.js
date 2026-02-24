@@ -1,4 +1,4 @@
-(function(){const e=document.createElement("link").relList;if(e&&e.supports&&e.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))n(i);new MutationObserver(i=>{for(const a of i)if(a.type==="childList")for(const r of a.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(i){const a={};return i.integrity&&(a.integrity=i.integrity),i.referrerPolicy&&(a.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?a.credentials="include":i.crossOrigin==="anonymous"?a.credentials="omit":a.credentials="same-origin",a}function n(i){if(i.ep)return;i.ep=!0;const a=s(i);fetch(i.href,a)}})();const S="https://casey-episodes-truck-fraction.trycloudflare.com";function P(){return localStorage.getItem("kdashx3-token")}async function c(t,e={}){const s=`${S}${t}`,n=P(),i={"Content-Type":"application/json",...e.headers};n&&(i.Authorization=`Bearer ${n}`);const a=await fetch(s,{...e,headers:i});if(!a.ok){const r=await a.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${a.status}`)}return a.json()}async function E(t,e){return c("/auth/register",{method:"POST",body:JSON.stringify({email:t,password:e})})}async function N(t,e){return c("/auth/login",{method:"POST",body:JSON.stringify({email:t,password:e})})}async function R(){return c("/pairing-tokens",{method:"POST"})}async function x(){return c("/nodes")}async function B(){return c("/tasks")}async function L(t,e="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:t,priority:e})})}async function M(t,e){return c(`/tasks/${t}/dispatch`,{method:"POST",body:JSON.stringify({node_id:e})})}async function _(t){return c(`/tasks/${t}/events`)}class O{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(e){return this.listeners.add(e),()=>this.listeners.delete(e)}notify(e){this.listeners.forEach(s=>s(this.state,e))}get(e=null){return e?e.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(e,s){const n=e.split("."),i={...this.state};let a=i;for(let r=0;r<n.length-1;r++)a[n[r]]={...a[n[r]]},a=a[n[r]];a[n[n.length-1]]=s,this.state=i,this.persistToCache(),this.notify(e)}loadFromCache(){try{const e=localStorage.getItem("kdashx3-store");if(e)return JSON.parse(e)}catch(e){console.warn("Failed to load from cache:",e)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(e){console.warn("Failed to persist to cache:",e)}}async login(e,s){const n=await N(e,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(e,s){const n=await E(e,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const e=await x();return this.set("nodes",e),e}catch(e){return console.error("Failed to sync nodes:",e),[]}}async syncTasks(){try{const e=await B();return this.set("tasks",e),e}catch(e){return console.error("Failed to sync tasks:",e),[]}}hasConnectedNodes(){return this.state.nodes.some(e=>e.online&&e.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(e=>e.online&&e.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(e=>e.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(e=>e.status==="configured"):[]}getBlocks(){const e=[];return this.hasConnectedNodes()||e.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||e.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),e}getSetupProgress(){const e=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=e.filter(i=>{var a;return(a=s[i])==null?void 0:a.completed}).length;return{completed:n,total:e.length,percentage:Math.round(n/e.length*100),modules:e.map(i=>{var a;return{name:i,completed:((a=s[i])==null?void 0:a.completed)||!1,label:this.getModuleLabel(i)}})}}getModuleLabel(e){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[e]||e}}const o=new O;function D(){return`
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))n(i);new MutationObserver(i=>{for(const a of i)if(a.type==="childList")for(const r of a.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(i){const a={};return i.integrity&&(a.integrity=i.integrity),i.referrerPolicy&&(a.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?a.credentials="include":i.crossOrigin==="anonymous"?a.credentials="omit":a.credentials="same-origin",a}function n(i){if(i.ep)return;i.ep=!0;const a=s(i);fetch(i.href,a)}})();const S="https://casey-episodes-truck-fraction.trycloudflare.com";function P(){return localStorage.getItem("kdashx3-token")}async function c(e,t={}){const s=`${S}${e}`,n=P(),i={"Content-Type":"application/json",...t.headers};n&&(i.Authorization=`Bearer ${n}`);const a=await fetch(s,{...t,headers:i});if(!a.ok){const r=await a.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${a.status}`)}return a.json()}async function E(e,t){return c("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function N(e,t){return c("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function R(){return c("/pairing-tokens",{method:"POST"})}async function x(){return c("/nodes")}async function B(){return c("/tasks")}async function L(e,t="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function M(e,t){return c(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function _(e){return c(`/tasks/${e}/events`)}class D{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),i={...this.state};let a=i;for(let r=0;r<n.length-1;r++)a[n[r]]={...a[n[r]]},a=a[n[r]];a[n[n.length-1]]=s,this.state=i,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await N(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await E(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await x();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await B();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasConnectedNodes()||t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=t.filter(i=>{var a;return(a=s[i])==null?void 0:a.completed}).length;return{completed:n,total:t.length,percentage:Math.round(n/t.length*100),modules:t.map(i=>{var a;return{name:i,completed:((a=s[i])==null?void 0:a.completed)||!1,label:this.getModuleLabel(i)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const o=new D;function O(){return`
     <div class="login-page">
       <div class="login-container card">
         <div class="login-brand">
@@ -59,7 +59,7 @@
         </div>
       </div>
     </div>
-  `}window.showTab=function(t){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${t}`).classList.add("active");const e=document.getElementById(`${t}-panel`);e.classList.remove("hidden"),e.classList.add("active")};window.handleLogin=async function(){const t=document.getElementById("login-email").value,e=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!t||!e){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await o.login(t,e),window.navigate("/setup")}catch(i){s.textContent=i.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const t=document.getElementById("register-email").value,e=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!t||!e){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(e.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await o.register(t,e),window.navigate("/setup")}catch(i){s.textContent=i.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const F={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function q(){const t=o.getSetupProgress();return`
+  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await o.login(e,t),window.navigate("/setup")}catch(i){s.textContent=i.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await o.register(e,t),window.navigate("/setup")}catch(i){s.textContent=i.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const F={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function q(){const e=o.getSetupProgress();return`
     <div class="setup-page">
       <header class="page-header">
         <div class="container">
@@ -80,16 +80,16 @@
           <div class="setup-progress-header">
             <div>
               <h2>Setup Progress</h2>
-              <p class="text-muted">${t.completed} of ${t.total} modules completed</p>
+              <p class="text-muted">${e.completed} of ${e.total} modules completed</p>
             </div>
             <div class="setup-progress-percentage">
-              <span class="progress-number">${t.percentage}%</span>
+              <span class="progress-number">${e.percentage}%</span>
             </div>
           </div>
           <div class="progress-bar">
-            <div class="progress-fill" style="width: ${t.percentage}%"></div>
+            <div class="progress-fill" style="width: ${e.percentage}%"></div>
           </div>
-          ${t.percentage===100?`
+          ${e.percentage===100?`
             <div class="setup-complete-banner">
               <span class="complete-icon">🎉</span>
               <span>Setup complete! You can now use Mission Control.</span>
@@ -100,31 +100,31 @@
         
         <!-- Module Cards with Inline Instructions -->
         <div class="modules-list">
-          ${t.modules.map(e=>W(e)).join("")}
+          ${e.modules.map(t=>W(t)).join("")}
         </div>
         
       </main>
     </div>
-  `}function W(t){const e=F[t.name],s=t.completed,n=U(t.name),i=`instructions-${t.name}`;return`
+  `}function W(e){const t=F[e.name],s=e.completed,n=U(e.name),i=`instructions-${e.name}`;return`
     <div class="module-row ${s?"completed":"pending"}">
       <!-- Main Module Card -->
       <div class="module-main-card">
         <div class="module-header">
-          <div class="module-icon">${e.icon}</div>
+          <div class="module-icon">${t.icon}</div>
           <div class="module-title-section">
-            <div class="module-name">${e.title}</div>
-            <div class="module-description">${e.description}</div>
+            <div class="module-name">${t.title}</div>
+            <div class="module-description">${t.description}</div>
             <div class="module-status">
               ${s?'<span class="badge badge-success">✓ Complete</span>':'<span class="badge badge-warning">○ Pending</span>'}
             </div>
           </div>
           <div class="module-actions">
-            ${t.name!=="nodes"&&t.name!=="routing"&&t.name!=="providers"?`
+            ${e.name!=="nodes"&&e.name!=="routing"&&e.name!=="providers"?`
               <button class="info-btn" onclick="toggleInstructions('${i}')" title="Show Instructions">
                 <span class="info-icon">ℹ️</span>
               </button>
             `:""}
-            ${s?'<span class="status-check">✓</span>':t.name==="nodes"||t.name==="routing"||t.name==="providers"?`<button onclick="showInstructionsForModule('${t.name}')" class="btn btn-primary btn-small">${C(t.name)}</button>`:`<a href="${e.route}" class="btn btn-primary btn-small">${C(t.name)}</a>`}
+            ${s?'<span class="status-check">✓</span>':e.name==="nodes"||e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${C(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${C(e.name)}</a>`}
           </div>
         </div>
       </div>
@@ -136,7 +136,7 @@
         </div>
       </div>
     </div>
-  `}function U(t){return{workspace:`
+  `}function U(e){return{workspace:`
       <div class="instruction-content">
         <div class="instruction-header">
           <h4>🏢 What is a Workspace?</h4>
@@ -406,7 +406,7 @@
           <strong>✨ Tip:</strong> Run health checks regularly to catch issues early.
         </div>
       </div>
-    `}[t]||""}function C(t){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[t]||"Start"}window.toggleInstructions=function(t){const e=document.getElementById(t);if(e){const s=e.style.display!=="none";e.style.display=s?"none":"block",s||setTimeout(()=>{e.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(t){const e=`instructions-${t}`,s=document.getElementById(e);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function H(){var e,s;const t=o.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
+    `}[e]||""}function C(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function H(){var t,s;const e=o.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -423,7 +423,7 @@
               type="text" 
               id="org-name" 
               class="form-input" 
-              value="${t.orgName||""}"
+              value="${e.orgName||""}"
               placeholder="My Organization"
             />
             <p class="form-help">Choose a name that identifies your team or organization</p>
@@ -432,7 +432,7 @@
           <div class="form-group">
             <label class="form-label">Timezone</label>
             <select id="timezone" class="form-select">
-              ${z(t.timezone)}
+              ${z(e.timezone)}
             </select>
             <p class="form-help">Used for scheduling tasks and displaying timestamps</p>
           </div>
@@ -441,11 +441,11 @@
             <label class="form-label">Notifications</label>
             <div class="checkbox-group">
               <label class="checkbox-label">
-                <input type="checkbox" id="notify-email" ${(e=t.notifications)!=null&&e.email?"checked":""} />
+                <input type="checkbox" id="notify-email" ${(t=e.notifications)!=null&&t.email?"checked":""} />
                 Email notifications
               </label>
               <label class="checkbox-label">
-                <input type="checkbox" id="notify-webhook" ${(s=t.notifications)!=null&&s.webhook?"checked":""} />
+                <input type="checkbox" id="notify-webhook" ${(s=e.notifications)!=null&&s.webhook?"checked":""} />
                 Webhook notifications
               </label>
             </div>
@@ -458,7 +458,7 @@
         </div>
       </main>
     </div>
-  `}function z(t){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===t?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const t=document.getElementById("org-name").value,e=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!t.trim()){alert("Please enter an organization name");return}o.set("setup.workspace.data",{orgName:t.trim(),timezone:e,notifications:{email:s,webhook:n}}),o.set("setup.workspace.completed",!0),window.navigate("/setup")};function G(){var e;const t=o.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
+  `}function z(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}o.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),o.set("setup.workspace.completed",!0),window.navigate("/setup")};function G(){var t;const e=o.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -495,7 +495,7 @@
               type="text"
               id="allowed-folders"
               class="form-input"
-              value="${((e=t.allowedFolders)==null?void 0:e.join(", "))||""}"
+              value="${((t=e.allowedFolders)==null?void 0:t.join(", "))||""}"
               placeholder="~/mission-control/projects, ~/mission-control/outputs"
             />
             <p class="form-help">Folders where agents can read and write files</p>
@@ -507,7 +507,7 @@
               type="text"
               id="output-folder"
               class="form-input"
-              value="${t.defaultOutputFolder||""}"
+              value="${e.defaultOutputFolder||""}"
               placeholder="~/mission-control/outputs"
             />
             <p class="form-help">Default location for generated files</p>
@@ -519,7 +519,7 @@
               type="number"
               id="max-file-size"
               class="form-input"
-              value="${t.maxFileSize?t.maxFileSize/(1024*1024):100}"
+              value="${e.maxFileSize?e.maxFileSize/(1024*1024):100}"
               min="1"
               max="1000"
             />
@@ -533,7 +533,7 @@
         </div>
       </main>
     </div>
-  `}window.saveStorage=function(){const t=document.getElementById("allowed-folders").value,e=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=t.split(",").map(i=>i.trim()).filter(i=>i.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}o.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:e||n[0],maxFileSize:s*1024*1024}),o.set("setup.storage.completed",!0),window.navigate("/setup")};function K(){const t=o.get("nodes")||[];return`
+  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(i=>i.trim()).filter(i=>i.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}o.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),o.set("setup.storage.completed",!0),window.navigate("/setup")};function K(){const e=o.get("nodes")||[];return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -560,15 +560,15 @@
 
         <div class="health-checks-container">
           <div class="health-check-item">
-            <div class="check-status ${t.length>0?"success":"pending"}">
-              ${t.length>0?"✓":"○"}
+            <div class="check-status ${e.length>0?"success":"pending"}">
+              ${e.length>0?"✓":"○"}
             </div>
             <div class="check-info">
               <div class="check-name">Connected Nodes</div>
-              <div class="check-detail">${t.length} node${t.length!==1?"s":""} connected</div>
+              <div class="check-detail">${e.length} node${e.length!==1?"s":""} connected</div>
             </div>
             <div class="check-action">
-              ${t.length===0?'<a href="#/nodes" class="btn btn-small btn-secondary">Add Node</a>':'<span class="check-pass">Pass</span>'}
+              ${e.length===0?'<a href="#/nodes" class="btn btn-small btn-secondary">Add Node</a>':'<span class="check-pass">Pass</span>'}
             </div>
           </div>
 
@@ -616,7 +616,7 @@
         </div>
       </main>
     </div>
-  `}window.testBackendConnection=async function(){try{const t=await fetch("https://eagle-funky-twice-drugs.trycloudflare.com/health");t.ok?alert("✓ Backend connection successful"):alert("✗ Backend returned error: "+t.status)}catch(t){alert("✗ Cannot connect to backend: "+t.message)}};window.completeHealthChecks=function(){o.set("setup.healthChecks.completed",!0),window.navigate("/setup")};function $(){const t=o.get("tasks"),e=o.get("nodes"),s=o.getSetupProgress(),n=t.slice(0,5),i=t.filter(d=>d.status==="executing").length,a=t.filter(d=>d.status==="completed").length,r=t.filter(d=>d.status==="failed").length;return`
+  `}window.testBackendConnection=async function(){try{const e=await fetch("https://eagle-funky-twice-drugs.trycloudflare.com/health");e.ok?alert("✓ Backend connection successful"):alert("✗ Backend returned error: "+e.status)}catch(e){alert("✗ Cannot connect to backend: "+e.message)}};window.completeHealthChecks=function(){o.set("setup.healthChecks.completed",!0),window.navigate("/setup")};function $(){const e=o.get("tasks"),t=o.get("nodes"),s=o.getSetupProgress(),n=o.isSetupComplete(),i=e.slice(0,5),a=e.filter(d=>d.status==="executing").length,r=e.filter(d=>d.status==="completed").length,l=e.filter(d=>d.status==="failed").length;return n?`
     <div class="dashboard-page">
       <header class="page-header">
         <div class="container">
@@ -631,7 +631,7 @@
           <div class="stat-card card">
             <div class="stat-icon">🖥️</div>
             <div class="stat-content">
-              <span class="stat-value">${e.filter(d=>d.status==="connected").length}/${e.length}</span>
+              <span class="stat-value">${t.filter(d=>d.status==="connected").length}/${t.length}</span>
               <span class="stat-label">Nodes Online</span>
             </div>
           </div>
@@ -639,7 +639,7 @@
           <div class="stat-card card">
             <div class="stat-icon">⚡</div>
             <div class="stat-content">
-              <span class="stat-value">${i}</span>
+              <span class="stat-value">${a}</span>
               <span class="stat-label">Executing</span>
             </div>
           </div>
@@ -647,7 +647,7 @@
           <div class="stat-card card">
             <div class="stat-icon">✅</div>
             <div class="stat-content">
-              <span class="stat-value">${a}</span>
+              <span class="stat-value">${r}</span>
               <span class="stat-label">Completed</span>
             </div>
           </div>
@@ -655,7 +655,7 @@
           <div class="stat-card card">
             <div class="stat-icon">❌</div>
             <div class="stat-content">
-              <span class="stat-value">${r}</span>
+              <span class="stat-value">${l}</span>
               <span class="stat-label">Failed</span>
             </div>
           </div>
@@ -706,14 +706,14 @@
             <a href="#/tasks" class="btn btn-small btn-secondary">View All</a>
           </div>
           
-          ${n.length===0?`
+          ${i.length===0?`
             <div class="empty-state-small">
               <p class="text-muted">No tasks yet. Create your first task to get started.</p>
               <a href="#/tasks/new" class="btn btn-primary btn-small">Create Task</a>
             </div>
           `:`
             <div class="tasks-list">
-              ${n.map(d=>`
+              ${i.map(d=>`
                 <a href="#/tasks/${d.id}" class="task-row">
                   <span class="task-intent">${d.intent.substring(0,50)}${d.intent.length>50?"...":""}</span>
                   <span class="badge ${V(d.status)}">${d.status}</span>
@@ -733,8 +733,8 @@
             </div>
             <div class="status-item">
               <span class="status-label">Node Connection</span>
-              <span class="badge ${e.some(d=>d.status==="connected")?"badge-success":"badge-error"}">
-                ${e.some(d=>d.status==="connected")?"Active":"No Nodes"}
+              <span class="badge ${t.some(d=>d.status==="connected")?"badge-success":"badge-error"}">
+                ${t.some(d=>d.status==="connected")?"Active":"No Nodes"}
               </span>
             </div>
             <div class="status-item">
@@ -747,7 +747,43 @@
         </div>
       </main>
     </div>
-  `}function V(t){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[t]||"badge-info"}function Y(){const t=o.get("nodes")||[],e=t.length>0;return o.syncNodes(),`
+  `:Y(s)}function V(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function Y(e){return`
+    <div class="dashboard-page">
+      <header class="page-header">
+        <div class="container">
+          <h1>Mission Control</h1>
+          <p class="text-muted">Overview of your AI agent operations</p>
+        </div>
+      </header>
+      
+      <main class="container">
+        <!-- Setup Warning Banner -->
+        <div class="setup-warning-banner">
+          <span class="setup-warning-icon">⚠️</span>
+          <div class="setup-warning-content">
+            <div class="setup-warning-title">Setup Required</div>
+            <p class="setup-warning-text">Complete setup to start using Mission Control. ${e.completed} of ${e.total} modules finished.</p>
+          </div>
+          <div class="setup-warning-actions">
+            <a href="#/setup" class="btn btn-primary">Continue Setup</a>
+          </div>
+        </div>
+        
+        <!-- Gated Content -->
+        <div class="gated-section">
+          <div class="gated-icon">🚀</div>
+          <h2 class="gated-title">Dashboard Ready After Setup</h2>
+          <p class="gated-message">
+            Your Mission Control dashboard will display real-time statistics, task status, and node health once you complete the setup process.
+          </p>
+          <div class="gated-actions">
+            <a href="#/setup" class="btn btn-primary">Complete Setup</a>
+            <a href="#/setup/workspace" class="btn btn-secondary">Start with Workspace</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  `}function j(){const e=o.get("nodes")||[],t=e.length>0;return o.syncNodes(),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -766,55 +802,55 @@
           </button>
         </div>
         
-        ${e?j(t):J()}
+        ${t?Q(e):X()}
       </main>
       
-      ${X()}
+      ${Z()}
     </div>
-  `}function j(t){return`
+  `}function Q(e){return`
     <div class="nodes-list">
-      ${t.map(e=>Q(e)).join("")}
+      ${e.map(t=>J(t)).join("")}
     </div>
-  `}function Q(t){var i;const e={connected:"badge-success",disconnected:"badge-error",pending:"badge-warning"},s={vm:"☁️",local:"💻",server:"🖥️"},n=t.online||t.status==="connected";return`
+  `}function J(e){var i;const t={connected:"badge-success",disconnected:"badge-error",pending:"badge-warning"},s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online||e.status==="connected";return`
     <div class="node-card card">
       <div class="node-header">
         <div class="node-info">
-          <span class="node-type-icon">${s[t.type]||"🖥️"}</span>
+          <span class="node-type-icon">${s[e.type]||"🖥️"}</span>
           <div>
-            <h3 class="node-name">${t.name}</h3>
-            <span class="badge ${e[t.status]||"badge-warning"}">${t.status}</span>
+            <h3 class="node-name">${e.name}</h3>
+            <span class="badge ${t[e.status]||"badge-warning"}">${e.status}</span>
             ${n?'<span class="badge badge-success">● Online</span>':'<span class="badge badge-error">○ Offline</span>'}
           </div>
         </div>
         <div class="node-actions">
-          <button onclick="testNode('${t.id}')" class="btn btn-small btn-secondary">Test</button>
+          <button onclick="testNode('${e.id}')" class="btn btn-small btn-secondary">Test</button>
         </div>
       </div>
       
       <div class="node-details">
         <div class="node-detail">
           <span class="detail-label">OS</span>
-          <span class="detail-value">${t.os||"Unknown"}</span>
+          <span class="detail-value">${e.os||"Unknown"}</span>
         </div>
         <div class="node-detail">
           <span class="detail-label">ID</span>
-          <span class="detail-value node-id">${t.id}</span>
+          <span class="detail-value node-id">${e.id}</span>
         </div>
         <div class="node-detail">
           <span class="detail-label">Last Heartbeat</span>
-          <span class="detail-value">${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}</span>
+          <span class="detail-value">${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"Never"}</span>
         </div>
-        ${(i=t.capabilities)!=null&&i.length?`
+        ${(i=e.capabilities)!=null&&i.length?`
           <div class="node-detail">
             <span class="detail-label">Capabilities</span>
             <div class="capabilities-list">
-              ${t.capabilities.map(a=>`<span class="capability-tag">${a}</span>`).join("")}
+              ${e.capabilities.map(a=>`<span class="capability-tag">${a}</span>`).join("")}
             </div>
           </div>
         `:""}
       </div>
     </div>
-  `}function J(){return`
+  `}function X(){return`
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Connected</h2>
@@ -825,7 +861,7 @@
         Add Your First Node
       </button>
     </div>
-  `}function X(){return`
+  `}function Z(){return`
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
@@ -867,10 +903,10 @@
         </div>
       </div>
     </div>
-  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const t=document.getElementById("create-pairing-btn"),e=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;t.disabled=!0,t.textContent="Generating...";try{const n=await R(),i=`mc-node connect --api ${S} --token ${n.token} --name "${e}" --type ${s}`;document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),t.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),t.disabled=!1,t.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const t=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(t).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(t){const e=o.get("nodes").find(s=>s.id===t);e&&alert(`Node: ${e.name}
-Status: ${e.status}
-Online: ${e.online?"Yes":"No"}
-Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"Never"}`)};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function Z(){const t=o.getConnectedNodes();return t.length>0?`
+  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await R(),i=`mc-node connect --api ${S} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=o.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
+Status: ${t.status}
+Online: ${t.online?"Yes":"No"}
+Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function ee(){const e=o.getConnectedNodes();return e.length>0?`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -880,18 +916,18 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
       </header>
       
       <main class="container">
-        ${t.map(s=>te(s)).join("")}
+        ${e.map(s=>se(s)).join("")}
         
         <div class="providers-fallback card">
           <h3>Fallback Order</h3>
           <p class="text-muted">When primary provider fails, try these in order</p>
-          ${ne()}
+          ${ie()}
         </div>
       </main>
       
-      ${ie()}
+      ${ae()}
     </div>
-  `:ee()}function ee(){return`
+  `:te()}function te(){return`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -908,29 +944,29 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </div>
       </main>
     </div>
-  `}function te(t){const e=o.get("providers").filter(s=>s.nodeId===t.id);return`
+  `}function se(e){const t=o.get("providers").filter(s=>s.nodeId===e.id);return`
     <div class="node-providers card">
       <div class="node-providers-header">
         <div>
-          <h3>${t.name}</h3>
-          <span class="badge ${t.status==="connected"?"badge-success":"badge-error"}">${t.status}</span>
+          <h3>${e.name}</h3>
+          <span class="badge ${e.status==="connected"?"badge-success":"badge-error"}">${e.status}</span>
         </div>
-        <button onclick="showProviderConfigModal('${t.id}')" class="btn btn-primary btn-small">
+        <button onclick="showProviderConfigModal('${e.id}')" class="btn btn-primary btn-small">
           + Add Provider
         </button>
       </div>
       
-      ${e.length===0?`
+      ${t.length===0?`
         <div class="empty-state-small">
           <p class="text-muted">No providers configured for this node</p>
         </div>
       `:`
         <div class="providers-list">
-          ${e.map(s=>se(s)).join("")}
+          ${t.map(s=>ne(s)).join("")}
         </div>
       `}
     </div>
-  `}function se(t,e){const s=v[t.type]||{name:t.type,icon:"❓"},n={not_configured:{class:"badge-warning",text:"Not Configured"},configured:{class:"badge-success",text:"Configured"},failing:{class:"badge-error",text:"Failing"},testing:{class:"badge-info",text:"Testing..."}},i=n[t.status]||n.not_configured;return`
+  `}function ne(e,t){const s=v[e.type]||{name:e.type,icon:"❓"},n={not_configured:{class:"badge-warning",text:"Not Configured"},configured:{class:"badge-success",text:"Configured"},failing:{class:"badge-error",text:"Failing"},testing:{class:"badge-info",text:"Testing..."}},i=n[e.status]||n.not_configured;return`
     <div class="provider-row">
       <div class="provider-info">
         <span class="provider-icon">${s.icon}</span>
@@ -938,34 +974,34 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
           <div class="provider-name">${s.name}</div>
           <div class="provider-meta">
             <span class="badge ${i.class}">${i.text}</span>
-            ${t.endpointUrl?`<span class="endpoint">${t.endpointUrl}</span>`:""}
+            ${e.endpointUrl?`<span class="endpoint">${e.endpointUrl}</span>`:""}
           </div>
         </div>
       </div>
       
       <div class="provider-actions">
-        <button onclick="testProvider('${t.id}')" class="btn btn-small btn-secondary" ${t.status==="testing"?"disabled":""}>
-          ${t.status==="testing"?"Testing...":"Test"}
+        <button onclick="testProvider('${e.id}')" class="btn btn-small btn-secondary" ${e.status==="testing"?"disabled":""}>
+          ${e.status==="testing"?"Testing...":"Test"}
         </button>
-        <button onclick="editProvider('${t.id}')" class="btn btn-small btn-secondary">Edit</button>
-        <button onclick="deleteProvider('${t.id}')" class="btn btn-small btn-danger">Delete</button>
+        <button onclick="editProvider('${e.id}')" class="btn btn-small btn-secondary">Edit</button>
+        <button onclick="deleteProvider('${e.id}')" class="btn btn-small btn-danger">Delete</button>
       </div>
     </div>
-  `}function ne(){const t=o.get("providers").filter(e=>e.status==="configured");return t.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
+  `}function ie(){const e=o.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
     <div class="fallback-list">
-      ${t.map((e,s)=>{const n=o.get("nodes").find(a=>a.id===e.nodeId),i=v[e.type]||{name:e.type};return`
+      ${e.map((t,s)=>{const n=o.get("nodes").find(a=>a.id===t.nodeId),i=v[t.type]||{name:t.type};return`
           <div class="fallback-item">
             <span class="fallback-rank">${s+1}</span>
             <span class="fallback-name">${i.name}</span>
             <span class="fallback-node">on ${(n==null?void 0:n.name)||"Unknown"}</span>
             <div class="fallback-actions">
-              ${s>0?`<button onclick="moveProviderUp('${e.id}')" class="btn btn-small">↑</button>`:""}
-              ${s<t.length-1?`<button onclick="moveProviderDown('${e.id}')" class="btn btn-small">↓</button>`:""}
+              ${s>0?`<button onclick="moveProviderUp('${t.id}')" class="btn btn-small">↑</button>`:""}
+              ${s<e.length-1?`<button onclick="moveProviderDown('${t.id}')" class="btn btn-small">↓</button>`:""}
             </div>
           </div>
         `}).join("")}
     </div>
-  `}function ie(){return`
+  `}function ae(){return`
     <div id="provider-config-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProviderConfigModal()"></div>
       <div class="modal-content">
@@ -976,7 +1012,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         <div class="form-group">
           <label class="form-label">Provider Type</label>
           <select id="provider-type" class="form-select" onchange="onProviderTypeChange()">
-            ${Object.entries(v).map(([t,e])=>`<option value="${t}">${e.icon} ${e.name}</option>`).join("")}
+            ${Object.entries(v).map(([e,t])=>`<option value="${e}">${t.icon} ${t.name}</option>`).join("")}
           </select>
         </div>
         
@@ -1008,7 +1044,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showProviderConfigModal=function(t,e=null){if(document.getElementById("provider-node-id").value=t,document.getElementById("provider-id").value=e||"",e){const s=o.get("providers").find(n=>n.id===e);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const t=document.getElementById("provider-type").value,e=document.getElementById("provider-name");if(!e.value){const s=v[t];e.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const t=document.getElementById("provider-node-id").value,e=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,i=document.getElementById("provider-endpoint").value,a=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=o.get("providers");if(e){const d=r.findIndex(l=>l.id===e);d!==-1&&(r[d]={...r[d],type:s,name:n.trim(),endpointUrl:i.trim(),priority:a})}else r.push({id:"provider-"+Date.now(),nodeId:t,type:s,name:n.trim(),endpointUrl:i.trim(),priority:a,status:"not_configured",lastTested:null});o.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(t){const e=o.get("providers"),s=e.find(a=>a.id===t);if(!s)return;s.status="testing",o.set("providers",e),window.navigate("/providers"),await new Promise(a=>setTimeout(a,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),o.set("providers",e);const i=e.some(a=>a.status==="configured");o.set("setup.providers.completed",i),window.navigate("/providers")};window.editProvider=function(t){const e=o.get("providers").find(s=>s.id===t);e&&showProviderConfigModal(e.nodeId,t)};window.deleteProvider=function(t){if(!confirm("Delete this provider configuration?"))return;const e=o.get("providers").filter(n=>n.id!==t);o.set("providers",e);const s=e.some(n=>n.status==="configured");o.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(t){const e=o.get("providers"),s=e.findIndex(n=>n.id===t);s>0&&([e[s],e[s-1]]=[e[s-1],e[s]],o.set("providers",e),window.navigate("/providers"))};window.moveProviderDown=function(t){const e=o.get("providers"),s=e.findIndex(n=>n.id===t);s<e.length-1&&([e[s],e[s+1]]=[e[s+1],e[s]],o.set("providers",e),window.navigate("/providers"))};function ae(){const e=o.get().tasks||[],s=o.hasConnectedNodes();return`
+  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=o.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=v[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,i=document.getElementById("provider-endpoint").value,a=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=o.get("providers");if(t){const l=r.findIndex(d=>d.id===t);l!==-1&&(r[l]={...r[l],type:s,name:n.trim(),endpointUrl:i.trim(),priority:a})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:i.trim(),priority:a,status:"not_configured",lastTested:null});o.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=o.get("providers"),s=t.find(a=>a.id===e);if(!s)return;s.status="testing",o.set("providers",t),window.navigate("/providers"),await new Promise(a=>setTimeout(a,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),o.set("providers",t);const i=t.some(a=>a.status==="configured");o.set("setup.providers.completed",i),window.navigate("/providers")};window.editProvider=function(e){const t=o.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=o.get("providers").filter(n=>n.id!==e);o.set("providers",t);const s=t.some(n=>n.status==="configured");o.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=o.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],o.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=o.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],o.set("providers",t),window.navigate("/providers"))};function oe(){const t=o.get().tasks||[],s=o.hasConnectedNodes();return`
     <div class="tasks-page">
       <header class="page-header">
         <div class="container">
@@ -1018,16 +1054,16 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
       </header>
       
       <main class="container">
-        ${oe(s)}
-        ${re(e,s)}
+        ${re(s)}
+        ${de(t,s)}
       </main>
     </div>
-  `}function oe(t){return`
+  `}function re(e){return`
     <div class="tasks-toolbar">
-      <a href="#/tasks/new" class="btn btn-primary ${t?"":"disabled"}">
+      <a href="#/tasks/new" class="btn btn-primary ${e?"":"disabled"}">
         + New Task
       </a>
-      ${t?"":`
+      ${e?"":`
         <span class="toolbar-notice">
           <span class="notice-icon">⚠️</span>
           Add a node to create tasks
@@ -1037,7 +1073,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         🔄 Refresh
       </button>
     </div>
-  `}function re(t,e){return e?t.length===0?`
+  `}function de(e,t){return t?e.length===0?`
       <div class="empty-state card">
         <div class="empty-icon">📋</div>
         <h2 class="empty-title">No Tasks Yet</h2>
@@ -1046,7 +1082,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
       </div>
     `:`
     <div class="tasks-list">
-      ${t.map(s=>de(s)).join("")}
+      ${e.map(s=>le(s)).join("")}
     </div>
   `:`
       <div class="blocked-state card">
@@ -1055,33 +1091,33 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         <p>You need at least one connected node to create and run tasks.</p>
         <a href="#/nodes" class="btn btn-primary">Add Node</a>
       </div>
-    `}function de(t){const e={pending:{class:"badge-warning",text:"Pending"},assigned:{class:"badge-info",text:"Assigned"},executing:{class:"badge-info",text:"Executing"},completed:{class:"badge-success",text:"Completed"},failed:{class:"badge-error",text:"Failed"},cancelled:{class:"badge-error",text:"Cancelled"}},s=e[t.status]||e.pending,i=(o.get().nodes||[]).find(a=>a.id===t.node_id);return`
+    `}function le(e){const t={pending:{class:"badge-warning",text:"Pending"},assigned:{class:"badge-info",text:"Assigned"},executing:{class:"badge-info",text:"Executing"},completed:{class:"badge-success",text:"Completed"},failed:{class:"badge-error",text:"Failed"},cancelled:{class:"badge-error",text:"Cancelled"}},s=t[e.status]||t.pending,i=(o.get().nodes||[]).find(a=>a.id===e.node_id);return`
     <div class="task-card card">
       <div class="task-header">
         <div class="task-info">
-          <h3 class="task-intent">${t.intent}</h3>
+          <h3 class="task-intent">${e.intent}</h3>
           <div class="task-meta">
             <span class="badge ${s.class}">${s.text}</span>
             ${i?`<span class="task-node">on ${i.name}</span>`:""}
-            <span class="task-time">${new Date(t.created_at).toLocaleString()}</span>
+            <span class="task-time">${new Date(e.created_at).toLocaleString()}</span>
           </div>
         </div>
         <div class="task-actions">
-          <a href="#/tasks/${t.id}" class="btn btn-small btn-secondary">View</a>
-          ${t.status==="pending"?`
-            <button onclick="dispatchTaskToNode('${t.id}')" class="btn btn-small btn-primary">Dispatch</button>
+          <a href="#/tasks/${e.id}" class="btn btn-small btn-secondary">View</a>
+          ${e.status==="pending"?`
+            <button onclick="dispatchTaskToNode('${e.id}')" class="btn btn-small btn-primary">Dispatch</button>
           `:""}
         </div>
       </div>
       
-      ${t.error?`
+      ${e.error?`
         <div class="task-error">
           <span class="error-icon">⚠️</span>
-          <span>${t.error}</span>
+          <span>${e.error}</span>
         </div>
       `:""}
     </div>
-  `}function le(){return o.hasConnectedNodes()?`
+  `}function ce(){return o.hasConnectedNodes()?`
     <div class="new-task-page">
       <header class="page-header">
         <div class="container">
@@ -1132,7 +1168,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
           <a href="#/nodes" class="btn btn-primary">Add Node</a>
         </div>
       </div>
-    `}function ce(t){const s=(o.get().tasks||[]).find(a=>a.id===t);if(!s)return`
+    `}function ue(e){const s=(o.get().tasks||[]).find(a=>a.id===e);if(!s)return`
       <div class="error-page">
         <h1>Task Not Found</h1>
         <p>The task you're looking for doesn't exist.</p>
@@ -1199,7 +1235,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </div>
       </main>
     </div>
-  `}window.submitTask=async function(){const t=document.getElementById("task-intent").value,e=document.getElementById("task-priority").value,s=document.getElementById("task-error"),n=document.getElementById("create-task-btn");if(!t.trim()){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}const i=o.get().currentWorkspace;if(!i){s.textContent="No workspace selected",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating...";try{await L(i.id,t.trim(),e),o.loadTasks(),window.navigate("/tasks")}catch(a){s.textContent=a.message||"Failed to create task",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Task"}};window.dispatchTaskToNode=async function(t){const e=o.get().nodes.filter(n=>n.status==="connected"||n.online);if(e.length===0){alert("No connected nodes available");return}const s=e[0];try{await M(t,s.id),alert(`Task dispatched to ${s.name}`),o.loadTasks(),window.navigate("/tasks")}catch(n){alert("Failed to dispatch task: "+n.message)}};window.refreshTasks=function(){o.loadTasks(),window.navigate("/tasks")};window.loadTaskEvents=async function(t){const e=document.getElementById("task-events-list");e.innerHTML='<p class="text-muted">Loading...</p>';try{const s=await _(t);s.length===0?e.innerHTML='<p class="text-muted">No events yet</p>':e.innerHTML=`
+  `}window.submitTask=async function(){const e=document.getElementById("task-intent").value,t=document.getElementById("task-priority").value,s=document.getElementById("task-error"),n=document.getElementById("create-task-btn");if(!e.trim()){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}const i=o.get().currentWorkspace;if(!i){s.textContent="No workspace selected",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating...";try{await L(i.id,e.trim(),t),o.loadTasks(),window.navigate("/tasks")}catch(a){s.textContent=a.message||"Failed to create task",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Task"}};window.dispatchTaskToNode=async function(e){const t=o.get().nodes.filter(n=>n.status==="connected"||n.online);if(t.length===0){alert("No connected nodes available");return}const s=t[0];try{await M(e,s.id),alert(`Task dispatched to ${s.name}`),o.loadTasks(),window.navigate("/tasks")}catch(n){alert("Failed to dispatch task: "+n.message)}};window.refreshTasks=function(){o.loadTasks(),window.navigate("/tasks")};window.loadTaskEvents=async function(e){const t=document.getElementById("task-events-list");t.innerHTML='<p class="text-muted">Loading...</p>';try{const s=await _(e);s.length===0?t.innerHTML='<p class="text-muted">No events yet</p>':t.innerHTML=`
         <div class="events-list">
           ${s.map(n=>`
             <div class="event-item">
@@ -1209,7 +1245,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
             </div>
           `).join("")}
         </div>
-      `}catch(s){e.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const ue={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function b(t,e){const s=[];if(e.type&&typeof t!==e.type&&(e.type==="array"&&!Array.isArray(t)?s.push(`Expected array, got ${typeof t}`):e.type==="number"&&typeof t!="number"?s.push(`Expected number, got ${typeof t}`):e.type==="boolean"&&typeof t!="boolean"?s.push(`Expected boolean, got ${typeof t}`):e.type==="object"&&(typeof t!="object"||Array.isArray(t))?s.push(`Expected object, got ${Array.isArray(t)?"array":typeof t}`):["array","number","boolean","object"].includes(e.type)||s.push(`Expected ${e.type}, got ${typeof t}`)),e.required&&typeof t=="object"&&!Array.isArray(t))for(const n of e.required)n in t||s.push(`Missing required field: ${n}`);if(e.enum&&!e.enum.includes(t)&&s.push(`Value must be one of: ${e.enum.join(", ")}`),e.type==="number"&&typeof t=="number"&&e.minimum!==void 0&&t<e.minimum&&s.push(`Value must be >= ${e.minimum}`),e.type==="array"&&Array.isArray(t)&&e.items&&t.forEach((n,i)=>{const a=b(n,e.items);a.valid||s.push(`Item ${i}: ${a.errors.join(", ")}`)}),e.properties&&typeof t=="object"&&!Array.isArray(t)){for(const[n,i]of Object.entries(e.properties))if(n in t){const a=b(t[n],i);a.valid||s.push(`${n}: ${a.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function pe(t){console.log("[RoutingBrain] Routing task:",t.intent),await new Promise(f=>setTimeout(f,800));const{intent:e,context:s,constraints:n}=t,i=(s==null?void 0:s.available_nodes)||[],a=(s==null?void 0:s.configured_providers)||[];if(!e||typeof e!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(i))throw new Error("Invalid input: available_nodes must be an array");if(i.length===0)throw new Error("No available nodes for routing");const r=ge(e),d=i.filter(f=>be(f,r));if(d.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const l=d[0],p=ve(e),y=ye(a,p),m=me(e,n),A={type:"node_local",path:`${l.workspace_path||"./outputs"}/task-${Date.now()}`},k=he(e),T=fe(k,p),w={selected_node_id:l.id,required_capabilities:r,provider_preference:p,fallback_order:y.length>0?y:["default"],output_location:A,risk_level:m,approval_required:m==="critical"||m==="high",estimated_tokens:k,estimated_cost:T},h=b(w,ue);if(!h.valid)throw console.error("[RoutingBrain] Invalid response schema:",h.errors),new Error(`Routing Brain returned invalid data: ${h.errors.join(", ")}`);return w}function ge(t){const e=[],s=t.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&e.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&e.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&e.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&e.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&e.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&e.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&e.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&e.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&e.push("deployment"),e.length>0?e:["general"]}function ve(t){const e=t.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(e)?"openai":/\b(anthropic|claude)\b/.test(e)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(e)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(e)?"local":"auto"}function me(t,e){const s=t.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(e==null?void 0:e.priority)==="critical"?"critical":(e==null?void 0:e.priority)==="high"?"high":"low"}function he(t){const e=Math.ceil(t.length/4);return Math.max(500,e+1e3)}function fe(t,e){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[e]||s.auto;return t/1e3*n}function be(t,e){return!e||e.length===0?!0:!t.capabilities||!Array.isArray(t.capabilities)?!1:e.includes("general")?!0:e.every(s=>t.capabilities.includes(s))}function ye(t,e){if(!t||t.length===0)return[];const s=t.filter(i=>i.status==="configured");if(s.length===0)return[];const n=[...s].sort((i,a)=>(i.priority||99)-(a.priority||99));if(e&&e!=="auto"){const i=n.filter(r=>r.type===e),a=n.filter(r=>r.type!==e);return[...i,...a].map(r=>r.id)}return n.map(i=>i.id)}function ke(){const t=o.get("routingRules"),e=o.hasConnectedNodes();return`
+      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const pe={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function b(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,i)=>{const a=b(n,t.items);a.valid||s.push(`Item ${i}: ${a.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,i]of Object.entries(t.properties))if(n in e){const a=b(e[n],i);a.valid||s.push(`${n}: ${a.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function ge(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(f=>setTimeout(f,800));const{intent:t,context:s,constraints:n}=e,i=(s==null?void 0:s.available_nodes)||[],a=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(i))throw new Error("Invalid input: available_nodes must be an array");if(i.length===0)throw new Error("No available nodes for routing");const r=ve(t),l=i.filter(f=>ye(f,r));if(l.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const d=l[0],p=me(t),y=ke(a,p),m=he(t,n),A={type:"node_local",path:`${d.workspace_path||"./outputs"}/task-${Date.now()}`},k=fe(t),T=be(k,p),w={selected_node_id:d.id,required_capabilities:r,provider_preference:p,fallback_order:y.length>0?y:["default"],output_location:A,risk_level:m,approval_required:m==="critical"||m==="high",estimated_tokens:k,estimated_cost:T},h=b(w,pe);if(!h.valid)throw console.error("[RoutingBrain] Invalid response schema:",h.errors),new Error(`Routing Brain returned invalid data: ${h.errors.join(", ")}`);return w}function ve(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function me(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function he(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function fe(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function be(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function ye(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function ke(e,t){if(!e||e.length===0)return[];const s=e.filter(i=>i.status==="configured");if(s.length===0)return[];const n=[...s].sort((i,a)=>(i.priority||99)-(a.priority||99));if(t&&t!=="auto"){const i=n.filter(r=>r.type===t),a=n.filter(r=>r.type!==t);return[...i,...a].map(r=>r.id)}return n.map(i=>i.id)}function we(){const e=o.get("routingRules"),t=o.hasConnectedNodes();return`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1221,22 +1257,22 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
       <main class="container">
         <div class="routing-layout">
           <div class="routing-main">
-            ${we(e)}
             ${Ce(t)}
+            ${$e(e)}
           </div>
           
           <div class="routing-sidebar">
-            ${$e()}
+            ${Ie()}
           </div>
         </div>
       </main>
     </div>
-  `}function we(t){return`
+  `}function Ce(e){return`
     <div class="routing-simulator card">
       <h2>Test Routing Brain</h2>
       <p class="text-muted">Enter a task intent to see how the routing brain would handle it</p>
       
-      ${t?"":`
+      ${e?"":`
         <div class="blocked-notice">
           <span class="blocked-icon">⚠️</span>
           <span>Connect a node to test routing</span>
@@ -1251,13 +1287,13 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
             id="routing-intent" 
             class="form-textarea" 
             placeholder="e.g., Deploy a Python web app with Docker"
-            ${t?"":"disabled"}
+            ${e?"":"disabled"}
           ></textarea>
         </div>
         
         <div class="form-group">
           <label class="form-label">Priority</label>
-          <select id="routing-priority" class="form-select" ${t?"":"disabled"}>
+          <select id="routing-priority" class="form-select" ${e?"":"disabled"}>
             <option value="low">Low</option>
             <option value="normal" selected>Normal</option>
             <option value="high">High</option>
@@ -1265,7 +1301,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
           </select>
         </div>
         
-        <button onclick="simulateRouting()" class="btn btn-primary" ${t?"":"disabled"}>
+        <button onclick="simulateRouting()" class="btn btn-primary" ${e?"":"disabled"}>
           Simulate Routing
         </button>
       </div>
@@ -1274,25 +1310,25 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         <!-- Results rendered here -->
       </div>
     </div>
-  `}function Ce(t){return`
+  `}function $e(e){return`
     <div class="routing-rules card">
       <div class="rules-header">
         <h2>Routing Rules</h2>
         <button onclick="addRoutingRule()" class="btn btn-small btn-primary">+ Add Rule</button>
       </div>
       
-      ${t.length===0?`
+      ${e.length===0?`
         <div class="empty-state-small">
           <p class="text-muted">No custom routing rules. Default routing applies.</p>
         </div>
       `:`
         <div class="rules-list">
-          ${t.map((e,s)=>`
+          ${e.map((t,s)=>`
             <div class="rule-item">
               <div class="rule-pattern">
-                <span class="rule-keyword">${e.keyword}</span>
+                <span class="rule-keyword">${t.keyword}</span>
                 <span class="rule-arrow">→</span>
-                <span class="rule-target">${e.target}</span>
+                <span class="rule-target">${t.target}</span>
               </div>
               <div class="rule-actions">
                 <button onclick="deleteRoutingRule(${s})" class="btn btn-small btn-danger">Delete</button>
@@ -1302,23 +1338,23 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </div>
       `}
     </div>
-  `}function $e(){const t=o.get("setup.routing.data");return`
+  `}function Ie(){const e=o.get("setup.routing.data");return`
     <div class="routing-settings card">
       <h3>Routing Settings</h3>
       
       <div class="form-group">
         <label class="form-label">Default Risk Threshold</label>
         <select id="risk-threshold" class="form-select" onchange="updateRiskThreshold()">
-          <option value="low" ${t.defaultRiskThreshold==="low"?"selected":""}>Low - Allow most actions</option>
-          <option value="medium" ${t.defaultRiskThreshold==="medium"?"selected":""}>Medium - Moderate caution</option>
-          <option value="high" ${t.defaultRiskThreshold==="high"?"selected":""}>High - Strict approval</option>
-          <option value="critical" ${t.defaultRiskThreshold==="critical"?"selected":""}>Critical - Require approval</option>
+          <option value="low" ${e.defaultRiskThreshold==="low"?"selected":""}>Low - Allow most actions</option>
+          <option value="medium" ${e.defaultRiskThreshold==="medium"?"selected":""}>Medium - Moderate caution</option>
+          <option value="high" ${e.defaultRiskThreshold==="high"?"selected":""}>High - Strict approval</option>
+          <option value="critical" ${e.defaultRiskThreshold==="critical"?"selected":""}>Critical - Require approval</option>
         </select>
       </div>
       
       <div class="form-group">
         <label class="checkbox-label">
-          <input type="checkbox" id="fallback-enabled" ${t.fallbackEnabled!==!1?"checked":""} onchange="updateFallbackEnabled()" />
+          <input type="checkbox" id="fallback-enabled" ${e.fallbackEnabled!==!1?"checked":""} onchange="updateFallbackEnabled()" />
           Enable provider fallback
         </label>
         <p class="form-hint">Try alternative providers if primary fails</p>
@@ -1335,7 +1371,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </ol>
       </div>
     </div>
-  `}window.simulateRouting=async function(){const t=document.getElementById("routing-intent").value,e=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!t.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=o.getConnectedNodes(),i=o.getWorkingProviders(),a=await pe({intent:t,context:{available_nodes:n,configured_providers:i},constraints:{priority:e}});if(!a.selected_node_id||!a.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(d=>d.id===a.selected_node_id);s.innerHTML=`
+  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=o.getConnectedNodes(),i=o.getWorkingProviders(),a=await ge({intent:e,context:{available_nodes:n,configured_providers:i},constraints:{priority:t}});if(!a.selected_node_id||!a.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(l=>l.id===a.selected_node_id);s.innerHTML=`
       <div class="routing-decision">
         <h3>Routing Decision</h3>
         
@@ -1350,7 +1386,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         <div class="decision-section">
           <h4>Required Capabilities</h4>
           <div class="capabilities-list">
-            ${a.required_capabilities.map(d=>`<span class="capability-tag">${d}</span>`).join("")}
+            ${a.required_capabilities.map(l=>`<span class="capability-tag">${l}</span>`).join("")}
           </div>
         </div>
         
@@ -1362,7 +1398,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         <div class="decision-section">
           <h4>Fallback Order</h4>
           <ol class="fallback-list">
-            ${a.fallback_order.map(d=>{const l=i.find(p=>p.id===d);return`<li>${(l==null?void 0:l.name)||d}</li>`}).join("")}
+            ${a.fallback_order.map(l=>{const d=i.find(p=>p.id===l);return`<li>${(d==null?void 0:d.name)||l}</li>`}).join("")}
           </ol>
         </div>
         
@@ -1387,7 +1423,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </div>
         
         <div class="decision-actions">
-          <button onclick="createTaskFromRouting('${encodeURIComponent(t)}')" class="btn btn-primary">
+          <button onclick="createTaskFromRouting('${encodeURIComponent(e)}')" class="btn btn-primary">
             Create Task with This Routing
           </button>
           <button onclick="hideRoutingResult()" class="btn btn-secondary">
@@ -1402,7 +1438,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         <p>${n.message}</p>
         <button onclick="simulateRouting()" class="btn btn-secondary">Retry</button>
       </div>
-    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(t){const e=decodeURIComponent(t);localStorage.setItem("kdashx2-new-task-intent",e),window.navigate("/tasks/new")};window.addRoutingRule=function(){const t=prompt("Enter keyword to match:");if(!t)return;const e=prompt("Enter target action:");if(!e)return;const s=o.get("routingRules");s.push({keyword:t.toLowerCase(),target:e,priority:100}),o.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(t){if(!confirm("Delete this rule?"))return;const e=o.get("routingRules");e.splice(t,1),o.set("routingRules",e),window.navigate("/routing")};window.updateRiskThreshold=function(){const t=document.getElementById("risk-threshold").value;o.set("setup.routing.data.defaultRiskThreshold",t)};window.updateFallbackEnabled=function(){const t=document.getElementById("fallback-enabled").checked;o.set("setup.routing.data.fallbackEnabled",t)};const Ie={workspace:"🏢",nodes:"🖥️",storage:"💾",providers:"🔌",routing:"📡",healthChecks:"✅"},Se={workspace:"#/setup/workspace",nodes:"#/nodes",storage:"#/setup/storage",providers:"#/providers",routing:"#/routing",healthChecks:"#/setup/health"};function Ae(){var s,n;const t=o.getSetupProgress(),e=o.get("auth");return`
+    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=o.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),o.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=o.get("routingRules");t.splice(e,1),o.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;o.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;o.set("setup.routing.data.fallbackEnabled",e)};const Se={workspace:"🏢",nodes:"🖥️",storage:"💾",providers:"🔌",routing:"📡",healthChecks:"✅"},Ae={workspace:"#/setup/workspace",nodes:"#/nodes",storage:"#/setup/storage",providers:"#/providers",routing:"#/routing",healthChecks:"#/setup/health"};function Te(){var s,n;const e=o.getSetupProgress(),t=o.get("auth");return`
     <div class="settings-page">
       <header class="page-header">
         <div class="container">
@@ -1419,12 +1455,12 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
             <p class="text-muted">Return to any setup step to make changes</p>
             
             <div class="settings-modules">
-              ${t.modules.map(i=>Te(i)).join("")}
+              ${e.modules.map(i=>Pe(i)).join("")}
             </div>
             
-            ${t.percentage<100?`
+            ${e.percentage<100?`
               <a href="#/setup" class="btn btn-primary btn-full">
-                Continue Setup (${t.percentage}%)
+                Continue Setup (${e.percentage}%)
               </a>
             `:""}
           </div>
@@ -1477,11 +1513,11 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
             <div class="account-info">
               <div class="account-field">
                 <span class="field-label">Email</span>
-                <span class="field-value">${((s=e.user)==null?void 0:s.email)||"Not set"}</span>
+                <span class="field-value">${((s=t.user)==null?void 0:s.email)||"Not set"}</span>
               </div>
               <div class="account-field">
                 <span class="field-label">Name</span>
-                <span class="field-value">${((n=e.user)==null?void 0:n.name)||"Not set"}</span>
+                <span class="field-value">${((n=t.user)==null?void 0:n.name)||"Not set"}</span>
               </div>
             </div>
             <div class="account-actions">
@@ -1503,11 +1539,11 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
         </div>
       </main>
     </div>
-  `}function Te(t){const e=Ie[t.name],s=Se[t.name],n=t.completed;return`
+  `}function Pe(e){const t=Se[e.name],s=Ae[e.name],n=e.completed;return`
     <a href="${s}" class="module-link ${n?"completed":"pending"}">
-      <span class="module-icon">${e}</span>
+      <span class="module-icon">${t}</span>
       <div class="module-info">
-        <span class="module-name">${t.label}</span>
+        <span class="module-name">${e.label}</span>
         <span class="module-status">
           ${n?'<span class="badge badge-success">✓ Complete</span>':'<span class="badge badge-warning">○ Pending</span>'}
         </span>
@@ -1518,7 +1554,7 @@ Last heartbeat: ${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"
 
 This cannot be undone.
 
-Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}o.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:$,requiresAuth:!0},"/login":{render:D,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:q,requiresAuth:!0},"/setup/workspace":{render:H,requiresAuth:!0},"/setup/storage":{render:G,requiresAuth:!0},"/setup/health":{render:K,requiresAuth:!0},"/dashboard":{render:$,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Y,requiresAuth:!0},"/providers":{render:Z,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ae,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:le,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:t=>ce(t),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:ke,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Ae,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Ne,requiresAuth:!0}};function Pe(t){var i,a;const e=o.get("auth");return e.isAuthenticated?`
+Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}o.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:$,requiresAuth:!0},"/login":{render:O,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:q,requiresAuth:!0},"/setup/workspace":{render:H,requiresAuth:!0},"/setup/storage":{render:G,requiresAuth:!0},"/setup/health":{render:K,requiresAuth:!0},"/dashboard":{render:$,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:j,requiresAuth:!0},"/providers":{render:ee,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:oe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:ce,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>ue(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:we,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Te,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Re,requiresAuth:!0}};function Ee(e){var i,a;const t=o.get("auth");return t.isAuthenticated?`
     <header class="global-header">
       <div class="container">
         <div class="header-brand">
@@ -1526,13 +1562,13 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
           <span class="header-title">KDashX3</span>
         </div>
         <nav class="header-nav">
-          ${[{path:"/dashboard",label:"Dashboard"},{path:"/nodes",label:"Nodes"},{path:"/providers",label:"Providers"},{path:"/routing",label:"Routing"},{path:"/settings",label:"Settings"}].map(r=>{const d=t===r.path||t.startsWith(r.path+"/");return`<a href="#${r.path}" class="${d?"active":""}">${r.label}</a>`}).join("")}
+          ${[{path:"/dashboard",label:"Dashboard"},{path:"/nodes",label:"Nodes"},{path:"/providers",label:"Providers"},{path:"/routing",label:"Routing"},{path:"/settings",label:"Settings"}].map(r=>{const l=e===r.path||e.startsWith(r.path+"/");return`<a href="#${r.path}" class="${l?"active":""}">${r.label}</a>`}).join("")}
         </nav>
         <div class="header-user">
           <div class="user-menu">
             <button class="user-menu-btn" onclick="toggleUserMenu()">
               <span>👤</span>
-              <span>${((a=(i=e.user)==null?void 0:i.email)==null?void 0:a.split("@")[0])||"User"}</span>
+              <span>${((a=(i=t.user)==null?void 0:i.email)==null?void 0:a.split("@")[0])||"User"}</span>
               <span>▼</span>
             </button>
             <div id="user-dropdown" class="user-dropdown hidden">
@@ -1542,42 +1578,42 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </header>
-  `:""}window.toggleUserMenu=function(){const t=document.getElementById("user-dropdown");t&&t.classList.toggle("hidden")};document.addEventListener("click",t=>{const e=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");e&&s&&!e.contains(t.target)&&s.classList.add("hidden")});window.handleLogout=function(){o.logout(),window.location.hash="/login",u("/login",!0)};function Ee(t){const e=g[t]||g["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(e.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!e.requiresAuth&&s.isAuthenticated&&e.redirectIfAuthed)return{allowed:!1,redirect:e.redirectIfAuthed};if(e.requiresAuth&&!o.isSetupComplete()&&!t.startsWith("/setup"))return{allowed:!1,redirect:"/setup"};if(e.blockedBy&&o.isSetupComplete())for(const i of e.blockedBy){const a=n.find(r=>r.id===i);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Ne(){const e=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
+  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){o.logout(),window.location.hash="/login",u("/login",!0)};function Ne(e){const t=g[e]||g["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const i of t.blockedBy){const a=n.find(r=>r.id===i);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Re(){const t=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
     <div class="locked-page">
       <div class="locked-content">
         <div class="lock-icon">🔒</div>
         <h1>Action Blocked</h1>
-        <p class="block-message">${e.message}</p>
+        <p class="block-message">${t.message}</p>
         <div class="block-actions">
-          <a href="${e.cta.href}" class="btn btn-primary">${e.cta.text}</a>
+          <a href="${t.cta.href}" class="btn btn-primary">${t.cta.text}</a>
           <a href="#/setup" class="btn btn-secondary">Setup Center</a>
         </div>
       </div>
     </div>
-  `}async function u(t,e=!1){t.startsWith("/")||(t="/"+t),e||(window.location.hash=t);const s=Ee(t);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,I("/locked");return}}await I(t)}async function I(t){const e=document.getElementById("app"),s=g[t]||g["/dashboard"],n=o.get("auth");e.innerHTML=`
+  `}async function u(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=Ne(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,I("/locked");return}}await I(e)}async function I(e){const t=document.getElementById("app"),s=g[e]||g["/dashboard"],n=o.get("auth");t.innerHTML=`
     <div class="loading-screen">
       <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
-  `,await new Promise(i=>setTimeout(i,300));try{const i=t==="/setup"||t.startsWith("/setup/"),a=t==="/login",r=a?"":Pe(t);if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&!a){const d=await s.render();e.innerHTML=r+Re()+d}else{const d=await s.render();e.innerHTML=r+d}xe()}catch(i){console.error("Render error:",i),e.innerHTML=`
+  `,await new Promise(i=>setTimeout(i,300));try{const i=e==="/setup"||e.startsWith("/setup/"),a=e==="/login",r=a?"":Ee(e);if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&!a){const l=await s.render();t.innerHTML=r+xe()+l}else{const l=await s.render();t.innerHTML=r+l}Be()}catch(i){console.error("Render error:",i),t.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
         <p>${i.message||"Something went wrong"}</p>
         <button onclick="navigate('/dashboard')" class="btn btn-primary">Go Home</button>
       </div>
-    `}}function Re(){const t=o.getSetupProgress();return`
+    `}}function xe(){const e=o.getSetupProgress();return`
     <div class="setup-banner">
       <div class="setup-banner-content">
         <span class="setup-icon">⚙️</span>
         <div class="setup-info">
           <span class="setup-title">Setup in Progress</span>
           <div class="setup-progress-bar">
-            <div class="setup-progress-fill" style="width: ${t.percentage}%"></div>
+            <div class="setup-progress-fill" style="width: ${e.percentage}%"></div>
           </div>
-          <span class="setup-percentage">${t.percentage}%</span>
+          <span class="setup-percentage">${e.percentage}%</span>
         </div>
         <a href="#/setup" class="btn btn-small btn-primary">Continue Setup</a>
       </div>
     </div>
-  `}function xe(){document.querySelectorAll('a[href^="#/"]').forEach(t=>{t.addEventListener("click",e=>{const s=t.getAttribute("href");s.startsWith("#/")&&(e.preventDefault(),u(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const t=window.location.hash.slice(1)||"/";u(t,!0)});document.addEventListener("DOMContentLoaded",()=>{const t=window.location.hash.slice(1)||"/";u(t,!0)});window.navigate=u;window.store=o;
+  `}function Be(){document.querySelectorAll('a[href^="#/"]').forEach(e=>{e.addEventListener("click",t=>{const s=e.getAttribute("href");s.startsWith("#/")&&(t.preventDefault(),u(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const e=window.location.hash.slice(1)||"/";u(e,!0)});document.addEventListener("DOMContentLoaded",()=>{const e=window.location.hash.slice(1)||"/";u(e,!0)});window.navigate=u;window.store=o;

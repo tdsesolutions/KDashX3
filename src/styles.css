@@ -1456,3 +1456,77 @@ a:hover {
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
 }
+
+/* Inline Setup Gating Banner */
+.setup-warning-banner {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 1px solid #f59e0b;
+  border-radius: var(--radius-md);
+  padding: 1rem 1.5rem;
+  margin: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.setup-warning-icon {
+  font-size: 1.5rem;
+}
+
+.setup-warning-content {
+  flex: 1;
+}
+
+.setup-warning-title {
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 0.25rem;
+}
+
+.setup-warning-text {
+  color: #a16207;
+  font-size: 0.9375rem;
+  margin: 0;
+}
+
+.setup-warning-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+/* Read-only Gating Message */
+.gated-section {
+  background: var(--bg-card);
+  border: 2px dashed var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 3rem 2rem;
+  text-align: center;
+  margin: 1.5rem;
+}
+
+.gated-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.gated-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.gated-message {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.gated-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
