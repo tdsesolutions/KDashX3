@@ -1525,7 +1525,7 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </div>
-  `}async function p(t,e=!1){t.startsWith("/")||(t="/"+t),e||(window.location.hash=t);const s=Pe(t);if(!s.allowed){if(s.redirect){p(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,$("/locked");return}}await $(t)}async function $(t){const e=document.getElementById("app"),s=g[t]||g["/dashboard"];e.innerHTML='<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';try{const n=o.get("auth"),i=t==="/setup"||t.startsWith("/setup/");if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&t!=="/login"){const a=await s.render();e.innerHTML=Ne()+a}else{const a=await s.render();e.innerHTML=a}Re()}catch(n){console.error("Render error:",n),e.innerHTML=`
+  `}async function p(t,e=!1){t.startsWith("/")||(t="/"+t),e||(window.location.hash=t);const s=Pe(t);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,p(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,$("/locked");return}}await $(t)}async function $(t){const e=document.getElementById("app"),s=g[t]||g["/dashboard"];e.innerHTML='<div class="loading-screen"><div class="spinner"></div><p>Loading...</p></div>';try{const n=o.get("auth"),i=t==="/setup"||t.startsWith("/setup/");if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&t!=="/login"){const a=await s.render();e.innerHTML=Ne()+a}else{const a=await s.render();e.innerHTML=a}Re()}catch(n){console.error("Render error:",n),e.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
         <p>${n.message||"Something went wrong"}</p>

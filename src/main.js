@@ -162,6 +162,8 @@ export async function navigate(path, skipHistory = false) {
   
   if (!access.allowed) {
     if (access.redirect) {
+      // Update URL to reflect the redirect
+      window.location.hash = access.redirect;
       navigate(access.redirect, true);
       return;
     }
