@@ -19,8 +19,7 @@ import './styles.css';
 const routes = {
   '/': { 
     render: renderDashboard, 
-    requiresAuth: true,
-    blockedBy: ['NODE_REQUIRED'] 
+    requiresAuth: true
   },
   '/login': { 
     render: renderLogin, 
@@ -85,19 +84,24 @@ function checkRouteAccess(path) {
   const route = routes[path] || routes['/dashboard'];
   const auth = store.get('auth');
   const blocks = store.getBlocks();
-  
+
   // Check auth
   if (route.requiresAuth && !auth.isAuthenticated) {
     return { allowed: false, redirect: '/login' };
   }
-  
+
   // Redirect if already authed
   if (!route.requiresAuth && auth.isAuthenticated && route.redirectIfAuthed) {
     return { allowed: false, redirect: route.redirectIfAuthed };
   }
-  
-  // Check blocks
-  if (route.blockedBy) {
+
+  // If setup is not complete, redirect to setup (except for setup page itself)
+  if (route.requiresAuth && !store.isSetupComplete() && path !== '/setup') {
+    return { allowed: false, redirect: '/setup' };
+  }
+
+  // Check blocks (only after setup is complete)
+  if (route.blockedBy && store.isSetupComplete()) {
     for (const blockId of route.blockedBy) {
       const block = blocks.find(b => b.id === blockId);
       if (block) {
@@ -105,7 +109,7 @@ function checkRouteAccess(path) {
       }
     }
   }
-  
+
   return { allowed: true };
 }
 
