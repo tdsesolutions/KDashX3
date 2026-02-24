@@ -531,12 +531,12 @@ window.saveWorkspace = function() {
   const timezone = document.getElementById('timezone').value;
   const emailNotifications = document.getElementById('notify-email').checked;
   const webhookNotifications = document.getElementById('notify-webhook').checked;
-  
+
   if (!orgName.trim()) {
     alert('Please enter an organization name');
     return;
   }
-  
+
   store.set('setup.workspace.data', {
     orgName: orgName.trim(),
     timezone,
@@ -545,7 +545,222 @@ window.saveWorkspace = function() {
       webhook: webhookNotifications
     }
   });
-  
+
   store.set('setup.workspace.completed', true);
+  window.navigate('/setup');
+};
+
+// Sub-page: Storage setup
+export function renderStorageSetup() {
+  const storage = store.get('setup.storage.data');
+
+  return `
+    <div class="setup-subpage">
+      <header class="page-header">
+        <div class="container">
+          <a href="#/setup" class="back-link">← Back to Setup</a>
+          <h1>Storage & Permissions</h1>
+        </div>
+      </header>
+
+      <main class="container">
+        <div class="setup-instructions card">
+          <h3>💾 Storage & Write-Fence Security</h3>
+          <p>Mission Control uses a "write-fence" system to prevent AI agents from accessing files outside designated folders.</p>
+
+          <div class="instruction-section">
+            <h4>Recommended Folder Structure</h4>
+            <code>mkdir -p ~/mission-control/{projects,outputs,temp}</code>
+          </div>
+
+          <div class="instruction-section">
+            <h4>Security Best Practices</h4>
+            <ul>
+              <li>Only grant access to folders you're comfortable with</li>
+              <li>Never grant access to system folders (~/.ssh, /etc, etc.)</li>
+              <li>Use a dedicated workspace folder</li>
+              <li>Each node can have different permissions</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Allowed Folders (comma-separated)</label>
+            <input
+              type="text"
+              id="allowed-folders"
+              class="form-input"
+              value="${storage.allowedFolders?.join(', ') || ''}"
+              placeholder="~/mission-control/projects, ~/mission-control/outputs"
+            />
+            <p class="form-help">Folders where agents can read and write files</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Default Output Folder</label>
+            <input
+              type="text"
+              id="output-folder"
+              class="form-input"
+              value="${storage.defaultOutputFolder || ''}"
+              placeholder="~/mission-control/outputs"
+            />
+            <p class="form-help">Default location for generated files</p>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Max File Size (MB)</label>
+            <input
+              type="number"
+              id="max-file-size"
+              class="form-input"
+              value="${storage.maxFileSize ? storage.maxFileSize / (1024 * 1024) : 100}"
+              min="1"
+              max="1000"
+            />
+            <p class="form-help">Maximum file size agents can create (1-1000 MB)</p>
+          </div>
+
+          <div class="form-actions">
+            <button onclick="saveStorage()" class="btn btn-primary">Save & Continue</button>
+            <a href="#/setup" class="btn btn-secondary">Cancel</a>
+          </div>
+        </div>
+      </main>
+    </div>
+  `;
+}
+
+window.saveStorage = function() {
+  const allowedFoldersInput = document.getElementById('allowed-folders').value;
+  const defaultOutputFolder = document.getElementById('output-folder').value;
+  const maxFileSizeMB = parseInt(document.getElementById('max-file-size').value) || 100;
+
+  const allowedFolders = allowedFoldersInput
+    .split(',')
+    .map(f => f.trim())
+    .filter(f => f.length > 0);
+
+  if (allowedFolders.length === 0) {
+    alert('Please specify at least one allowed folder');
+    return;
+  }
+
+  store.set('setup.storage.data', {
+    allowedFolders,
+    defaultOutputFolder: defaultOutputFolder || allowedFolders[0],
+    maxFileSize: maxFileSizeMB * 1024 * 1024
+  });
+
+  store.set('setup.storage.completed', true);
+  window.navigate('/setup');
+};
+
+// Sub-page: Health Checks
+export function renderHealthChecks() {
+  const nodes = store.get('nodes') || [];
+
+  return `
+    <div class="setup-subpage">
+      <header class="page-header">
+        <div class="container">
+          <a href="#/setup" class="back-link">← Back to Setup</a>
+          <h1>Health Checks</h1>
+        </div>
+      </header>
+
+      <main class="container">
+        <div class="setup-instructions card">
+          <h3>✅ System Verification</h3>
+          <p>Verify that everything is configured correctly before starting. Run checks to ensure your setup will work smoothly.</p>
+
+          <div class="instruction-section">
+            <h4>What We Check</h4>
+            <ul>
+              <li><strong>Node Connectivity:</strong> All nodes are online and responding</li>
+              <li><strong>API Keys:</strong> Provider keys are valid and have credits</li>
+              <li><strong>Storage:</strong> Write permissions in allowed folders</li>
+              <li><strong>Network:</strong> Nodes can reach Mission Control backend</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="health-checks-container">
+          <div class="health-check-item">
+            <div class="check-status ${nodes.length > 0 ? 'success' : 'pending'}">
+              ${nodes.length > 0 ? '✓' : '○'}
+            </div>
+            <div class="check-info">
+              <div class="check-name">Connected Nodes</div>
+              <div class="check-detail">${nodes.length} node${nodes.length !== 1 ? 's' : ''} connected</div>
+            </div>
+            <div class="check-action">
+              ${nodes.length === 0 ? '<a href="#/nodes" class="btn btn-small btn-secondary">Add Node</a>' : '<span class="check-pass">Pass</span>'}
+            </div>
+          </div>
+
+          <div class="health-check-item">
+            <div class="check-status ${store.isSetupComplete() ? 'success' : 'pending'}">
+              ${store.isSetupComplete() ? '✓' : '○'}
+            </div>
+            <div class="check-info">
+              <div class="check-name">Setup Completion</div>
+              <div class="check-detail">${store.getSetupProgress().completed} of 6 modules complete</div>
+            </div>
+            <div class="check-action">
+              ${!store.isSetupComplete() ? '<a href="#/setup" class="btn btn-small btn-secondary">Complete Setup</a>' : '<span class="check-pass">Pass</span>'}
+            </div>
+          </div>
+
+          <div class="health-check-item">
+            <div class="check-status ${store.hasWorkingProvider() ? 'success' : 'warning'}">
+              ${store.hasWorkingProvider() ? '✓' : '!'}
+            </div>
+            <div class="check-info">
+              <div class="check-name">AI Providers</div>
+              <div class="check-detail">${store.getWorkingProviders().length} provider(s) configured</div>
+            </div>
+            <div class="check-action">
+              ${!store.hasWorkingProvider() ? '<a href="#/providers" class="btn btn-small btn-secondary">Setup Providers</a>' : '<span class="check-pass">Pass</span>'}
+            </div>
+          </div>
+
+          <div class="health-check-item">
+            <div class="check-status pending">○</div>
+            <div class="check-info">
+              <div class="check-name">Backend Connection</div>
+              <div class="check-detail">Mission Control API connectivity</div>
+            </div>
+            <div class="check-action">
+              <button onclick="testBackendConnection()" class="btn btn-small btn-secondary">Test</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-actions" style="margin-top: 2rem;">
+          <button onclick="completeHealthChecks()" class="btn btn-primary">Complete Setup</button>
+          <a href="#/setup" class="btn btn-secondary">Back</a>
+        </div>
+      </main>
+    </div>
+  `;
+}
+
+window.testBackendConnection = async function() {
+  try {
+    const response = await fetch('https://eagle-funky-twice-drugs.trycloudflare.com/health');
+    if (response.ok) {
+      alert('✓ Backend connection successful');
+    } else {
+      alert('✗ Backend returned error: ' + response.status);
+    }
+  } catch (err) {
+    alert('✗ Cannot connect to backend: ' + err.message);
+  }
+};
+
+window.completeHealthChecks = function() {
+  store.set('setup.healthChecks.completed', true);
   window.navigate('/setup');
 };

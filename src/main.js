@@ -6,7 +6,7 @@
 
 import { store } from './lib/store.js';
 import { renderLogin } from './pages/login.js';
-import { renderSetup } from './pages/setup.js';
+import { renderSetup, renderWorkspaceSetup, renderStorageSetup, renderHealthChecks } from './pages/setup.js';
 import { renderDashboard } from './pages/dashboard.js';
 import { renderNodes } from './pages/nodes.js';
 import { renderProviders } from './pages/providers.js';
@@ -28,6 +28,18 @@ const routes = {
   },
   '/setup': { 
     render: renderSetup, 
+    requiresAuth: true 
+  },
+  '/setup/workspace': { 
+    render: renderWorkspaceSetup, 
+    requiresAuth: true 
+  },
+  '/setup/storage': { 
+    render: renderStorageSetup, 
+    requiresAuth: true 
+  },
+  '/setup/health': { 
+    render: renderHealthChecks, 
     requiresAuth: true 
   },
   '/dashboard': { 
