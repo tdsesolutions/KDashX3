@@ -3,7 +3,7 @@ const { test, expect } = require('@playwright/test');
 const BASE_URL = 'https://tdsesolutions.github.io/KDashX3';
 
 test.describe('JOURNEY C: Routing - Configure from setup page', () => {
-  test('Clicking Configure shows routing module', async ({ page }) => {
+  test('Clicking Configure shows routing instructions', async ({ page }) => {
     const consoleErrors = [];
     page.on('console', msg => {
       if (msg.type() === 'error') {
@@ -37,34 +37,37 @@ test.describe('JOURNEY C: Routing - Configure from setup page', () => {
     console.log('Has routing module:', hasRoutingModule);
     expect(hasRoutingModule, 'Setup page should show Routing module').toBe(true);
     
-    // Find and click Configure link
-    const configureLink = page.locator('a[href="#/routing"]').first();
-    const isVisible = await configureLink.isVisible().catch(() => false);
-    console.log('Configure link visible:', isVisible);
-    expect(isVisible, 'Configure link should be visible').toBe(true);
+    // Find and click Configure BUTTON (not link anymore)
+    const configureBtn = page.locator('button:has-text("Configure")').filter({ hasText: 'Configure' }).first();
+    const isVisible = await configureBtn.isVisible().catch(() => false);
+    console.log('Configure button visible:', isVisible);
+    
+    if (!isVisible) {
+      console.log('❌ FAIL: Configure button not visible');
+      test.fail();
+      return;
+    }
     
     // Click Configure
-    await configureLink.click();
+    await configureBtn.click();
     await page.waitForTimeout(2000);
     
     const urlAfter = page.url();
     console.log('URL after click:', urlAfter);
     await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-after.png' });
     
-    // Check for routing-related content
+    // Check for routing-related content (instructions panel should be visible)
     const bodyTextAfter = await page.locator('body').textContent();
-    const showsRoutingUI = bodyTextAfter.includes('Routing') || bodyTextAfter.includes('Rules') || bodyTextAfter.includes('Test Routing');
+    const showsRoutingInstructions = bodyTextAfter.includes('Routing') && (bodyTextAfter.includes('Rules') || bodyTextAfter.includes('How Routing Works'));
     const showsGating = bodyTextAfter.includes('Connect a node') || bodyTextAfter.includes('requires at least one node');
-    const onSetupPage = urlAfter.includes('#/setup');
     
-    console.log('Shows routing UI:', showsRoutingUI);
+    console.log('Shows routing instructions:', showsRoutingInstructions);
     console.log('Shows gating:', showsGating);
-    console.log('On setup page:', onSetupPage);
     console.log('Console errors:', consoleErrors);
     
     // Must show routing-related UI
-    const validOutcome = showsRoutingUI || showsGating || onSetupPage;
-    expect(validOutcome, 'Clicking Configure must show routing-related UI').toBe(true);
+    const validOutcome = showsRoutingInstructions || showsGating;
+    expect(validOutcome, 'Clicking Configure must show routing instructions').toBe(true);
     expect(consoleErrors).toHaveLength(0);
     
     console.log('✅ JOURNEY C PASSED');
