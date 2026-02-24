@@ -119,12 +119,16 @@ function renderModuleCardWithInstructions(module) {
             </div>
           </div>
           <div class="module-actions">
-            <button class="info-btn" onclick="toggleInstructions('${instructionsId}')" title="Show Instructions">
-              <span class="info-icon">ℹ️</span>
-            </button>
+            ${module.name !== 'nodes' && module.name !== 'routing' ? `
+              <button class="info-btn" onclick="toggleInstructions('${instructionsId}')" title="Show Instructions">
+                <span class="info-icon">ℹ️</span>
+              </button>
+            ` : ''}
             ${isCompleted 
               ? '<span class="status-check">✓</span>'
-              : `<a href="${config.route}" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</a>`
+              : (module.name === 'nodes' || module.name === 'routing') 
+                ? `<button onclick="showInstructionsForModule('${module.name}')" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</button>`
+                : `<a href="${config.route}" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</a>`
             }
           </div>
         </div>
@@ -447,6 +451,18 @@ window.toggleInstructions = function(instructionsId) {
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 100);
     }
+  }
+};
+
+// Show instructions for nodes/routing when clicking their CTA buttons
+window.showInstructionsForModule = function(moduleName) {
+  const instructionsId = `instructions-${moduleName}`;
+  const panel = document.getElementById(instructionsId);
+  if (panel) {
+    panel.style.display = 'block';
+    setTimeout(() => {
+      panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
   }
 };
 

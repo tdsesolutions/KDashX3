@@ -1,17 +1,18 @@
 #!/bin/bash
 set -e
 
-echo "=== KDashX3 VALIDATION SCRIPT ==="
+echo "=== KDashX3 VALIDATION SCRIPT (PAID USER STANDARD) ==="
 echo ""
 
 # 1. Build Check
 echo "[1/5] Build Check..."
 cd ~/KDashX3
 npm run build > /tmp/build.log 2>&1
-if [ $? -eq 0 ]; then
+BUILD_EXIT=$?
+if [ $BUILD_EXIT -eq 0 ]; then
     echo "✅ Build exits 0"
 else
-    echo "❌ Build failed"
+    echo "❌ Build failed (exit $BUILD_EXIT)"
     cat /tmp/build.log
     exit 1
 fi
@@ -20,7 +21,7 @@ fi
 echo ""
 echo "[2/5] Deploy Check..."
 DEPLOY_URL="https://tdsesolutions.github.io/KDashX3"
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" $DEPLOY_URL)
+HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" $DEPLOY_URL)
 if [ "$HTTP_CODE" = "200" ]; then
     echo "✅ Deployed: $DEPLOY_URL"
 else
@@ -40,19 +41,29 @@ else
     exit 1
 fi
 
-# 4. E2E Journey Suite
+# 4. E2E Journey Suite (MUST FAIL IF ANY JOURNEY FAILS)
 echo ""
 echo "[4/5] Running E2E Journey Suite..."
-bash scripts/e2e.sh
+cd ~/KDashX3
+npx playwright test tests/e2e/journeys/*.spec.cjs --reporter=list --trace=on
+JOURNEY_EXIT=$?
 
-# 5. Audit Result
+if [ $JOURNEY_EXIT -ne 0 ]; then
+    echo ""
+    echo "❌ JOURNEYS FAILED (exit $JOURNEY_EXIT)"
+    echo "Traces: test-results/"
+    echo "Screenshots: tests/e2e/screenshots/"
+    exit 1
+fi
+
+# 5. AUDITOR DECLARATION
 echo ""
 echo "[5/5] AUDITOR DECLARATION:"
 echo "================================"
-echo "Build: PASS"
+echo "Build: PASS (exit 0)"
 echo "Deploy: PASS ($DEPLOY_URL)"
 echo "Backend: PASS ($BACKEND_URL)"
-echo "Journeys: PASS"
+echo "Journeys: PASS (all 5 journeys)"
 echo "================================"
 echo ""
 echo "🎉 AUDIT PASS - Ready for production"
