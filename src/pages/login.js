@@ -97,7 +97,7 @@ window.handleLogin = async function() {
   
   try {
     await store.login(email, password);
-    window.navigate('/setup');
+    window.navigate('/dashboard');
   } catch (err) {
     errorEl.textContent = err.message || 'Login failed';
     errorEl.classList.remove('hidden');
@@ -129,7 +129,7 @@ window.handleRegister = async function() {
   
   try {
     await store.register(email, password);
-    window.navigate('/setup');
+    window.navigate('/dashboard');
   } catch (err) {
     errorEl.textContent = err.message || 'Registration failed';
     errorEl.classList.remove('hidden');
