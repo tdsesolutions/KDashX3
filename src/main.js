@@ -11,9 +11,15 @@ import { renderDashboard } from './pages/dashboard.js';
 import { renderNodes } from './pages/nodes.js';
 import { renderProviders } from './pages/providers.js';
 import { renderTasks, renderNewTask, renderTaskDetail } from './pages/tasks.js';
+import { renderIntent } from './pages/intent.js';
+import { renderExecution, onExecutionMount, onExecutionUnmount } from './pages/execution.js';
 import { renderRouting } from './pages/routing.js';
 import { renderSettings } from './pages/settings.js';
 import './styles.css';
+
+// Track current route for lifecycle hooks
+let currentRoute = null;
+let currentRouteParams = null;
 
 // Route definitions with metadata
 const routes = {
@@ -72,6 +78,18 @@ const routes = {
     blockedBy: ['NODE_REQUIRED'],
     dynamic: true
   },
+  '/intent': { 
+    render: renderIntent, 
+    requiresAuth: true
+    // Note: Gating handled internally by intent page (shows different message if no online nodes)
+  },
+  '/execution/:id': { 
+    render: (id) => renderExecution(id), 
+    requiresAuth: true,
+    dynamic: true,
+    onMount: onExecutionMount,
+    onUnmount: onExecutionUnmount
+  },
   '/routing': { 
     render: renderRouting, 
     requiresAuth: true,
@@ -98,6 +116,7 @@ function renderGlobalHeader(currentPath) {
   
   const navItems = [
     { path: '/dashboard', label: 'Dashboard' },
+    { path: '/intent', label: 'New Task' },
     { path: '/nodes', label: 'Nodes' },
     { path: '/providers', label: 'Providers' },
     { path: '/routing', label: 'Routing' },
@@ -242,10 +261,34 @@ export async function navigate(path, skipHistory = false) {
   await renderRoute(path);
 }
 
+// Match route with support for dynamic segments
+function matchRoute(path) {
+  // Exact match first
+  if (routes[path]) {
+    return { route: routes[path], params: null };
+  }
+  
+  // Try dynamic routes
+  for (const [routePath, route] of Object.entries(routes)) {
+    if (route.dynamic) {
+      // Convert route pattern to regex
+      // e.g., '/tasks/:id' -> /^\/tasks\/([^\/]+)$/
+      const pattern = routePath.replace(/:\w+/g, '([^/]+)');
+      const regex = new RegExp(`^${pattern}$`);
+      const match = path.match(regex);
+      
+      if (match) {
+        return { route, params: match[1] };
+      }
+    }
+  }
+  
+  return { route: routes['/dashboard'], params: null };
+}
+
 // Render a specific route
 async function renderRoute(path) {
   const app = document.getElementById('app');
-  const route = routes[path] || routes['/dashboard'];
   const auth = store.get('auth');
   
   // Show loading with logo
@@ -261,6 +304,18 @@ async function renderRoute(path) {
   await new Promise(resolve => setTimeout(resolve, 300));
   
   try {
+    // Call onUnmount on previous route if exists
+    if (currentRoute && currentRoute.onUnmount) {
+      currentRoute.onUnmount(currentRouteParams);
+    }
+    
+    // Match route (handles dynamic segments)
+    const { route, params } = matchRoute(path);
+    
+    // Track current route
+    currentRoute = route;
+    currentRouteParams = params;
+    
     // Check if setup is needed (allow /setup and all /setup/* sub-routes)
     const isSetupRoute = path === '/setup' || path.startsWith('/setup/');
     const isLoginPage = path === '/login';
@@ -268,17 +323,28 @@ async function renderRoute(path) {
     // Render global header for authenticated pages
     const globalHeader = !isLoginPage ? renderGlobalHeader(path) : '';
     
+    // Render content (with params for dynamic routes)
+    let content;
+    if (params && route.render.length > 0) {
+      content = await route.render(params);
+    } else {
+      content = await route.render();
+    }
+    
     if (auth.isAuthenticated && !store.isSetupComplete() && !isSetupRoute && !isLoginPage) {
       // Show setup banner but still render the page
-      const content = await route.render();
       app.innerHTML = globalHeader + renderSetupBanner() + content;
     } else {
-      const content = await route.render();
       app.innerHTML = globalHeader + content;
     }
     
     // Attach navigation handlers
     attachNavHandlers();
+    
+    // Call onMount on new route if exists
+    if (route.onMount) {
+      route.onMount(params);
+    }
     
   } catch (err) {
     console.error('Render error:', err);

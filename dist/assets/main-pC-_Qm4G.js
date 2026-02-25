@@ -1,4 +1,4 @@
-(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))n(i);new MutationObserver(i=>{for(const o of i)if(o.type==="childList")for(const r of o.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(i){const o={};return i.integrity&&(o.integrity=i.integrity),i.referrerPolicy&&(o.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?o.credentials="include":i.crossOrigin==="anonymous"?o.credentials="omit":o.credentials="same-origin",o}function n(i){if(i.ep)return;i.ep=!0;const o=s(i);fetch(i.href,o)}})();const y="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net";function P(){return localStorage.getItem("kdashx3-token")}async function c(e,t={}){const s=`${y}${e}`,n=P(),i={"Content-Type":"application/json",...t.headers};n&&(i.Authorization=`Bearer ${n}`);const o=await fetch(s,{...t,headers:i});if(!o.ok){const r=await o.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${o.status}`)}return o.json()}async function E(e,t){return c("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function R(e,t){return c("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function T(){return c("/pairing-tokens",{method:"POST"})}async function x(){return c("/nodes")}async function B(){return c("/tasks")}async function M(e,t="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function L(e,t){return c(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function D(e){return c(`/tasks/${e}/events`)}async function O(e){return c(`/nodes/${e}/disconnect`,{method:"POST"})}async function _(e){return c(`/nodes/${e}`,{method:"DELETE"})}class W{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),i={...this.state};let o=i;for(let r=0;r<n.length-1;r++)o[n[r]]={...o[n[r]]},o=o[n[r]];o[n[n.length-1]]=s,this.state=i,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await R(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await E(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await x();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await B();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasNodes(){return this.state.nodes.length>0}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasNodes()?this.hasConnectedNodes()||t.push({id:"NODE_OFFLINE",message:"Node paired. Start the connector on your node to go online.",cta:{text:"Go to Nodes",href:"#/nodes"}}):t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=this.hasConnectedNodes(),i=t.filter(o=>{var r;return o==="nodes"?n:(r=s[o])==null?void 0:r.completed}).length;return{completed:i,total:t.length,percentage:Math.round(i/t.length*100),modules:t.map(o=>{var r;return{name:o,completed:o==="nodes"?n:((r=s[o])==null?void 0:r.completed)||!1,label:this.getModuleLabel(o)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const a=new W;function F(){return`
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const o of document.querySelectorAll('link[rel="modulepreload"]'))n(o);new MutationObserver(o=>{for(const a of o)if(a.type==="childList")for(const r of a.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(o){const a={};return o.integrity&&(a.integrity=o.integrity),o.referrerPolicy&&(a.referrerPolicy=o.referrerPolicy),o.crossOrigin==="use-credentials"?a.credentials="include":o.crossOrigin==="anonymous"?a.credentials="omit":a.credentials="same-origin",a}function n(o){if(o.ep)return;o.ep=!0;const a=s(o);fetch(o.href,a)}})();const x="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net";function F(){return localStorage.getItem("kdashx3-token")}async function u(e,t={}){const s=`${x}${e}`,n=F(),o={"Content-Type":"application/json",...t.headers};n&&(o.Authorization=`Bearer ${n}`);const a=await fetch(s,{...t,headers:o});if(!a.ok){const r=await a.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${a.status}`)}return a.json()}async function q(e,t){return u("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function U(e,t){return u("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function G(){return u("/pairing-tokens",{method:"POST"})}async function H(){return u("/nodes")}async function j(){return u("/tasks")}async function M(e,t="normal"){return u("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function D(e,t){return u(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function O(e){return u(`/tasks/${e}/events`)}async function K(e){return u(`/nodes/${e}/disconnect`,{method:"POST"})}async function z(e){return u(`/nodes/${e}`,{method:"DELETE"})}class Y{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),o={...this.state};let a=o;for(let r=0;r<n.length-1;r++)a[n[r]]={...a[n[r]]},a=a[n[r]];a[n[n.length-1]]=s,this.state=o,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await U(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await q(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await H();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await j();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasNodes(){return this.state.nodes.length>0}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasNodes()?this.hasConnectedNodes()||t.push({id:"NODE_OFFLINE",message:"Node paired. Start the connector on your node to go online.",cta:{text:"Go to Nodes",href:"#/nodes"}}):t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=this.hasConnectedNodes(),o=t.filter(a=>{var r;return a==="nodes"?n:(r=s[a])==null?void 0:r.completed}).length;return{completed:o,total:t.length,percentage:Math.round(o/t.length*100),modules:t.map(a=>{var r;return{name:a,completed:a==="nodes"?n:((r=s[a])==null?void 0:r.completed)||!1,label:this.getModuleLabel(a)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const i=new Y;function V(){return`
     <div class="login-page">
       <div class="login-container card">
         <div class="login-brand">
@@ -59,7 +59,7 @@
         </div>
       </div>
     </div>
-  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await a.login(e,t),window.navigate("/dashboard")}catch(i){s.textContent=i.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await a.register(e,t),window.navigate("/dashboard")}catch(i){s.textContent=i.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const G={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function q(){const e=a.getSetupProgress(),t=a.get("nodes")||[],s=t.length>0,n=t.some(o=>o.online&&o.status==="connected"),i=e.modules.map(o=>o.name==="nodes"?{...o,completed:n,hasNodes:s,isOnline:n}:o);return`
+  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await i.login(e,t),window.navigate("/dashboard")}catch(o){s.textContent=o.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await i.register(e,t),window.navigate("/dashboard")}catch(o){s.textContent=o.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const X={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function Q(){const e=i.getSetupProgress(),t=i.get("nodes")||[],s=t.length>0,n=t.some(a=>a.online&&a.status==="connected"),o=e.modules.map(a=>a.name==="nodes"?{...a,completed:n,hasNodes:s,isOnline:n}:a);return`
     <div class="setup-page">
       <header class="page-header">
         <div class="container">
@@ -100,14 +100,14 @@
         
         <!-- Module Cards with Inline Instructions -->
         <div class="modules-list">
-          ${i.map(o=>K(o)).join("")}
+          ${o.map(a=>Z(a)).join("")}
         </div>
 
       </main>
 
-      ${U()}
+      ${J()}
     </div>
-  `}function U(){return`
+  `}function J(){return`
     <div id="setup-node-info-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideSetupNodeInfoModal()"></div>
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -194,7 +194,7 @@
         </div>
       </div>
     </div>
-  `}function K(e){const t=G[e.name],s=e.completed,n=j(e.name),i=`instructions-${e.name}`;let o;return e.name==="nodes"?e.isOnline?o='<span class="badge badge-success">✓ Complete</span>':e.hasNodes?o='<span class="badge badge-warning">○ Paired (waiting for heartbeat)</span>':o='<span class="badge badge-warning">○ Pending</span>':o=s?'<span class="badge badge-success">✓ Complete</span>':'<span class="badge badge-warning">○ Pending</span>',`
+  `}function Z(e){const t=X[e.name],s=e.completed,n=ee(e.name),o=`instructions-${e.name}`;let a;return e.name==="nodes"?e.isOnline?a='<span class="badge badge-success">✓ Complete</span>':e.hasNodes?a='<span class="badge badge-warning">○ Paired (waiting for heartbeat)</span>':a='<span class="badge badge-warning">○ Pending</span>':a=s?'<span class="badge badge-success">✓ Complete</span>':'<span class="badge badge-warning">○ Pending</span>',`
     <div class="module-row ${s?"completed":"pending"}">
       <!-- Main Module Card -->
       <div class="module-main-card">
@@ -204,7 +204,7 @@
             <div class="module-name">${t.title}</div>
             <div class="module-description">${t.description}</div>
             <div class="module-status">
-              ${o}
+              ${a}
             </div>
           </div>
           <div class="module-actions">
@@ -213,25 +213,25 @@
                 <span class="info-icon">ℹ️</span>
               </button>
             `:e.name!=="routing"&&e.name!=="providers"?`
-              <button class="info-btn" onclick="toggleInstructions('${i}')" title="Show Instructions">
+              <button class="info-btn" onclick="toggleInstructions('${o}')" title="Show Instructions">
                 <span class="info-icon">ℹ️</span>
               </button>
             `:""}
-            ${s?'<span class="status-check">✓</span>':e.name==="nodes"?`<button onclick="goToNodesAndAdd()" class="btn btn-primary btn-small">${b(e.name)}</button>`:e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${b(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${b(e.name)}</a>`}
+            ${s?'<span class="status-check">✓</span>':e.name==="nodes"?`<button onclick="goToNodesAndAdd()" class="btn btn-primary btn-small">${N(e.name)}</button>`:e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${N(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${N(e.name)}</a>`}
           </div>
         </div>
       </div>
       
       <!-- Expandable Instructions Panel (not for nodes - uses modal instead) -->
       ${e.name!=="nodes"?`
-      <div id="${i}" class="instructions-panel" style="display: none;">
+      <div id="${o}" class="instructions-panel" style="display: none;">
         <div class="instructions-content">
           ${n}
         </div>
       </div>
       `:""}
     </div>
-  `}function j(e){return{workspace:`
+  `}function ee(e){return{workspace:`
       <div class="instruction-content">
         <div class="instruction-header">
           <h4>🏢 What is a Workspace?</h4>
@@ -506,7 +506,7 @@
           <strong>✨ Tip:</strong> Run health checks regularly to catch issues early.
         </div>
       </div>
-    `}[e]||""}function b(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function H(){var t,s;const e=a.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
+    `}[e]||""}function N(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function te(){var t,s;const e=i.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -532,7 +532,7 @@
           <div class="form-group">
             <label class="form-label">Timezone</label>
             <select id="timezone" class="form-select">
-              ${Y(e.timezone)}
+              ${se(e.timezone)}
             </select>
             <p class="form-help">Used for scheduling tasks and displaying timestamps</p>
           </div>
@@ -558,7 +558,7 @@
         </div>
       </main>
     </div>
-  `}function Y(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}a.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),a.set("setup.workspace.completed",!0),window.navigate("/setup")};function z(){var t;const e=a.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
+  `}function se(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}i.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),i.set("setup.workspace.completed",!0),window.navigate("/setup")};function ne(){var t;const e=i.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -633,7 +633,7 @@
         </div>
       </main>
     </div>
-  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(i=>i.trim()).filter(i=>i.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}a.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),a.set("setup.storage.completed",!0),window.navigate("/setup")};function V(){const e=a.get("nodes")||[];return`
+  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(o=>o.trim()).filter(o=>o.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}i.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),i.set("setup.storage.completed",!0),window.navigate("/setup")};function ae(){const e=i.get("nodes")||[];return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -673,28 +673,28 @@
           </div>
 
           <div class="health-check-item">
-            <div class="check-status ${a.isSetupComplete()?"success":"pending"}">
-              ${a.isSetupComplete()?"✓":"○"}
+            <div class="check-status ${i.isSetupComplete()?"success":"pending"}">
+              ${i.isSetupComplete()?"✓":"○"}
             </div>
             <div class="check-info">
               <div class="check-name">Setup Completion</div>
-              <div class="check-detail">${a.getSetupProgress().completed} of 6 modules complete</div>
+              <div class="check-detail">${i.getSetupProgress().completed} of 6 modules complete</div>
             </div>
             <div class="check-action">
-              ${a.isSetupComplete()?'<span class="check-pass">Pass</span>':'<a href="#/setup" class="btn btn-small btn-secondary">Complete Setup</a>'}
+              ${i.isSetupComplete()?'<span class="check-pass">Pass</span>':'<a href="#/setup" class="btn btn-small btn-secondary">Complete Setup</a>'}
             </div>
           </div>
 
           <div class="health-check-item">
-            <div class="check-status ${a.hasWorkingProvider()?"success":"warning"}">
-              ${a.hasWorkingProvider()?"✓":"!"}
+            <div class="check-status ${i.hasWorkingProvider()?"success":"warning"}">
+              ${i.hasWorkingProvider()?"✓":"!"}
             </div>
             <div class="check-info">
               <div class="check-name">AI Providers</div>
-              <div class="check-detail">${a.getWorkingProviders().length} provider(s) configured</div>
+              <div class="check-detail">${i.getWorkingProviders().length} provider(s) configured</div>
             </div>
             <div class="check-action">
-              ${a.hasWorkingProvider()?'<span class="check-pass">Pass</span>':'<a href="#/providers" class="btn btn-small btn-secondary">Setup Providers</a>'}
+              ${i.hasWorkingProvider()?'<span class="check-pass">Pass</span>':'<a href="#/providers" class="btn btn-small btn-secondary">Setup Providers</a>'}
             </div>
           </div>
 
@@ -716,7 +716,7 @@
         </div>
       </main>
     </div>
-  `}window.testBackendConnection=async function(){try{const e=await fetch("https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/health");e.ok?alert("✓ Backend connection successful"):alert("✗ Backend returned error: "+e.status)}catch(e){alert("✗ Cannot connect to backend: "+e.message)}};window.completeHealthChecks=function(){a.set("setup.healthChecks.completed",!0),window.navigate("/setup")};window.goToNodesAndAdd=function(){window.navigate("/nodes"),setTimeout(()=>{window.showAddNodeModal&&window.showAddNodeModal()},100)};window.showSetupNodeInfoModal=function(){const e=document.getElementById("setup-node-info-modal");e&&e.classList.remove("hidden")};window.hideSetupNodeInfoModal=function(){const e=document.getElementById("setup-node-info-modal");e&&e.classList.add("hidden")};function I(){const e=a.get("tasks"),t=a.get("nodes"),s=a.getSetupProgress(),n=a.isSetupComplete(),i=e.slice(0,5),o=e.filter(d=>d.status==="executing").length,r=e.filter(d=>d.status==="completed").length,l=e.filter(d=>d.status==="failed").length;return n?`
+  `}window.testBackendConnection=async function(){try{const e=await fetch("https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/health");e.ok?alert("✓ Backend connection successful"):alert("✗ Backend returned error: "+e.status)}catch(e){alert("✗ Cannot connect to backend: "+e.message)}};window.completeHealthChecks=function(){i.set("setup.healthChecks.completed",!0),window.navigate("/setup")};window.goToNodesAndAdd=function(){window.navigate("/nodes"),setTimeout(()=>{window.showAddNodeModal&&window.showAddNodeModal()},100)};window.showSetupNodeInfoModal=function(){const e=document.getElementById("setup-node-info-modal");e&&e.classList.remove("hidden")};window.hideSetupNodeInfoModal=function(){const e=document.getElementById("setup-node-info-modal");e&&e.classList.add("hidden")};function P(){const e=i.get("tasks"),t=i.get("nodes"),s=i.getSetupProgress(),n=i.isSetupComplete(),o=e.slice(0,5),a=e.filter(d=>d.status==="executing").length,r=e.filter(d=>d.status==="completed").length,l=e.filter(d=>d.status==="failed").length;return n?`
     <div class="dashboard-page">
       <header class="page-header">
         <div class="container">
@@ -739,7 +739,7 @@
           <div class="stat-card card">
             <div class="stat-icon">⚡</div>
             <div class="stat-content">
-              <span class="stat-value">${o}</span>
+              <span class="stat-value">${a}</span>
               <span class="stat-label">Executing</span>
             </div>
           </div>
@@ -806,17 +806,17 @@
             <a href="#/tasks" class="btn btn-small btn-secondary">View All</a>
           </div>
           
-          ${i.length===0?`
+          ${o.length===0?`
             <div class="empty-state-small">
               <p class="text-muted">No tasks yet. Create your first task to get started.</p>
               <a href="#/tasks/new" class="btn btn-primary btn-small">Create Task</a>
             </div>
           `:`
             <div class="tasks-list">
-              ${i.map(d=>`
+              ${o.map(d=>`
                 <a href="#/tasks/${d.id}" class="task-row">
                   <span class="task-intent">${d.intent.substring(0,50)}${d.intent.length>50?"...":""}</span>
-                  <span class="badge ${X(d.status)}">${d.status}</span>
+                  <span class="badge ${oe(d.status)}">${d.status}</span>
                 </a>
               `).join("")}
             </div>
@@ -839,15 +839,15 @@
             </div>
             <div class="status-item">
               <span class="status-label">Providers</span>
-              <span class="badge ${a.hasWorkingProvider()?"badge-success":"badge-warning"}">
-                ${a.hasWorkingProvider()?"Configured":"Not Configured"}
+              <span class="badge ${i.hasWorkingProvider()?"badge-success":"badge-warning"}">
+                ${i.hasWorkingProvider()?"Configured":"Not Configured"}
               </span>
             </div>
           </div>
         </div>
       </main>
     </div>
-  `:Q(s)}function X(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function Q(e){return`
+  `:ie(s)}function oe(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function ie(e){return`
     <div class="dashboard-page">
       <header class="page-header">
         <div class="container">
@@ -883,7 +883,7 @@
         </div>
       </main>
     </div>
-  `}function J(){const e=a.get("nodes")||[],t=e.length>0;return a.syncNodes(),`
+  `}function re(){const e=i.get("nodes")||[],t=e.length>0;return i.syncNodes(),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -907,13 +907,13 @@
           </button>
         </div>
         
-        ${t?ee(e):se()}
+        ${t?le(e):ue()}
       </main>
       
-      ${ne()}
-      ${Z()}
+      ${pe()}
+      ${de()}
     </div>
-  `}function Z(){return`
+  `}function de(){return`
     <div id="node-info-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideNodeInfoModal()"></div>
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -999,18 +999,18 @@
         </div>
       </div>
     </div>
-  `}function ee(e){return`
+  `}function le(e){return`
     <div class="nodes-list">
-      ${e.map(t=>te(t)).join("")}
+      ${e.map(t=>ce(t)).join("")}
     </div>
-  `}function te(e){const t=Array.isArray(e.capabilities)?e.capabilities:typeof e.capabilities=="string"?[e.capabilities]:[],s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online===!0,i=e.status==="connected"||e.status==="paired";return`
+  `}function ce(e){const t=Array.isArray(e.capabilities)?e.capabilities:typeof e.capabilities=="string"?[e.capabilities]:[],s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online===!0,o=e.status==="connected"||e.status==="paired";return`
     <div class="node-card card">
       <div class="node-header">
         <div class="node-info">
           <span class="node-type-icon">${s[e.type]||"🖥️"}</span>
           <div>
             <h3 class="node-name">${e.name}</h3>
-            ${n?'<span class="badge badge-success">● Online</span>':i?'<span class="badge badge-warning">○ Paired (start connector)</span>':'<span class="badge badge-error">○ Disconnected</span>'}
+            ${n?'<span class="badge badge-success">● Online</span>':o?'<span class="badge badge-warning">○ Paired (start connector)</span>':'<span class="badge badge-error">○ Disconnected</span>'}
           </div>
         </div>
         <div class="node-actions">
@@ -1031,7 +1031,7 @@
         </div>
         <div class="node-detail">
           <span class="detail-label">Status</span>
-          <span class="detail-value">${n?"Connected and reporting":i?"Registered, waiting for connector":"Not connected"}</span>
+          <span class="detail-value">${n?"Connected and reporting":o?"Registered, waiting for connector":"Not connected"}</span>
         </div>
         <div class="node-detail">
           <span class="detail-label">Last Heartbeat</span>
@@ -1041,13 +1041,13 @@
           <div class="node-detail">
             <span class="detail-label">Capabilities</span>
             <div class="capabilities-list">
-              ${t.map(o=>`<span class="capability-tag">${o}</span>`).join("")}
+              ${t.map(a=>`<span class="capability-tag">${a}</span>`).join("")}
             </div>
           </div>
         `:""}
       </div>
     </div>
-  `}function se(){return`
+  `}function ue(){return`
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Yet</h2>
@@ -1058,7 +1058,7 @@
         Add Your First Node
       </button>
     </div>
-  `}function ne(){return`
+  `}function pe(){return`
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
@@ -1108,10 +1108,10 @@
         </div>
       </div>
     </div>
-  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await T(),i=`curl -o connector.js ${y}/connector.js`,o=`node connector.js --api ${y} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=i,document.getElementById("pairing-command").textContent=o,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await a.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=a.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
+  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await G(),o=`curl -o connector.js ${x}/connector.js`,a=`node connector.js --api ${x} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=o,document.getElementById("pairing-command").textContent=a,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await i.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=i.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
 Status: ${t.status}
 Online: ${t.online?"Yes":"No"}
-Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};window.disconnectNodeById=async function(e){if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await O(e),await a.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(confirm("Permanently remove this node? This cannot be undone."))try{await _(e);const t=a.get("nodes").filter(s=>s.id!==e);a.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};window.showNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.remove("hidden")};window.hideNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.add("hidden")};setInterval(()=>{window.location.hash==="#/nodes"&&a.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function oe(){const e=a.getConnectedNodes();return e.length>0?`
+Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};window.disconnectNodeById=async function(e){if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await K(e),await i.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(confirm("Permanently remove this node? This cannot be undone."))try{await z(e);const t=i.get("nodes").filter(s=>s.id!==e);i.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};window.showNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.remove("hidden")};window.hideNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.add("hidden")};setInterval(()=>{window.location.hash==="#/nodes"&&i.syncNodes()},1e4);const C={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function ve(){const e=i.getConnectedNodes();return e.length>0?`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1121,18 +1121,18 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </header>
       
       <main class="container">
-        ${e.map(s=>re(s)).join("")}
+        ${e.map(s=>he(s)).join("")}
         
         <div class="providers-fallback card">
           <h3>Fallback Order</h3>
           <p class="text-muted">When primary provider fails, try these in order</p>
-          ${le()}
+          ${be()}
         </div>
       </main>
       
-      ${ce()}
+      ${ye()}
     </div>
-  `:ie()}function ie(){return`
+  `:ge()}function ge(){return`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1149,9 +1149,9 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </main>
       
-      ${ae()}
+      ${me()}
     </div>
-  `}function ae(){return`
+  `}function me(){return`
     <div id="providers-gating-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProvidersGatingModal()"></div>
       <div class="modal-content">
@@ -1173,7 +1173,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.remove("hidden")};window.hideProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.add("hidden")};function re(e){const t=a.get("providers").filter(s=>s.nodeId===e.id);return`
+  `}window.showProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.remove("hidden")};window.hideProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.add("hidden")};function he(e){const t=i.get("providers").filter(s=>s.nodeId===e.id);return`
     <div class="node-providers card">
       <div class="node-providers-header">
         <div>
@@ -1191,18 +1191,18 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       `:`
         <div class="providers-list">
-          ${t.map(s=>de(s)).join("")}
+          ${t.map(s=>fe(s)).join("")}
         </div>
       `}
     </div>
-  `}function de(e,t){const s=v[e.type]||{name:e.type,icon:"❓"},n={not_configured:{class:"badge-warning",text:"Not Configured"},configured:{class:"badge-success",text:"Configured"},failing:{class:"badge-error",text:"Failing"},testing:{class:"badge-info",text:"Testing..."}},i=n[e.status]||n.not_configured;return`
+  `}function fe(e,t){const s=C[e.type]||{name:e.type,icon:"❓"},n={not_configured:{class:"badge-warning",text:"Not Configured"},configured:{class:"badge-success",text:"Configured"},failing:{class:"badge-error",text:"Failing"},testing:{class:"badge-info",text:"Testing..."}},o=n[e.status]||n.not_configured;return`
     <div class="provider-row">
       <div class="provider-info">
         <span class="provider-icon">${s.icon}</span>
         <div>
           <div class="provider-name">${s.name}</div>
           <div class="provider-meta">
-            <span class="badge ${i.class}">${i.text}</span>
+            <span class="badge ${o.class}">${o.text}</span>
             ${e.endpointUrl?`<span class="endpoint">${e.endpointUrl}</span>`:""}
           </div>
         </div>
@@ -1216,12 +1216,12 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <button onclick="deleteProvider('${e.id}')" class="btn btn-small btn-danger">Delete</button>
       </div>
     </div>
-  `}function le(){const e=a.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
+  `}function be(){const e=i.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
     <div class="fallback-list">
-      ${e.map((t,s)=>{const n=a.get("nodes").find(o=>o.id===t.nodeId),i=v[t.type]||{name:t.type};return`
+      ${e.map((t,s)=>{const n=i.get("nodes").find(a=>a.id===t.nodeId),o=C[t.type]||{name:t.type};return`
           <div class="fallback-item">
             <span class="fallback-rank">${s+1}</span>
-            <span class="fallback-name">${i.name}</span>
+            <span class="fallback-name">${o.name}</span>
             <span class="fallback-node">on ${(n==null?void 0:n.name)||"Unknown"}</span>
             <div class="fallback-actions">
               ${s>0?`<button onclick="moveProviderUp('${t.id}')" class="btn btn-small">↑</button>`:""}
@@ -1230,7 +1230,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
           </div>
         `}).join("")}
     </div>
-  `}function ce(){return`
+  `}function ye(){return`
     <div id="provider-config-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProviderConfigModal()"></div>
       <div class="modal-content">
@@ -1241,7 +1241,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <div class="form-group">
           <label class="form-label">Provider Type</label>
           <select id="provider-type" class="form-select" onchange="onProviderTypeChange()">
-            ${Object.entries(v).map(([e,t])=>`<option value="${e}">${t.icon} ${t.name}</option>`).join("")}
+            ${Object.entries(C).map(([e,t])=>`<option value="${e}">${t.icon} ${t.name}</option>`).join("")}
           </select>
         </div>
         
@@ -1273,7 +1273,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=a.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=v[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,i=document.getElementById("provider-endpoint").value,o=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=a.get("providers");if(t){const l=r.findIndex(d=>d.id===t);l!==-1&&(r[l]={...r[l],type:s,name:n.trim(),endpointUrl:i.trim(),priority:o})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:i.trim(),priority:o,status:"not_configured",lastTested:null});a.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=a.get("providers"),s=t.find(o=>o.id===e);if(!s)return;s.status="testing",a.set("providers",t),window.navigate("/providers"),await new Promise(o=>setTimeout(o,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),a.set("providers",t);const i=t.some(o=>o.status==="configured");a.set("setup.providers.completed",i),window.navigate("/providers")};window.editProvider=function(e){const t=a.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=a.get("providers").filter(n=>n.id!==e);a.set("providers",t);const s=t.some(n=>n.status==="configured");a.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=a.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],a.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=a.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],a.set("providers",t),window.navigate("/providers"))};function ue(){const t=a.get().tasks||[],s=a.hasConnectedNodes();return`
+  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=i.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=C[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,o=document.getElementById("provider-endpoint").value,a=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=i.get("providers");if(t){const l=r.findIndex(d=>d.id===t);l!==-1&&(r[l]={...r[l],type:s,name:n.trim(),endpointUrl:o.trim(),priority:a})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:o.trim(),priority:a,status:"not_configured",lastTested:null});i.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=i.get("providers"),s=t.find(a=>a.id===e);if(!s)return;s.status="testing",i.set("providers",t),window.navigate("/providers"),await new Promise(a=>setTimeout(a,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),i.set("providers",t);const o=t.some(a=>a.status==="configured");i.set("setup.providers.completed",o),window.navigate("/providers")};window.editProvider=function(e){const t=i.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=i.get("providers").filter(n=>n.id!==e);i.set("providers",t);const s=t.some(n=>n.status==="configured");i.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=i.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],i.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=i.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],i.set("providers",t),window.navigate("/providers"))};function ke(){const t=i.get().tasks||[],s=i.hasConnectedNodes();return`
     <div class="tasks-page">
       <header class="page-header">
         <div class="container">
@@ -1283,11 +1283,11 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </header>
       
       <main class="container">
-        ${pe(s)}
-        ${ge(t,s)}
+        ${we(s)}
+        ${Ce(t,s)}
       </main>
     </div>
-  `}function pe(e){return`
+  `}function we(e){return`
     <div class="tasks-toolbar">
       <a href="#/tasks/new" class="btn btn-primary ${e?"":"disabled"}">
         + New Task
@@ -1302,7 +1302,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         🔄 Refresh
       </button>
     </div>
-  `}function ge(e,t){return t?e.length===0?`
+  `}function Ce(e,t){return t?e.length===0?`
       <div class="empty-state card">
         <div class="empty-icon">📋</div>
         <h2 class="empty-title">No Tasks Yet</h2>
@@ -1311,7 +1311,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </div>
     `:`
     <div class="tasks-list">
-      ${e.map(s=>ve(s)).join("")}
+      ${e.map(s=>Ie(s)).join("")}
     </div>
   `:`
       <div class="blocked-state card">
@@ -1320,14 +1320,14 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <p>You need at least one connected node to create and run tasks.</p>
         <a href="#/nodes" class="btn btn-primary">Add Node</a>
       </div>
-    `}function ve(e){const t={pending:{class:"badge-warning",text:"Pending"},assigned:{class:"badge-info",text:"Assigned"},executing:{class:"badge-info",text:"Executing"},completed:{class:"badge-success",text:"Completed"},failed:{class:"badge-error",text:"Failed"},cancelled:{class:"badge-error",text:"Cancelled"}},s=t[e.status]||t.pending,i=(a.get().nodes||[]).find(o=>o.id===e.node_id);return`
+    `}function Ie(e){const t={pending:{class:"badge-warning",text:"Pending"},assigned:{class:"badge-info",text:"Assigned"},executing:{class:"badge-info",text:"Executing"},completed:{class:"badge-success",text:"Completed"},failed:{class:"badge-error",text:"Failed"},cancelled:{class:"badge-error",text:"Cancelled"}},s=t[e.status]||t.pending,o=(i.get().nodes||[]).find(a=>a.id===e.node_id);return`
     <div class="task-card card">
       <div class="task-header">
         <div class="task-info">
           <h3 class="task-intent">${e.intent}</h3>
           <div class="task-meta">
             <span class="badge ${s.class}">${s.text}</span>
-            ${i?`<span class="task-node">on ${i.name}</span>`:""}
+            ${o?`<span class="task-node">on ${o.name}</span>`:""}
             <span class="task-time">${new Date(e.created_at).toLocaleString()}</span>
           </div>
         </div>
@@ -1346,7 +1346,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       `:""}
     </div>
-  `}function me(){return a.hasConnectedNodes()?`
+  `}function $e(){return i.hasConnectedNodes()?`
     <div class="new-task-page">
       <header class="page-header">
         <div class="container">
@@ -1397,13 +1397,13 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
           <a href="#/nodes" class="btn btn-primary">Add Node</a>
         </div>
       </div>
-    `}function he(e){const s=(a.get().tasks||[]).find(o=>o.id===e);if(!s)return`
+    `}function Ne(e){const s=(i.get().tasks||[]).find(a=>a.id===e);if(!s)return`
       <div class="error-page">
         <h1>Task Not Found</h1>
         <p>The task you're looking for doesn't exist.</p>
         <a href="#/tasks" class="btn btn-primary">Back to Tasks</a>
       </div>
-    `;const i=(a.get().nodes||[]).find(o=>o.id===s.node_id);return`
+    `;const o=(i.get().nodes||[]).find(a=>a.id===s.node_id);return`
     <div class="task-detail-page">
       <header class="page-header">
         <div class="container">
@@ -1443,10 +1443,10 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
                   <span class="meta-label">Created</span>
                   <span class="meta-value">${new Date(s.created_at).toLocaleString()}</span>
                 </div>
-                ${i?`
+                ${o?`
                   <div class="meta-item">
                     <span class="meta-label">Node</span>
-                    <span class="meta-value">${i.name}</span>
+                    <span class="meta-value">${o.name}</span>
                   </div>
                 `:""}
               </div>
@@ -1464,7 +1464,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </main>
     </div>
-  `}window.submitTask=async function(){const e=document.getElementById("task-intent").value,t=document.getElementById("task-priority").value,s=document.getElementById("task-error"),n=document.getElementById("create-task-btn");if(!e.trim()){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}const i=a.get().currentWorkspace;if(!i){s.textContent="No workspace selected",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating...";try{await M(i.id,e.trim(),t),a.loadTasks(),window.navigate("/tasks")}catch(o){s.textContent=o.message||"Failed to create task",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Task"}};window.dispatchTaskToNode=async function(e){const t=a.get().nodes.filter(n=>n.status==="connected"||n.online);if(t.length===0){alert("No connected nodes available");return}const s=t[0];try{await L(e,s.id),alert(`Task dispatched to ${s.name}`),a.loadTasks(),window.navigate("/tasks")}catch(n){alert("Failed to dispatch task: "+n.message)}};window.refreshTasks=function(){a.loadTasks(),window.navigate("/tasks")};window.loadTaskEvents=async function(e){const t=document.getElementById("task-events-list");t.innerHTML='<p class="text-muted">Loading...</p>';try{const s=await D(e);s.length===0?t.innerHTML='<p class="text-muted">No events yet</p>':t.innerHTML=`
+  `}window.submitTask=async function(){const e=document.getElementById("task-intent").value,t=document.getElementById("task-priority").value,s=document.getElementById("task-error"),n=document.getElementById("create-task-btn");if(!e.trim()){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}const o=i.get().currentWorkspace;if(!o){s.textContent="No workspace selected",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating...";try{await M(o.id,e.trim(),t),i.loadTasks(),window.navigate("/tasks")}catch(a){s.textContent=a.message||"Failed to create task",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Task"}};window.dispatchTaskToNode=async function(e){const t=i.get().nodes.filter(n=>n.status==="connected"||n.online);if(t.length===0){alert("No connected nodes available");return}const s=t[0];try{await D(e,s.id),alert(`Task dispatched to ${s.name}`),i.loadTasks(),window.navigate("/tasks")}catch(n){alert("Failed to dispatch task: "+n.message)}};window.refreshTasks=function(){i.loadTasks(),window.navigate("/tasks")};window.loadTaskEvents=async function(e){const t=document.getElementById("task-events-list");t.innerHTML='<p class="text-muted">Loading...</p>';try{const s=await O(e);s.length===0?t.innerHTML='<p class="text-muted">No events yet</p>':t.innerHTML=`
         <div class="events-list">
           ${s.map(n=>`
             <div class="event-item">
@@ -1474,7 +1474,317 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
             </div>
           `).join("")}
         </div>
-      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const fe={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function k(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,i)=>{const o=k(n,t.items);o.valid||s.push(`Item ${i}: ${o.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,i]of Object.entries(t.properties))if(n in e){const o=k(e[n],i);o.valid||s.push(`${n}: ${o.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function be(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(f=>setTimeout(f,800));const{intent:t,context:s,constraints:n}=e,i=(s==null?void 0:s.available_nodes)||[],o=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(i))throw new Error("Invalid input: available_nodes must be an array");if(i.length===0)throw new Error("No available nodes for routing");const r=ye(t),l=i.filter(f=>Ie(f,r));if(l.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const d=l[0],p=ke(t),w=Ne(o,p),m=we(t,n),S={type:"node_local",path:`${d.workspace_path||"./outputs"}/task-${Date.now()}`},C=Ce(t),A=$e(C,p),$={selected_node_id:d.id,required_capabilities:r,provider_preference:p,fallback_order:w.length>0?w:["default"],output_location:S,risk_level:m,approval_required:m==="critical"||m==="high",estimated_tokens:C,estimated_cost:A},h=k($,fe);if(!h.valid)throw console.error("[RoutingBrain] Invalid response schema:",h.errors),new Error(`Routing Brain returned invalid data: ${h.errors.join(", ")}`);return $}function ye(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function ke(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function we(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function Ce(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function $e(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function Ie(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Ne(e,t){if(!e||e.length===0)return[];const s=e.filter(i=>i.status==="configured");if(s.length===0)return[];const n=[...s].sort((i,o)=>(i.priority||99)-(o.priority||99));if(t&&t!=="auto"){const i=n.filter(r=>r.type===t),o=n.filter(r=>r.type!==t);return[...i,...o].map(r=>r.id)}return n.map(i=>i.id)}function Se(){const e=a.get("routingRules"),t=a.hasConnectedNodes();return t?`
+      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const xe={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function S(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,o)=>{const a=S(n,t.items);a.valid||s.push(`Item ${o}: ${a.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,o]of Object.entries(t.properties))if(n in e){const a=S(e[n],o);a.valid||s.push(`${n}: ${a.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function _(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise($=>setTimeout($,800));const{intent:t,context:s,constraints:n}=e,o=(s==null?void 0:s.available_nodes)||[],a=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(o))throw new Error("Invalid input: available_nodes must be an array");if(o.length===0)throw new Error("No available nodes for routing");const r=Se(t),l=o.filter($=>Re($,r));if(l.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const d=l[0],c=Ee(t),g=Be(a,c),p=Ae(t,n),y={type:"node_local",path:`${d.workspace_path||"./outputs"}/task-${Date.now()}`},E=Pe(t),W=Te(E,c),A={selected_node_id:d.id,required_capabilities:r,provider_preference:c,fallback_order:g.length>0?g:["default"],output_location:y,risk_level:p,approval_required:p==="critical"||p==="high",estimated_tokens:E,estimated_cost:W},I=S(A,xe);if(!I.valid)throw console.error("[RoutingBrain] Invalid response schema:",I.errors),new Error(`Routing Brain returned invalid data: ${I.errors.join(", ")}`);return A}function Se(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function Ee(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function Ae(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function Pe(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function Te(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function Re(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Be(e,t){if(!e||e.length===0)return[];const s=e.filter(o=>o.status==="configured");if(s.length===0)return[];const n=[...s].sort((o,a)=>(o.priority||99)-(a.priority||99));if(t&&t!=="auto"){const o=n.filter(r=>r.type===t),a=n.filter(r=>r.type!==t);return[...o,...a].map(r=>r.id)}return n.map(o=>o.id)}function Le(){const e=i.hasConnectedNodes();return(i.get("nodes")||[]).length>0?e?`
+    <div class="intent-page">
+      <header class="page-header">
+        <div class="container">
+          <h1>New Task</h1>
+          <p class="text-muted">Describe what you want to accomplish</p>
+        </div>
+      </header>
+      
+      <main class="container">
+        <div class="intent-flow">
+          <!-- Step 1: Intent Input -->
+          <div id="intent-step-input" class="intent-step card">
+            <h2>What do you want to do?</h2>
+            <div class="form-group">
+              <textarea 
+                id="intent-text" 
+                class="form-textarea intent-textarea" 
+                placeholder="Describe your task in detail... e.g., Create a Python script that fetches weather data from OpenWeatherMap API and sends daily email summaries"
+                rows="5"
+              ></textarea>
+              <p class="form-hint">Be specific about inputs, outputs, and any preferences.</p>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Priority</label>
+              <select id="intent-priority" class="form-select">
+                <option value="low">Low - Background task</option>
+                <option value="normal" selected>Normal - Standard priority</option>
+                <option value="high">High - Urgent</option>
+                <option value="critical">Critical - Immediate attention</option>
+              </select>
+            </div>
+            
+            <div id="intent-error" class="alert alert-error hidden"></div>
+            
+            <div class="intent-actions">
+              <button onclick="analyzeAndRoute()" class="btn btn-primary btn-large" id="analyze-btn">
+                <span class="btn-icon">🧠</span>
+                Analyze & Route
+              </button>
+              <a href="#/tasks" class="btn btn-secondary">Cancel</a>
+            </div>
+          </div>
+          
+          <!-- Step 2: Routing Analysis (hidden initially) -->
+          <div id="intent-step-analysis" class="intent-step card hidden">
+            <div class="analysis-loading" id="analysis-loading">
+              <div class="spinner"></div>
+              <h3>Analyzing your intent...</h3>
+              <p class="text-muted">Matching against available capabilities and nodes</p>
+            </div>
+            
+            <div id="analysis-result" class="hidden">
+              <h2>Execution Plan</h2>
+              
+              <div class="plan-section">
+                <h4>📋 Intent Summary</h4>
+                <p id="plan-intent-text" class="plan-intent"></p>
+              </div>
+              
+              <div class="plan-grid">
+                <div class="plan-card">
+                  <span class="plan-label">Selected Node</span>
+                  <span id="plan-node-name" class="plan-value"></span>
+                  <span id="plan-node-id" class="plan-detail"></span>
+                </div>
+                
+                <div class="plan-card">
+                  <span class="plan-label">Required Capabilities</span>
+                  <div id="plan-capabilities" class="plan-tags"></div>
+                </div>
+                
+                <div class="plan-card">
+                  <span class="plan-label">Provider Preference</span>
+                  <span id="plan-provider" class="plan-value"></span>
+                </div>
+                
+                <div class="plan-card">
+                  <span class="plan-label">Risk Level</span>
+                  <span id="plan-risk" class="plan-value"></span>
+                </div>
+              </div>
+              
+              <div class="plan-section">
+                <h4>💰 Cost Estimate</h4>
+                <div class="cost-grid">
+                  <div class="cost-item">
+                    <span class="cost-label">Estimated Tokens</span>
+                    <span id="plan-tokens" class="cost-value"></span>
+                  </div>
+                  <div class="cost-item">
+                    <span class="cost-label">Estimated Cost</span>
+                    <span id="plan-cost" class="cost-value"></span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="plan-section" id="plan-approval-section">
+                <div class="alert alert-warning">
+                  <strong>⚠️ Approval Required</strong>
+                  <p>This task has elevated risk and requires your approval to proceed.</p>
+                </div>
+              </div>
+              
+              <div id="execute-error" class="alert alert-error hidden"></div>
+              
+              <div class="intent-actions">
+                <button onclick="executeTask()" class="btn btn-primary btn-large" id="execute-btn">
+                  <span class="btn-icon">🚀</span>
+                  Execute Task
+                </button>
+                <button onclick="backToIntent()" class="btn btn-secondary">Back</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  `:`
+      <div class="intent-page">
+        <header class="page-header">
+          <div class="container">
+            <h1>New Task</h1>
+            <p class="text-muted">Create and execute AI-powered tasks</p>
+          </div>
+        </header>
+        <main class="container">
+          <div class="blocked-state card">
+            <div class="blocked-icon">⏳</div>
+            <h2>Node Paired - Start Connector</h2>
+            <p>Your node is registered but not online. Start the connector on your node to execute tasks.</p>
+            <div class="blocked-actions">
+              <a href="#/nodes" class="btn btn-primary">Go to Nodes</a>
+              <button onclick="refreshNodeStatus()" class="btn btn-secondary">Refresh Status</button>
+            </div>
+          </div>
+        </main>
+      </div>
+    `:`
+      <div class="intent-page">
+        <header class="page-header">
+          <div class="container">
+            <h1>New Task</h1>
+            <p class="text-muted">Create and execute AI-powered tasks</p>
+          </div>
+        </header>
+        <main class="container">
+          <div class="blocked-state card">
+            <div class="blocked-icon">🔒</div>
+            <h2>Add a Node First</h2>
+            <p>You need to connect at least one node to create and run tasks.</p>
+            <a href="#/nodes" class="btn btn-primary">Add Node</a>
+          </div>
+        </main>
+      </div>
+    `}let m=null;window.analyzeAndRoute=async function(){const e=document.getElementById("intent-text"),t=document.getElementById("intent-priority"),s=document.getElementById("intent-error");document.getElementById("analyze-btn");const n=e.value.trim(),o=t.value;if(!n){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}s.classList.add("hidden");const r=(i.get("nodes")||[]).filter(l=>l.online&&l.status==="connected");if(r.length===0){s.textContent="No online nodes available. Start your connector first.",s.classList.remove("hidden");return}document.getElementById("intent-step-input").classList.add("hidden"),document.getElementById("intent-step-analysis").classList.remove("hidden"),document.getElementById("analysis-loading").classList.remove("hidden"),document.getElementById("analysis-result").classList.add("hidden");try{const d=await _({intent:n,priority:o,context:{available_nodes:r,configured_providers:[]},constraints:{}});m={...d,intent:n,priority:o,analyzed_at:new Date().toISOString()};const c=r.find(y=>y.id===d.selected_node_id);document.getElementById("plan-intent-text").textContent=n,document.getElementById("plan-node-name").textContent=(c==null?void 0:c.name)||"Unknown Node",document.getElementById("plan-node-id").textContent=d.selected_node_id;const g=document.getElementById("plan-capabilities");g.innerHTML=d.required_capabilities.map(y=>`<span class="capability-tag">${y}</span>`).join(""),document.getElementById("plan-provider").textContent=d.provider_preference,document.getElementById("plan-risk").textContent=d.risk_level,document.getElementById("plan-tokens").textContent=d.estimated_tokens.toLocaleString(),document.getElementById("plan-cost").textContent=`$${d.estimated_cost.toFixed(4)}`;const p=document.getElementById("plan-approval-section");d.approval_required?p.classList.remove("hidden"):p.classList.add("hidden"),document.getElementById("analysis-loading").classList.add("hidden"),document.getElementById("analysis-result").classList.remove("hidden")}catch(l){document.getElementById("analysis-loading").classList.add("hidden"),document.getElementById("intent-step-input").classList.remove("hidden"),document.getElementById("intent-step-analysis").classList.add("hidden"),s.textContent="Routing failed: "+l.message,s.classList.remove("hidden")}};window.backToIntent=function(){document.getElementById("intent-step-input").classList.remove("hidden"),document.getElementById("intent-step-analysis").classList.add("hidden"),m=null};window.executeTask=async function(){const e=document.getElementById("execute-btn"),t=document.getElementById("execute-error");if(!m){t.textContent="No routing decision available. Please analyze again.",t.classList.remove("hidden");return}e.disabled=!0,e.textContent="Creating Task...",t.classList.add("hidden");try{const s=await M(m.intent,m.priority);await D(s.id,m.selected_node_id),window.navigate(`/execution/${s.id}`)}catch(s){e.disabled=!1,e.innerHTML='<span class="btn-icon">🚀</span> Execute Task',t.textContent="Execution failed: "+s.message,t.classList.remove("hidden")}};window.refreshNodeStatus=async function(){await i.syncNodes(),window.navigate("/intent")};let f=null,v=null;function Me(e){v=e;const s=(i.get("tasks")||[]).find(l=>l.id===e);if(!s)return`
+      <div class="execution-page">
+        <header class="page-header">
+          <div class="container">
+            <a href="#/tasks" class="back-link">← Back to Tasks</a>
+            <h1>Execution</h1>
+          </div>
+        </header>
+        <main class="container">
+          <div class="loading-state card">
+            <div class="spinner"></div>
+            <p>Loading task...</p>
+          </div>
+        </main>
+      </div>
+    `;const o=(i.get("nodes")||[]).find(l=>l.id===s.node_id),a=s.status==="completed"||s.status==="failed",r=s.status==="dispatched"||s.status==="executing";return`
+    <div class="execution-page">
+      <header class="page-header">
+        <div class="container">
+          <a href="#/tasks" class="back-link">← Back to Tasks</a>
+          <h1>Execution</h1>
+          <div class="execution-status-header">
+            <span class="badge badge-${De(s.status)}">${T(s.status)}</span>
+            ${r?'<span class="live-indicator">● Live</span>':""}
+          </div>
+        </div>
+      </header>
+      
+      <main class="container">
+        <div class="execution-layout">
+          <!-- Main: Intent & Logs -->
+          <div class="execution-main">
+            <!-- Intent Card -->
+            <div class="execution-card card">
+              <h3>Intent</h3>
+              <p class="execution-intent">${s.intent}</p>
+              <div class="execution-meta">
+                <span class="meta-item">
+                  <span class="meta-label">Priority:</span>
+                  <span class="meta-value">${s.priority}</span>
+                </span>
+                <span class="meta-item">
+                  <span class="meta-label">Created:</span>
+                  <span class="meta-value">${new Date(s.created_at).toLocaleString()}</span>
+                </span>
+              </div>
+            </div>
+            
+            <!-- Live Logs -->
+            <div class="execution-card card">
+              <div class="logs-header">
+                <h3>Live Logs</h3>
+                <div class="logs-actions">
+                  <button onclick="refreshExecutionLogs()" class="btn btn-small btn-secondary">
+                    🔄 Refresh
+                  </button>
+                  <button onclick="toggleAutoScroll()" class="btn btn-small btn-secondary" id="autoscroll-btn">
+                    Auto-scroll: ON
+                  </button>
+                </div>
+              </div>
+              <div id="execution-logs" class="execution-logs">
+                <div class="logs-placeholder">
+                  ${r?'<div class="spinner-small"></div> Waiting for logs...':"No logs available"}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Result (shown when complete) -->
+            ${s.result?`
+              <div class="execution-card card result-success">
+                <h3>✅ Result</h3>
+                <pre class="result-content">${Oe(s.result)}</pre>
+              </div>
+            `:""}
+            
+            ${s.error?`
+              <div class="execution-card card result-error">
+                <h3>❌ Error</h3>
+                <pre class="error-content">${s.error}</pre>
+              </div>
+            `:""}
+          </div>
+          
+          <!-- Sidebar: Details -->
+          <div class="execution-sidebar">
+            <div class="execution-card card">
+              <h3>Task Details</h3>
+              <div class="detail-list">
+                <div class="detail-item">
+                  <span class="detail-label">Task ID</span>
+                  <span class="detail-value mono">${s.id.slice(0,8)}...</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">Status</span>
+                  <span class="detail-value">${T(s.status)}</span>
+                </div>
+                ${o?`
+                  <div class="detail-item">
+                    <span class="detail-label">Node</span>
+                    <span class="detail-value">${o.name}</span>
+                  </div>
+                  <div class="detail-item">
+                    <span class="detail-label">Node ID</span>
+                    <span class="detail-value mono">${o.id.slice(0,8)}...</span>
+                  </div>
+                `:""}
+                ${s.started_at?`
+                  <div class="detail-item">
+                    <span class="detail-label">Started</span>
+                    <span class="detail-value">${new Date(s.started_at).toLocaleTimeString()}</span>
+                  </div>
+                `:""}
+                ${s.completed_at?`
+                  <div class="detail-item">
+                    <span class="detail-label">Completed</span>
+                    <span class="detail-value">${new Date(s.completed_at).toLocaleTimeString()}</span>
+                  </div>
+                `:""}
+              </div>
+            </div>
+            
+            <!-- Actions -->
+            <div class="execution-card card">
+              <h3>Actions</h3>
+              <div class="action-list">
+                <a href="#/intent" class="btn btn-primary btn-full">New Task</a>
+                ${a?`
+                  <button onclick="rerunTask('${s.id}')" class="btn btn-secondary btn-full">
+                    Re-run Task
+                  </button>
+                `:""}
+              </div>
+            </div>
+            
+            <!-- Polling Status -->
+            <div class="execution-card card polling-status">
+              <span class="polling-indicator" id="polling-indicator">●</span>
+              <span class="polling-text">Live updates</span>
+              <span class="polling-interval">(2s)</span>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  `}function De(e){return{pending:"warning",dispatched:"info",executing:"info",completed:"success",failed:"error"}[e]||"warning"}function T(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Executing",completed:"Completed",failed:"Failed"}[e]||e}function Oe(e){if(typeof e=="string")return e;try{return JSON.stringify(e,null,2)}catch{return String(e)}}let w=!0;window.startExecutionPolling=function(e){f&&clearInterval(f),v=e;let t=2e3;loadExecutionLogs(e),f=setInterval(async()=>{if(!v)return;const n=(i.get("tasks")||[]).find(o=>o.id===v);n||await i.syncTasks(),await loadExecutionLogs(v),n&&(n.status==="completed"||n.status==="failed")&&(t=5e3)},t)};window.stopExecutionPolling=function(){f&&(clearInterval(f),f=null),v=null};window.loadExecutionLogs=async function(e){const t=document.getElementById("execution-logs");if(t)try{const s=await O(e);if(s.length===0){const a=(i.get("tasks")||[]).find(l=>l.id===e),r=a&&(a.status==="dispatched"||a.status==="executing");t.innerHTML=`
+        <div class="logs-placeholder">
+          ${r?'<div class="spinner-small"></div> Waiting for node to report logs...':"No logs available for this task"}
+        </div>
+      `;return}const n=s.map(o=>{var l,d;const a=new Date(o.created_at).toLocaleTimeString();let r="";switch(o.event_type){case"created":r='<span class="log-type">📋</span> Task created';break;case"dispatched":r=`<span class="log-type">🚀</span> Dispatched to ${(o.payload||{}).node_name||"node"}`;break;case"log":const g=((l=o.payload)==null?void 0:l.line)||"";r=`<span class="log-type">📝</span> <pre class="log-line">${R(g)}</pre>`;break;case"completed":r='<span class="log-type">✅</span> Task completed successfully';break;case"failed":const p=((d=o.payload)==null?void 0:d.error)||"Unknown error";r=`<span class="log-type">❌</span> Task failed: ${R(p)}`;break;default:r=`<span class="log-type">📌</span> ${o.event_type}`}return`
+        <div class="log-entry">
+          <span class="log-time">${a}</span>
+          <span class="log-content">${r}</span>
+        </div>
+      `}).join("");t.innerHTML=`<div class="logs-list">${n}</div>`,w&&(t.scrollTop=t.scrollHeight)}catch(s){console.error("Failed to load logs:",s),t.innerHTML=`<div class="logs-error">Failed to load logs: ${s.message}</div>`}};window.refreshExecutionLogs=function(){v&&loadExecutionLogs(v)};window.toggleAutoScroll=function(){w=!w;const e=document.getElementById("autoscroll-btn");e&&(e.textContent=`Auto-scroll: ${w?"ON":"OFF"}`)};window.rerunTask=function(e){const s=(i.get("tasks")||[]).find(n=>n.id===e);s&&(sessionStorage.setItem("rerun-intent",s.intent),window.navigate("/intent"))};function R(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}function _e(e){startExecutionPolling(e)}function We(){stopExecutionPolling()}function Fe(){const e=i.get("routingRules"),t=i.hasConnectedNodes();return t?`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1486,17 +1796,17 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       <main class="container">
         <div class="routing-layout">
           <div class="routing-main">
-            ${Ee(t)}
-            ${Re(e)}
+            ${Ge(t)}
+            ${He(e)}
           </div>
 
           <div class="routing-sidebar">
-            ${Te()}
+            ${je()}
           </div>
         </div>
       </main>
     </div>
-  `:Ae()}function Ae(){return`
+  `:qe()}function qe(){return`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1513,9 +1823,9 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </main>
 
-      ${Pe()}
+      ${Ue()}
     </div>
-  `}function Pe(){return`
+  `}function Ue(){return`
     <div id="routing-gating-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideRoutingGatingModal()"></div>
       <div class="modal-content">
@@ -1537,7 +1847,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.remove("hidden")};window.hideRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.add("hidden")};function Ee(e){return`
+  `}window.showRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.remove("hidden")};window.hideRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.add("hidden")};function Ge(e){return`
     <div class="routing-simulator card">
       <h2>Test Routing Brain</h2>
       <p class="text-muted">Enter a task intent to see how the routing brain would handle it</p>
@@ -1580,7 +1890,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <!-- Results rendered here -->
       </div>
     </div>
-  `}function Re(e){return`
+  `}function He(e){return`
     <div class="routing-rules card">
       <div class="rules-header">
         <h2>Routing Rules</h2>
@@ -1608,7 +1918,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       `}
     </div>
-  `}function Te(){const e=a.get("setup.routing.data");return`
+  `}function je(){const e=i.get("setup.routing.data");return`
     <div class="routing-settings card">
       <h3>Routing Settings</h3>
       
@@ -1641,7 +1951,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </ol>
       </div>
     </div>
-  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=a.getConnectedNodes(),i=a.getWorkingProviders(),o=await be({intent:e,context:{available_nodes:n,configured_providers:i},constraints:{priority:t}});if(!o.selected_node_id||!o.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(l=>l.id===o.selected_node_id);s.innerHTML=`
+  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=i.getConnectedNodes(),o=i.getWorkingProviders(),a=await _({intent:e,context:{available_nodes:n,configured_providers:o},constraints:{priority:t}});if(!a.selected_node_id||!a.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(l=>l.id===a.selected_node_id);s.innerHTML=`
       <div class="routing-decision">
         <h3>Routing Decision</h3>
         
@@ -1649,46 +1959,46 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
           <h4>Selected Node</h4>
           <div class="decision-value">
             <span class="node-badge">${(r==null?void 0:r.name)||"Unknown"}</span>
-            <span class="badge ${o.risk_level==="critical"?"badge-error":o.risk_level==="high"?"badge-warning":"badge-success"}">${o.risk_level} risk</span>
+            <span class="badge ${a.risk_level==="critical"?"badge-error":a.risk_level==="high"?"badge-warning":"badge-success"}">${a.risk_level} risk</span>
           </div>
         </div>
         
         <div class="decision-section">
           <h4>Required Capabilities</h4>
           <div class="capabilities-list">
-            ${o.required_capabilities.map(l=>`<span class="capability-tag">${l}</span>`).join("")}
+            ${a.required_capabilities.map(l=>`<span class="capability-tag">${l}</span>`).join("")}
           </div>
         </div>
         
         <div class="decision-section">
           <h4>Provider Preference</h4>
-          <div class="decision-value">${o.provider_preference}</div>
+          <div class="decision-value">${a.provider_preference}</div>
         </div>
         
         <div class="decision-section">
           <h4>Fallback Order</h4>
           <ol class="fallback-list">
-            ${o.fallback_order.map(l=>{const d=i.find(p=>p.id===l);return`<li>${(d==null?void 0:d.name)||l}</li>`}).join("")}
+            ${a.fallback_order.map(l=>{const d=o.find(c=>c.id===l);return`<li>${(d==null?void 0:d.name)||l}</li>`}).join("")}
           </ol>
         </div>
         
         <div class="decision-section">
           <h4>Output Location</h4>
-          <code class="output-path">${o.output_location.path}</code>
+          <code class="output-path">${a.output_location.path}</code>
         </div>
         
         <div class="decision-section">
           <h4>Approval Required</h4>
           <div class="decision-value">
-            ${o.approval_required?'<span class="badge badge-warning">Yes - Requires approval</span>':'<span class="badge badge-success">No - Auto-approved</span>'}
+            ${a.approval_required?'<span class="badge badge-warning">Yes - Requires approval</span>':'<span class="badge badge-success">No - Auto-approved</span>'}
           </div>
         </div>
         
         <div class="decision-section">
           <h4>Estimated Cost</h4>
           <div class="decision-value">
-            ~${o.estimated_tokens.toLocaleString()} tokens
-            (${o.estimated_cost===0?"Free":"$"+o.estimated_cost.toFixed(4)})
+            ~${a.estimated_tokens.toLocaleString()} tokens
+            (${a.estimated_cost===0?"Free":"$"+a.estimated_cost.toFixed(4)})
           </div>
         </div>
         
@@ -1701,14 +2011,14 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
           </button>
         </div>
       </div>
-    `,a.set("setup.routing.completed",!0)}catch(n){s.innerHTML=`
+    `,i.set("setup.routing.completed",!0)}catch(n){s.innerHTML=`
       <div class="routing-error">
         <span class="error-icon">❌</span>
         <h4>Routing Failed</h4>
         <p>${n.message}</p>
         <button onclick="simulateRouting()" class="btn btn-secondary">Retry</button>
       </div>
-    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=a.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),a.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=a.get("routingRules");t.splice(e,1),a.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;a.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;a.set("setup.routing.data.fallbackEnabled",e)};const xe={workspace:"🏢",nodes:"🖥️",storage:"💾",providers:"🔌",routing:"📡",healthChecks:"✅"},Be={workspace:"#/setup/workspace",nodes:"#/nodes",storage:"#/setup/storage",providers:"#/providers",routing:"#/routing",healthChecks:"#/setup/health"};function Me(){var s,n;const e=a.getSetupProgress(),t=a.get("auth");return`
+    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=i.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),i.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=i.get("routingRules");t.splice(e,1),i.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;i.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;i.set("setup.routing.data.fallbackEnabled",e)};const Ke={workspace:"🏢",nodes:"🖥️",storage:"💾",providers:"🔌",routing:"📡",healthChecks:"✅"},ze={workspace:"#/setup/workspace",nodes:"#/nodes",storage:"#/setup/storage",providers:"#/providers",routing:"#/routing",healthChecks:"#/setup/health"};function Ye(){var s,n;const e=i.getSetupProgress(),t=i.get("auth");return`
     <div class="settings-page">
       <header class="page-header">
         <div class="container">
@@ -1725,7 +2035,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
             <p class="text-muted">Return to any setup step to make changes</p>
             
             <div class="settings-modules">
-              ${e.modules.map(i=>Le(i)).join("")}
+              ${e.modules.map(o=>Ve(o)).join("")}
             </div>
             
             ${e.percentage<100?`
@@ -1809,7 +2119,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </main>
     </div>
-  `}function Le(e){const t=xe[e.name],s=Be[e.name],n=e.completed;return`
+  `}function Ve(e){const t=Ke[e.name],s=ze[e.name],n=e.completed;return`
     <a href="${s}" class="module-link ${n?"completed":"pending"}">
       <span class="module-icon">${t}</span>
       <div class="module-info">
@@ -1820,11 +2130,11 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </div>
       <span class="module-arrow">→</span>
     </a>
-  `}window.logout=function(){confirm("Sign out of Mission Control?")&&(a.set("auth",{isAuthenticated:!1,user:null,token:null}),window.navigate("/login"))};window.resetAllData=function(){if(confirm(`WARNING: This will delete ALL data including nodes, tasks, and settings.
+  `}window.logout=function(){confirm("Sign out of Mission Control?")&&(i.set("auth",{isAuthenticated:!1,user:null,token:null}),window.navigate("/login"))};window.resetAllData=function(){if(confirm(`WARNING: This will delete ALL data including nodes, tasks, and settings.
 
 This cannot be undone.
 
-Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}a.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:I,requiresAuth:!0},"/login":{render:F,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:q,requiresAuth:!0},"/setup/workspace":{render:H,requiresAuth:!0},"/setup/storage":{render:z,requiresAuth:!0},"/setup/health":{render:V,requiresAuth:!0},"/dashboard":{render:I,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:J,requiresAuth:!0},"/providers":{render:oe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ue,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:me,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>he(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:Se,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Me,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:_e,requiresAuth:!0}};function De(e){var i,o;const t=a.get("auth");return t.isAuthenticated?`
+Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}i.reset(),alert("All data has been reset"),window.navigate("/setup")}};let k=null,B=null;const h={"/":{render:P,requiresAuth:!0},"/login":{render:V,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:Q,requiresAuth:!0},"/setup/workspace":{render:te,requiresAuth:!0},"/setup/storage":{render:ne,requiresAuth:!0},"/setup/health":{render:ae,requiresAuth:!0},"/dashboard":{render:P,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:re,requiresAuth:!0},"/providers":{render:ve,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ke,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:$e,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>Ne(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/intent":{render:Le,requiresAuth:!0},"/execution/:id":{render:e=>Me(e),requiresAuth:!0,dynamic:!0,onMount:_e,onUnmount:We},"/routing":{render:Fe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Ye,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Je,requiresAuth:!0}};function Xe(e){var o,a;const t=i.get("auth");return t.isAuthenticated?`
     <header class="global-header">
       <div class="container">
         <div class="header-brand">
@@ -1832,13 +2142,13 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
           <span class="header-title">KDashX3</span>
         </div>
         <nav class="header-nav">
-          ${[{path:"/dashboard",label:"Dashboard"},{path:"/nodes",label:"Nodes"},{path:"/providers",label:"Providers"},{path:"/routing",label:"Routing"},{path:"/settings",label:"Settings"}].map(r=>{const l=e===r.path||e.startsWith(r.path+"/");return`<a href="#${r.path}" class="${l?"active":""}">${r.label}</a>`}).join("")}
+          ${[{path:"/dashboard",label:"Dashboard"},{path:"/intent",label:"New Task"},{path:"/nodes",label:"Nodes"},{path:"/providers",label:"Providers"},{path:"/routing",label:"Routing"},{path:"/settings",label:"Settings"}].map(r=>{const l=e===r.path||e.startsWith(r.path+"/");return`<a href="#${r.path}" class="${l?"active":""}">${r.label}</a>`}).join("")}
         </nav>
         <div class="header-user">
           <div class="user-menu">
             <button class="user-menu-btn" onclick="toggleUserMenu()">
               <span>👤</span>
-              <span>${((o=(i=t.user)==null?void 0:i.email)==null?void 0:o.split("@")[0])||"User"}</span>
+              <span>${((a=(o=t.user)==null?void 0:o.email)==null?void 0:a.split("@")[0])||"User"}</span>
               <span>▼</span>
             </button>
             <div id="user-dropdown" class="user-dropdown hidden">
@@ -1848,7 +2158,7 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </header>
-  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){a.logout(),window.location.hash="/login",u("/login",!0)};function Oe(e){const t=g[e]||g["/dashboard"],s=a.get("auth"),n=a.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const i of t.blockedBy){const o=n.find(r=>r.id===i);if(o)return{allowed:!1,blockedBy:o}}return{allowed:!0}}function _e(){const t=a.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
+  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){i.logout(),window.location.hash="/login",b("/login",!0)};function Qe(e){const t=h[e]||h["/dashboard"],s=i.get("auth"),n=i.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const o of t.blockedBy){const a=n.find(r=>r.id===o);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Je(){const t=i.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
     <div class="locked-page">
       <div class="locked-content">
         <div class="lock-icon">🔒</div>
@@ -1860,19 +2170,19 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </div>
-  `}async function u(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=Oe(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,N("/locked");return}}await N(e)}async function N(e){const t=document.getElementById("app"),s=g[e]||g["/dashboard"],n=a.get("auth");t.innerHTML=`
+  `}async function b(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=Qe(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,b(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,L("/locked");return}}await L(e)}function Ze(e){if(h[e])return{route:h[e],params:null};for(const[t,s]of Object.entries(h))if(s.dynamic){const n=t.replace(/:\w+/g,"([^/]+)"),o=new RegExp(`^${n}$`),a=e.match(o);if(a)return{route:s,params:a[1]}}return{route:h["/dashboard"],params:null}}async function L(e){const t=document.getElementById("app"),s=i.get("auth");t.innerHTML=`
     <div class="loading-screen">
       <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
-  `,await new Promise(i=>setTimeout(i,300));try{const i=e==="/setup"||e.startsWith("/setup/"),o=e==="/login",r=o?"":De(e);if(n.isAuthenticated&&!a.isSetupComplete()&&!i&&!o){const l=await s.render();t.innerHTML=r+We()+l}else{const l=await s.render();t.innerHTML=r+l}Fe()}catch(i){console.error("Render error:",i),t.innerHTML=`
+  `,await new Promise(n=>setTimeout(n,300));try{k&&k.onUnmount&&k.onUnmount(B);const{route:n,params:o}=Ze(e);k=n,B=o;const a=e==="/setup"||e.startsWith("/setup/"),r=e==="/login",l=r?"":Xe(e);let d;o&&n.render.length>0?d=await n.render(o):d=await n.render(),s.isAuthenticated&&!i.isSetupComplete()&&!a&&!r?t.innerHTML=l+et()+d:t.innerHTML=l+d,tt(),n.onMount&&n.onMount(o)}catch(n){console.error("Render error:",n),t.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
-        <p>${i.message||"Something went wrong"}</p>
+        <p>${n.message||"Something went wrong"}</p>
         <button onclick="navigate('/dashboard')" class="btn btn-primary">Go Home</button>
       </div>
-    `}}function We(){const e=a.getSetupProgress();return`
+    `}}function et(){const e=i.getSetupProgress();return`
     <div class="setup-banner">
       <div class="setup-banner-content">
         <span class="setup-icon">⚙️</span>
@@ -1886,4 +2196,4 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         <a href="#/setup" class="btn btn-small btn-primary">Continue Setup</a>
       </div>
     </div>
-  `}function Fe(){document.querySelectorAll('a[href^="#/"]').forEach(e=>{e.addEventListener("click",t=>{const s=e.getAttribute("href");s.startsWith("#/")&&(t.preventDefault(),u(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const e=window.location.hash.slice(1)||"/";u(e,!0)});document.addEventListener("DOMContentLoaded",()=>{const e=window.location.hash.slice(1)||"/";u(e,!0)});window.navigate=u;window.store=a;
+  `}function tt(){document.querySelectorAll('a[href^="#/"]').forEach(e=>{e.addEventListener("click",t=>{const s=e.getAttribute("href");s.startsWith("#/")&&(t.preventDefault(),b(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const e=window.location.hash.slice(1)||"/";b(e,!0)});document.addEventListener("DOMContentLoaded",()=>{const e=window.location.hash.slice(1)||"/";b(e,!0)});window.navigate=b;window.store=i;
