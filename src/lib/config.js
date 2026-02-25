@@ -2,8 +2,6 @@
  * KDashX3 Configuration
  */
 
-// Use Cloudflare Tunnel HTTPS endpoint
-// NOTE: This is a temporary tunnel URL. For production, set up a named Cloudflare Tunnel
-// See: ~/TUNNEL_SETUP.md for instructions
-export const API_BASE_URL = 'https://authorized-totals-sauce-processes.trycloudflare.com';
-export const WS_BASE_URL = 'wss://authorized-totals-sauce-processes.trycloudflare.com';
+// Stable Tailscale HTTPS endpoint
+export const API_BASE_URL = 'https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net';
+export const WS_BASE_URL = 'wss://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net';

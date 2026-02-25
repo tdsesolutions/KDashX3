@@ -765,7 +765,7 @@ export function renderHealthChecks() {
 
 window.testBackendConnection = async function() {
   try {
-    const response = await fetch('https://authorized-totals-sauce-processes.trycloudflare.com/health');
+    const response = await fetch('https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/health');
     if (response.ok) {
       alert('✓ Backend connection successful');
     } else {
