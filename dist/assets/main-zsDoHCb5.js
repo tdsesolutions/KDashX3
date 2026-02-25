@@ -1,4 +1,4 @@
-(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))n(i);new MutationObserver(i=>{for(const a of i)if(a.type==="childList")for(const r of a.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(i){const a={};return i.integrity&&(a.integrity=i.integrity),i.referrerPolicy&&(a.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?a.credentials="include":i.crossOrigin==="anonymous"?a.credentials="omit":a.credentials="same-origin",a}function n(i){if(i.ep)return;i.ep=!0;const a=s(i);fetch(i.href,a)}})();const b="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net";function P(){return localStorage.getItem("kdashx3-token")}async function c(e,t={}){const s=`${b}${e}`,n=P(),i={"Content-Type":"application/json",...t.headers};n&&(i.Authorization=`Bearer ${n}`);const a=await fetch(s,{...t,headers:i});if(!a.ok){const r=await a.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${a.status}`)}return a.json()}async function E(e,t){return c("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function N(e,t){return c("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function x(){return c("/pairing-tokens",{method:"POST"})}async function R(){return c("/nodes")}async function B(){return c("/tasks")}async function L(e,t="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function M(e,t){return c(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function D(e){return c(`/tasks/${e}/events`)}async function O(e){return c(`/nodes/${e}/disconnect`,{method:"POST"})}async function _(e){return c(`/nodes/${e}`,{method:"DELETE"})}class F{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),i={...this.state};let a=i;for(let r=0;r<n.length-1;r++)a[n[r]]={...a[n[r]]},a=a[n[r]];a[n[n.length-1]]=s,this.state=i,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await N(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await E(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await R();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await B();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasConnectedNodes()||t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=t.filter(i=>{var a;return(a=s[i])==null?void 0:a.completed}).length;return{completed:n,total:t.length,percentage:Math.round(n/t.length*100),modules:t.map(i=>{var a;return{name:i,completed:((a=s[i])==null?void 0:a.completed)||!1,label:this.getModuleLabel(i)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const o=new F;function q(){return`
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const i of document.querySelectorAll('link[rel="modulepreload"]'))n(i);new MutationObserver(i=>{for(const a of i)if(a.type==="childList")for(const r of a.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(i){const a={};return i.integrity&&(a.integrity=i.integrity),i.referrerPolicy&&(a.referrerPolicy=i.referrerPolicy),i.crossOrigin==="use-credentials"?a.credentials="include":i.crossOrigin==="anonymous"?a.credentials="omit":a.credentials="same-origin",a}function n(i){if(i.ep)return;i.ep=!0;const a=s(i);fetch(i.href,a)}})();const b="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net";function P(){return localStorage.getItem("kdashx3-token")}async function c(e,t={}){const s=`${b}${e}`,n=P(),i={"Content-Type":"application/json",...t.headers};n&&(i.Authorization=`Bearer ${n}`);const a=await fetch(s,{...t,headers:i});if(!a.ok){const r=await a.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${a.status}`)}return a.json()}async function E(e,t){return c("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function N(e,t){return c("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function R(){return c("/pairing-tokens",{method:"POST"})}async function x(){return c("/nodes")}async function B(){return c("/tasks")}async function L(e,t="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function M(e,t){return c(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function D(e){return c(`/tasks/${e}/events`)}async function O(e){return c(`/nodes/${e}/disconnect`,{method:"POST"})}async function _(e){return c(`/nodes/${e}`,{method:"DELETE"})}class F{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),i={...this.state};let a=i;for(let r=0;r<n.length-1;r++)a[n[r]]={...a[n[r]]},a=a[n[r]];a[n[n.length-1]]=s,this.state=i,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await N(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await E(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await x();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await B();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasConnectedNodes()||t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=t.filter(i=>{var a;return(a=s[i])==null?void 0:a.completed}).length;return{completed:n,total:t.length,percentage:Math.round(n/t.length*100),modules:t.map(i=>{var a;return{name:i,completed:((a=s[i])==null?void 0:a.completed)||!1,label:this.getModuleLabel(i)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const o=new F;function q(){return`
     <div class="login-page">
       <div class="login-container card">
         <div class="login-brand">
@@ -160,7 +160,7 @@
       <div class="instruction-content">
         <div class="instruction-header">
           <h4>🖥️ What is a Node?</h4>
-          <p>Nodes are machines (computers, servers, VMs) that run your AI agents. Mission Control orchestrates tasks across all connected nodes. <strong>Important:</strong> API keys are stored on your nodes, NOT in Mission Control.</p>
+          <p>Nodes are machines (computers, servers, VMs) that run your AI agents. KDashX3 orchestrates tasks across all your connected nodes. <strong>Important:</strong> API keys are stored encrypted on YOUR nodes—never in KDashX3 or the backend.</p>
         </div>
         
         <div class="instruction-section">
@@ -192,35 +192,40 @@
         <div class="instruction-steps">
           <h5>🚀 How to Add a Node:</h5>
           <ol>
-            <li><strong>Click "Add Node" below</strong> to generate a pairing token</li>
+            <li><strong>Click "Add Node" below</strong> to generate a pairing token for your workspace</li>
             <li>
               <strong>On your server/computer,</strong> download the node connector:
-              <code>curl -o connector.js https://kdashx3.io/connector.js</code>
+              <code>curl -o connector.js https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/connector.js</code>
             </li>
             <li>
               <strong>Run the connector with your token:</strong>
-              <code>node connector.js --token [YOUR_TOKEN] --name "My Node"</code>
+              <code>node connector.js --api https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net --token [YOUR_TOKEN] --name "My Node"</code>
             </li>
             <li>
               <strong>Add API keys on your node:</strong>
               <code>export OPENAI_API_KEY=sk-...</code> or create ~/.claw/providers/openai.json
             </li>
-            <li><strong>Done!</strong> Node appears as "Connected" in Mission Control</li>
+            <li><strong>Done!</strong> Node appears as "Connected" in your KDashX3 Dashboard</li>
           </ol>
+        </div>
+        
+        <div class="instruction-section">
+          <h5>💡 What is connector.js?</h5>
+          <p>The connector.js is a small Node.js program that runs on YOUR machine and connects to the KDashX3 backend (control plane). It maintains a secure WebSocket connection, receives task assignments, and executes them on your node. Your API keys never leave your machine.</p>
         </div>
         
         <div class="instruction-section">
           <h5>⚠️ Requirements:</h5>
           <ul>
             <li>Ubuntu 20.04+, Debian 11+, macOS 12+, or Windows with WSL2</li>
-            <li>Node.js 18+ (installed automatically)</li>
+            <li>Node.js 18+</li>
             <li>Stable internet connection</li>
             <li>~1GB disk space minimum, 5GB recommended</li>
           </ul>
         </div>
         
         <div class="instruction-tip">
-          <strong>🔒 BYO Security:</strong> API keys are stored encrypted on YOUR nodes only. Mission Control never sees or stores your keys. This is the "Bring Your Own" architecture.
+          <strong>🔒 BYO Security:</strong> API keys are stored encrypted on YOUR nodes only. KDashX3 never sees or stores your provider keys. Each user's nodes are isolated by workspace—your nodes are only visible to you.
         </div>
       </div>
     `,storage:`
@@ -406,7 +411,7 @@
           <strong>✨ Tip:</strong> Run health checks regularly to catch issues early.
         </div>
       </div>
-    `}[e]||""}function $(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function G(){var t,s;const e=o.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
+    `}[e]||""}function $(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function K(){var t,s;const e=o.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -432,7 +437,7 @@
           <div class="form-group">
             <label class="form-label">Timezone</label>
             <select id="timezone" class="form-select">
-              ${K(e.timezone)}
+              ${G(e.timezone)}
             </select>
             <p class="form-help">Used for scheduling tasks and displaying timestamps</p>
           </div>
@@ -458,7 +463,7 @@
         </div>
       </main>
     </div>
-  `}function K(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}o.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),o.set("setup.workspace.completed",!0),window.navigate("/setup")};function j(){var t;const e=o.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
+  `}function G(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}o.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),o.set("setup.workspace.completed",!0),window.navigate("/setup")};function j(){var t;const e=o.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -747,7 +752,7 @@
         </div>
       </main>
     </div>
-  `:Q(s)}function V(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function Q(e){return`
+  `:X(s)}function V(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function X(e){return`
     <div class="dashboard-page">
       <header class="page-header">
         <div class="container">
@@ -783,7 +788,7 @@
         </div>
       </main>
     </div>
-  `}function J(){const e=o.get("nodes")||[],t=e.length>0;return o.syncNodes(),`
+  `}function Q(){const e=o.get("nodes")||[],t=e.length>0;return o.syncNodes(),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -802,12 +807,12 @@
           </button>
         </div>
         
-        ${t?X(e):ee()}
+        ${t?J(e):ee()}
       </main>
       
       ${te()}
     </div>
-  `}function X(e){return`
+  `}function J(e){return`
     <div class="nodes-list">
       ${e.map(t=>Z(t)).join("")}
     </div>
@@ -857,7 +862,7 @@
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Connected</h2>
       <p class="empty-description">
-        Add your first node to start executing tasks. Nodes are where your API keys live.
+        Add your first node to start executing tasks. Nodes are where your API keys live—encrypted on your machines, never in KDashX3.
       </p>
       <button onclick="showAddNodeModal()" class="btn btn-primary">
         Add Your First Node
@@ -913,7 +918,7 @@
         </div>
       </div>
     </div>
-  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await x(),i=`curl -o connector.js ${b}/connector.js`,a=`node connector.js --api ${b} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=i,document.getElementById("pairing-command").textContent=a,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=o.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
+  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await R(),i=`curl -o connector.js ${b}/connector.js`,a=`node connector.js --api ${b} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=i,document.getElementById("pairing-command").textContent=a,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=o.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
 Status: ${t.status}
 Online: ${t.online?"Yes":"No"}
 Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};window.disconnectNodeById=async function(e){if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await O(e),await o.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(confirm("Permanently remove this node? This cannot be undone."))try{await _(e);const t=o.get("nodes").filter(s=>s.id!==e);o.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function se(){const e=o.getConnectedNodes();return e.length>0?`
@@ -1564,7 +1569,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
 
 This cannot be undone.
 
-Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}o.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:I,requiresAuth:!0},"/login":{render:q,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:U,requiresAuth:!0},"/setup/workspace":{render:G,requiresAuth:!0},"/setup/storage":{render:j,requiresAuth:!0},"/setup/health":{render:Y,requiresAuth:!0},"/dashboard":{render:I,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:J,requiresAuth:!0},"/providers":{render:se,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:de,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:pe,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>ge(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:$e,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Ee,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Be,requiresAuth:!0}};function xe(e){var i,a;const t=o.get("auth");return t.isAuthenticated?`
+Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}o.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:I,requiresAuth:!0},"/login":{render:q,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:U,requiresAuth:!0},"/setup/workspace":{render:K,requiresAuth:!0},"/setup/storage":{render:j,requiresAuth:!0},"/setup/health":{render:Y,requiresAuth:!0},"/dashboard":{render:I,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Q,requiresAuth:!0},"/providers":{render:se,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:de,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:pe,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>ge(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:$e,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Ee,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Be,requiresAuth:!0}};function Re(e){var i,a;const t=o.get("auth");return t.isAuthenticated?`
     <header class="global-header">
       <div class="container">
         <div class="header-brand">
@@ -1588,7 +1593,7 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </header>
-  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){o.logout(),window.location.hash="/login",u("/login",!0)};function Re(e){const t=g[e]||g["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const i of t.blockedBy){const a=n.find(r=>r.id===i);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Be(){const t=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
+  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){o.logout(),window.location.hash="/login",u("/login",!0)};function xe(e){const t=g[e]||g["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const i of t.blockedBy){const a=n.find(r=>r.id===i);if(a)return{allowed:!1,blockedBy:a}}return{allowed:!0}}function Be(){const t=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
     <div class="locked-page">
       <div class="locked-content">
         <div class="lock-icon">🔒</div>
@@ -1600,13 +1605,13 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </div>
-  `}async function u(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=Re(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,S("/locked");return}}await S(e)}async function S(e){const t=document.getElementById("app"),s=g[e]||g["/dashboard"],n=o.get("auth");t.innerHTML=`
+  `}async function u(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=xe(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,S("/locked");return}}await S(e)}async function S(e){const t=document.getElementById("app"),s=g[e]||g["/dashboard"],n=o.get("auth");t.innerHTML=`
     <div class="loading-screen">
       <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
-  `,await new Promise(i=>setTimeout(i,300));try{const i=e==="/setup"||e.startsWith("/setup/"),a=e==="/login",r=a?"":xe(e);if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&!a){const l=await s.render();t.innerHTML=r+Le()+l}else{const l=await s.render();t.innerHTML=r+l}Me()}catch(i){console.error("Render error:",i),t.innerHTML=`
+  `,await new Promise(i=>setTimeout(i,300));try{const i=e==="/setup"||e.startsWith("/setup/"),a=e==="/login",r=a?"":Re(e);if(n.isAuthenticated&&!o.isSetupComplete()&&!i&&!a){const l=await s.render();t.innerHTML=r+Le()+l}else{const l=await s.render();t.innerHTML=r+l}Me()}catch(i){console.error("Render error:",i),t.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
         <p>${i.message||"Something went wrong"}</p>

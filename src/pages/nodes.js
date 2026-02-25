@@ -113,7 +113,7 @@ function renderEmptyState() {
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Connected</h2>
       <p class="empty-description">
-        Add your first node to start executing tasks. Nodes are where your API keys live.
+        Add your first node to start executing tasks. Nodes are where your API keys live—encrypted on your machines, never in KDashX3.
       </p>
       <button onclick="showAddNodeModal()" class="btn btn-primary">
         Add Your First Node

@@ -171,7 +171,7 @@ function getModuleInstructions(moduleName) {
       <div class="instruction-content">
         <div class="instruction-header">
           <h4>🖥️ What is a Node?</h4>
-          <p>Nodes are machines (computers, servers, VMs) that run your AI agents. Mission Control orchestrates tasks across all connected nodes. <strong>Important:</strong> API keys are stored on your nodes, NOT in Mission Control.</p>
+          <p>Nodes are machines (computers, servers, VMs) that run your AI agents. KDashX3 orchestrates tasks across all your connected nodes. <strong>Important:</strong> API keys are stored encrypted on YOUR nodes—never in KDashX3 or the backend.</p>
         </div>
         
         <div class="instruction-section">
@@ -203,35 +203,40 @@ function getModuleInstructions(moduleName) {
         <div class="instruction-steps">
           <h5>🚀 How to Add a Node:</h5>
           <ol>
-            <li><strong>Click "Add Node" below</strong> to generate a pairing token</li>
+            <li><strong>Click "Add Node" below</strong> to generate a pairing token for your workspace</li>
             <li>
               <strong>On your server/computer,</strong> download the node connector:
-              <code>curl -o connector.js https://kdashx3.io/connector.js</code>
+              <code>curl -o connector.js https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/connector.js</code>
             </li>
             <li>
               <strong>Run the connector with your token:</strong>
-              <code>node connector.js --token [YOUR_TOKEN] --name "My Node"</code>
+              <code>node connector.js --api https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net --token [YOUR_TOKEN] --name "My Node"</code>
             </li>
             <li>
               <strong>Add API keys on your node:</strong>
               <code>export OPENAI_API_KEY=sk-...</code> or create ~/.claw/providers/openai.json
             </li>
-            <li><strong>Done!</strong> Node appears as "Connected" in Mission Control</li>
+            <li><strong>Done!</strong> Node appears as "Connected" in your KDashX3 Dashboard</li>
           </ol>
+        </div>
+        
+        <div class="instruction-section">
+          <h5>💡 What is connector.js?</h5>
+          <p>The connector.js is a small Node.js program that runs on YOUR machine and connects to the KDashX3 backend (control plane). It maintains a secure WebSocket connection, receives task assignments, and executes them on your node. Your API keys never leave your machine.</p>
         </div>
         
         <div class="instruction-section">
           <h5>⚠️ Requirements:</h5>
           <ul>
             <li>Ubuntu 20.04+, Debian 11+, macOS 12+, or Windows with WSL2</li>
-            <li>Node.js 18+ (installed automatically)</li>
+            <li>Node.js 18+</li>
             <li>Stable internet connection</li>
             <li>~1GB disk space minimum, 5GB recommended</li>
           </ul>
         </div>
         
         <div class="instruction-tip">
-          <strong>🔒 BYO Security:</strong> API keys are stored encrypted on YOUR nodes only. Mission Control never sees or stores your keys. This is the "Bring Your Own" architecture.
+          <strong>🔒 BYO Security:</strong> API keys are stored encrypted on YOUR nodes only. KDashX3 never sees or stores your provider keys. Each user's nodes are isolated by workspace—your nodes are only visible to you.
         </div>
       </div>
     `,
