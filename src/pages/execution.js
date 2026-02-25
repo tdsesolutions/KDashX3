@@ -356,6 +356,31 @@ function escapeHtml(text) {
 
 // Lifecycle hooks for polling
 export function onExecutionMount(taskId) {
+  // First try to fetch task if not in store
+  const tasks = store.get('tasks') || [];
+  const task = tasks.find(t => t.id === taskId);
+  
+  if (!task) {
+    // Fetch task from API
+    getTask(taskId).then(fetchedTask => {
+      if (fetchedTask) {
+        // Update store with fetched task
+        const currentTasks = store.get('tasks') || [];
+        const existingIndex = currentTasks.findIndex(t => t.id === fetchedTask.id);
+        if (existingIndex >= 0) {
+          currentTasks[existingIndex] = fetchedTask;
+        } else {
+          currentTasks.push(fetchedTask);
+        }
+        store.set('tasks', currentTasks);
+        // Re-render
+        window.navigate(`/execution/${taskId}`, true);
+      }
+    }).catch(() => {
+      // Task fetch failed, will show "not found" on re-render
+    });
+  }
+  
   startExecutionPolling(taskId);
 }
 

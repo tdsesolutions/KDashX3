@@ -8,8 +8,7 @@ echo ""
 
 FAILED=0
 API_URL="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net"
-CONNECTOR_PID=""
-TEST_DIR="/tmp/validation-$$"
+TEST_DIR="/tmp/val-$$"
 mkdir -p "$TEST_DIR"
 
 # Cleanup function
@@ -17,7 +16,6 @@ cleanup() {
   echo ""
   echo "=== CLEANUP ==="
   if [ -n "$CONNECTOR_PID" ]; then
-    echo "Stopping test connector (PID: $CONNECTOR_PID)..."
     kill $CONNECTOR_PID 2>/dev/null || true
     wait $CONNECTOR_PID 2>/dev/null || true
   fi
@@ -31,7 +29,6 @@ echo "[1/5] Building frontend..."
 cd ~/KDashX3
 if npm run build > "$TEST_DIR/build.log" 2>&1; then
     echo "✅ Build successful"
-    BUILD_EXIT=0
 else
     echo "❌ Build failed"
     tail -20 "$TEST_DIR/build.log"
@@ -39,188 +36,127 @@ else
 fi
 echo ""
 
-# Step 2: Tenant isolation proof
+# Step 2: Tenant proof
 echo "[2/5] Running tenant isolation proof..."
 if bash scripts/tenant-proof.sh > "$TEST_DIR/tenant.log" 2>&1; then
     echo "✅ Tenant isolation verified"
-    TENANT_EXIT=0
 else
     echo "❌ Tenant isolation failed"
-    tail -20 "$TEST_DIR/tenant.log"
     exit 1
 fi
 echo ""
 
-# Step 3: Verify backend endpoints
+# Step 3: Backend endpoints
 echo "[3/5] Verifying backend endpoints..."
-
-HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/health" || echo "000")
-if [ "$HEALTH_STATUS" -eq 200 ]; then
-    echo "✅ Health endpoint: HTTP $HEALTH_STATUS"
+HEALTH=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/health")
+CONN=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/connector.js")
+if [ "$HEALTH" -eq 200 ] && [ "$CONN" -eq 200 ]; then
+    echo "✅ Health: HTTP $HEALTH"
+    echo "✅ Connector: HTTP $CONN"
 else
-    echo "❌ Health endpoint: HTTP $HEALTH_STATUS"
-    exit 1
-fi
-
-CONNECTOR_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$API_URL/connector.js" || echo "000")
-if [ "$CONNECTOR_STATUS" -eq 200 ]; then
-    echo "✅ Connector.js endpoint: HTTP $CONNECTOR_STATUS"
-else
-    echo "❌ Connector.js endpoint: HTTP $CONNECTOR_STATUS"
+    echo "❌ Backend check failed"
     exit 1
 fi
 echo ""
 
-# Step 4: Start test connector and run Phase A
-echo "[4/5] Setting up test environment for Phase A..."
+# Step 4: Setup test environment
+echo "[4/5] Setting up Phase A test environment..."
 
-# Create test user
+# Create user
 TEST_EMAIL="valtest_$(date +%s)@example.com"
 TEST_PASS="testpass123"
+REG=$(curl -s -X POST "$API_URL/auth/register" -H "Content-Type: application/json" -d "{\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASS\"}")
+AUTH=$(echo "$REG" | grep -o '"token":"[^"]*"' | cut -d'"' -f4)
 
-echo "Creating test user..."
-REG_RESULT=$(curl -s -X POST "$API_URL/auth/register" \
-  -H "Content-Type: application/json" \
-  -d "{\"email\":\"$TEST_EMAIL\",\"password\":\"$TEST_PASS\"}" 2>/dev/null || echo '{"error":"register failed"}')
-
-AUTH_TOKEN=$(echo "$REG_RESULT" | grep -o '"token":"[^"]*"' | cut -d'"' -f4 || echo "")
-
-if [ -z "$AUTH_TOKEN" ]; then
+if [ -z "$AUTH" ]; then
     echo "❌ Failed to create test user"
-    echo "Response: $REG_RESULT"
     exit 1
 fi
-echo "✅ Test user created"
+echo "✅ Test user: $TEST_EMAIL"
 
 # Create pairing token
-echo "Creating pairing token..."
-PAIR_RESULT=$(curl -s -X POST "$API_URL/pairing-tokens" \
-  -H "Authorization: Bearer $AUTH_TOKEN" \
-  -H "Content-Type: application/json" 2>/dev/null || echo '{"error":"pairing failed"}')
+PAIR=$(curl -s -X POST "$API_URL/pairing-tokens" -H "Authorization: Bearer $AUTH" -H "Content-Type: application/json")
+PAIR_TOKEN=$(echo "$PAIR" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4)
 
-PAIRING_TOKEN=$(echo "$PAIR_RESULT" | grep -o '"token":"[^"]*"' | head -1 | cut -d'"' -f4 || echo "")
-
-if [ -z "$PAIRING_TOKEN" ]; then
+if [ -z "$PAIR_TOKEN" ]; then
     echo "❌ Failed to create pairing token"
-    echo "Response: $PAIR_RESULT"
     exit 1
 fi
-echo "✅ Pairing token created: ${PAIRING_TOKEN:0:16}..."
-
-# Clear any existing credentials to force fresh pair
-echo "Clearing old credentials..."
-rm -rf ~/.claw/node-credentials.json ~/.claw/node-credentials.json.invalid.*
+echo "✅ Pairing token created"
 
 # Download connector
-echo "Downloading connector..."
-if ! curl -s "$API_URL/connector.js" -o "$TEST_DIR/connector.js"; then
-    echo "❌ Failed to download connector"
-    exit 1
-fi
-
-# Create minimal package.json
+curl -s "$API_URL/connector.js" -o "$TEST_DIR/connector.js"
 cat > "$TEST_DIR/package.json" << 'EOF'
 {"dependencies":{"ws":"^8.0.0","yargs":"^17.0.0"}}
 EOF
 
-# Install dependencies
-echo "Installing connector dependencies..."
+# Install deps
 cd "$TEST_DIR"
-if ! npm install ws yargs --silent > npm.log 2>&1; then
-    echo "❌ Failed to install dependencies"
-    cat npm.log
-    exit 1
-fi
+npm install ws yargs --silent > npm.log 2>&1 || { echo "❌ npm install failed"; cat npm.log; exit 1; }
 
-# Start connector with HOME pointing to test dir (isolated credentials)
-export HOME="$TEST_DIR"
-echo "Starting test connector..."
-node connector.js \
-  --api "$API_URL" \
-  --token "$PAIRING_TOKEN" \
-  --name "ValidationNode" \
-  --type local \
-  --capabilities python,nodejs \
-  > "$TEST_DIR/connector.log" 2>&1 &
-
+# Start connector with isolated credentials directory
+export CLAW_CREDENTIALS_DIR="$TEST_DIR/.claw"
+mkdir -p "$CLAW_CREDENTIALS_DIR"
+node connector.js --api "$API_URL" --token "$PAIR_TOKEN" --name "ValNode" --type local > "$TEST_DIR/conn.log" 2>&1 &
 CONNECTOR_PID=$!
-echo "Connector PID: $CONNECTOR_PID"
+echo "✅ Connector started (PID: $CONNECTOR_PID)"
 
-# Wait for node to come online (max 60 seconds)
-echo "Waiting for node to come online (max 60s)..."
+# Wait for online
+echo "Waiting for node online (max 60s)..."
 ONLINE=0
 for i in $(seq 1 60); do
-    NODES_RESULT=$(curl -s "$API_URL/nodes" -H "Authorization: Bearer $AUTH_TOKEN" 2>/dev/null || echo "[]")
-    
-    if echo "$NODES_RESULT" | grep -q '"online":true'; then
-        NODE_ID=$(echo "$NODES_RESULT" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
+    NODES=$(curl -s "$API_URL/nodes" -H "Authorization: Bearer $AUTH")
+    if echo "$NODES" | grep -q '"online":true'; then
+        NODE_ID=$(echo "$NODES" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
         echo ""
-        echo "✅ Node is online! ID: ${NODE_ID:0:16}..."
+        echo "✅ Node online: ${NODE_ID:0:16}..."
         ONLINE=1
         break
     fi
-    
-    if [ $((i % 10)) -eq 0 ]; then
-        echo -n "${i}s..."
-    else
-        echo -n "."
-    fi
-    
+    [ $((i % 10)) -eq 0 ] && echo -n "${i}s" || echo -n "."
     sleep 1
 done
 echo ""
 
 if [ "$ONLINE" -eq 0 ]; then
-    echo "❌ Node did not come online in 60 seconds"
-    echo "Connector log:"
-    tail -30 "$TEST_DIR/connector.log"
+    echo "❌ Node did not come online"
+    tail -20 "$TEST_DIR/conn.log"
     exit 1
 fi
 
 # Step 5: Run Phase A journey
 echo ""
-echo "[5/5] Running Phase A execution flow journey..."
+echo "[5/5] Running Phase A journey..."
 
-# Export for Playwright
+cd /home/teddiescott30/KDashX3
 export TEST_EMAIL="$TEST_EMAIL"
 export TEST_PASSWORD="$TEST_PASS"
 export TEST_API_URL="$API_URL"
 
-echo "Running Playwright test with online node..."
-cd ~/KDashX3
-
-# Run with timeout to ensure it completes
-if timeout 120 npx playwright test \
-    tests/e2e/journeys/phasea-execution-flow.spec.cjs \
-    --reporter=list \
-    > "$TEST_DIR/phasea.log" 2>&1; then
-    
+if timeout 120 npx playwright test tests/e2e/journeys/phasea-execution-flow.spec.cjs --reporter=list > "$TEST_DIR/phasea.log" 2>&1; then
     echo "✅ Phase A journey passed"
-    PHASEA_EXIT=0
+    PHASEA=0
 else
-    PHASEA_EXIT=$?
-    if [ "$PHASEA_EXIT" -eq 124 ]; then
-        echo "❌ Phase A journey timed out (120s)"
+    PHASEA=$?
+    if [ "$PHASEA" -eq 124 ]; then
+        echo "❌ Phase A timed out"
     else
-        echo "❌ Phase A journey failed (exit $PHASEA_EXIT)"
+        echo "❌ Phase A failed (exit $PHASEA)"
+        tail -40 "$TEST_DIR/phasea.log"
     fi
-    tail -50 "$TEST_DIR/phasea.log"
     exit 1
 fi
 
 echo ""
-
-# Summary
 echo "================================"
 echo "VALIDATION SUMMARY"
 echo "================================"
-echo "Build: PASS (exit 0)"
-echo "Tenant Proof: PASS (exit 0)"
-echo "Backend Health: PASS (HTTP 200)"
-echo "Connector.js: PASS (HTTP 200)"
-echo "Phase A Journey: PASS (exit 0)"
+echo "Build: PASS"
+echo "Tenant: PASS"
+echo "Backend: PASS"
+echo "Phase A: PASS"
 echo "================================"
-echo "✅ ALL VALIDATIONS PASSED - Ready for production"
+echo "✅ ALL VALIDATIONS PASSED"
 echo "================================"
 
 exit 0
