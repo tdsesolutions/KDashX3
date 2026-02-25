@@ -8,7 +8,11 @@ import { routeTask } from '../llm/routingBrain.js';
 export function renderRouting() {
   const rules = store.get('routingRules');
   const hasNodes = store.hasConnectedNodes();
-  
+
+  if (!hasNodes) {
+    return renderNoNodesState();
+  }
+
   return `
     <div class="routing-page">
       <header class="page-header">
@@ -17,14 +21,14 @@ export function renderRouting() {
           <p class="text-muted">Configure routing rules and test the routing brain</p>
         </div>
       </header>
-      
+
       <main class="container">
         <div class="routing-layout">
           <div class="routing-main">
             ${renderRoutingSimulator(hasNodes)}
             ${renderRoutingRules(rules)}
           </div>
-          
+
           <div class="routing-sidebar">
             ${renderRoutingSettings()}
           </div>
@@ -33,6 +37,63 @@ export function renderRouting() {
     </div>
   `;
 }
+
+function renderNoNodesState() {
+  return `
+    <div class="routing-page">
+      <header class="page-header">
+        <div class="container">
+          <h1>Routing</h1>
+        </div>
+      </header>
+
+      <main class="container">
+        <div class="blocked-state card">
+          <div class="blocked-icon">🔒</div>
+          <h2>Connect a Node to Continue</h2>
+          <p>Routing requires at least one connected node to function.</p>
+          <button onclick="showRoutingGatingModal()" class="btn btn-primary">How to Connect a Node</button>
+        </div>
+      </main>
+
+      ${renderRoutingGatingModal()}
+    </div>
+  `;
+}
+
+function renderRoutingGatingModal() {
+  return `
+    <div id="routing-gating-modal" class="modal hidden">
+      <div class="modal-overlay" onclick="hideRoutingGatingModal()"></div>
+      <div class="modal-content">
+        <h2>Connect a Node to Continue</h2>
+        <p class="text-muted">Routing requires at least one connected node to function.</p>
+
+        <div class="instruction-section">
+          <h4>Quick Start:</h4>
+          <ol>
+            <li>Go to the Nodes page to generate a pairing token</li>
+            <li>Run the connector on your machine</li>
+            <li>Return here to configure routing</li>
+          </ol>
+        </div>
+
+        <div class="modal-actions">
+          <a href="#/nodes" class="btn btn-primary">Go to Nodes</a>
+          <button onclick="hideRoutingGatingModal()" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.showRoutingGatingModal = function() {
+  document.getElementById('routing-gating-modal')?.classList.remove('hidden');
+};
+
+window.hideRoutingGatingModal = function() {
+  document.getElementById('routing-gating-modal')?.classList.add('hidden');
+};
 
 function renderRoutingSimulator(hasNodes) {
   return `

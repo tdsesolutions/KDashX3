@@ -1,0 +1,48 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - img "KDashX3" [ref=e6]
+        - generic [ref=e7]: KDashX3
+      - navigation [ref=e8]:
+        - link "Dashboard" [ref=e9] [cursor=pointer]:
+          - /url: "#/dashboard"
+        - link "Nodes" [ref=e10] [cursor=pointer]:
+          - /url: "#/nodes"
+        - link "Providers" [ref=e11] [cursor=pointer]:
+          - /url: "#/providers"
+        - link "Routing" [ref=e12] [cursor=pointer]:
+          - /url: "#/routing"
+        - link "Settings" [ref=e13] [cursor=pointer]:
+          - /url: "#/settings"
+      - button "👤 journey_d_1772038161080 ▼" [ref=e16] [cursor=pointer]:
+        - generic [ref=e17]: 👤
+        - generic [ref=e18]: journey_d_1772038161080
+        - generic [ref=e19]: ▼
+  - generic [ref=e21]:
+    - generic [ref=e22]: ⚙️
+    - generic [ref=e23]:
+      - generic [ref=e24]: Setup in Progress
+      - generic [ref=e26]: 0%
+    - link "Continue Setup" [ref=e27] [cursor=pointer]:
+      - /url: "#/setup"
+  - generic [ref=e28]:
+    - banner [ref=e29]:
+      - generic [ref=e30]:
+        - heading "Nodes" [level=1] [ref=e31]
+        - paragraph [ref=e32]: Manage your compute nodes. API keys stay on these nodes.
+    - main [ref=e33]:
+      - generic [ref=e34]:
+        - button "+ Add Node" [ref=e35] [cursor=pointer]:
+          - generic [ref=e36]: +
+          - text: Add Node
+        - button "🔄 Refresh" [ref=e37] [cursor=pointer]
+      - generic [ref=e38]:
+        - generic [ref=e39]: 🖥️
+        - heading "No Nodes Connected" [level=2] [ref=e40]
+        - paragraph [ref=e41]: Add your first node to start executing tasks. Nodes are where your API keys live—encrypted on your machines, never in KDashX3.
+        - button "Add Your First Node" [ref=e42] [cursor=pointer]
+```

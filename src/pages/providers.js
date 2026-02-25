@@ -56,14 +56,50 @@ function renderNoNodesState() {
       <main class="container">
         <div class="blocked-state card">
           <div class="blocked-icon">🔒</div>
-          <h2>No Nodes Connected</h2>
-          <p>You need to add and connect at least one node before configuring providers.</p>
-          <a href="#/nodes" class="btn btn-primary">Add Node First</a>
+          <h2>Connect a Node to Continue</h2>
+          <p>Providers run on your machine. Connect a node first.</p>
+          <button onclick="showProvidersGatingModal()" class="btn btn-primary">How to Connect a Node</button>
         </div>
       </main>
+      
+      ${renderProvidersGatingModal()}
     </div>
   `;
 }
+
+function renderProvidersGatingModal() {
+  return `
+    <div id="providers-gating-modal" class="modal hidden">
+      <div class="modal-overlay" onclick="hideProvidersGatingModal()"></div>
+      <div class="modal-content">
+        <h2>Connect a Node to Continue</h2>
+        <p class="text-muted">Providers run on your machine. Connect a node first.</p>
+        
+        <div class="instruction-section">
+          <h4>Quick Start:</h4>
+          <ol>
+            <li>Go to the Nodes page to generate a pairing token</li>
+            <li>Run the connector on your machine</li>
+            <li>Return here to configure providers</li>
+          </ol>
+        </div>
+        
+        <div class="modal-actions">
+          <a href="#/nodes" class="btn btn-primary">Go to Nodes</a>
+          <button onclick="hideProvidersGatingModal()" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+window.showProvidersGatingModal = function() {
+  document.getElementById('providers-gating-modal')?.classList.remove('hidden');
+};
+
+window.hideProvidersGatingModal = function() {
+  document.getElementById('providers-gating-modal')?.classList.add('hidden');
+};
 
 function renderNodeProviders(node) {
   const providers = store.get('providers').filter(p => p.nodeId === node.id);
