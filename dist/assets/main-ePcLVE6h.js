@@ -1,4 +1,4 @@
-(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const o of document.querySelectorAll('link[rel="modulepreload"]'))n(o);new MutationObserver(o=>{for(const i of o)if(i.type==="childList")for(const r of i.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(o){const i={};return o.integrity&&(i.integrity=o.integrity),o.referrerPolicy&&(i.referrerPolicy=o.referrerPolicy),o.crossOrigin==="use-credentials"?i.credentials="include":o.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function n(o){if(o.ep)return;o.ep=!0;const i=s(o);fetch(o.href,i)}})();const b="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net";function A(){return localStorage.getItem("kdashx3-token")}async function c(e,t={}){const s=`${b}${e}`,n=A(),o={"Content-Type":"application/json",...t.headers};n&&(o.Authorization=`Bearer ${n}`);const i=await fetch(s,{...t,headers:o});if(!i.ok){const r=await i.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${i.status}`)}return i.json()}async function E(e,t){return c("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function R(e,t){return c("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function T(){return c("/pairing-tokens",{method:"POST"})}async function x(){return c("/nodes")}async function B(){return c("/tasks")}async function M(e,t="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function L(e,t){return c(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function D(e){return c(`/tasks/${e}/events`)}async function O(e){return c(`/nodes/${e}/disconnect`,{method:"POST"})}async function _(e){return c(`/nodes/${e}`,{method:"DELETE"})}class q{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),o={...this.state};let i=o;for(let r=0;r<n.length-1;r++)i[n[r]]={...i[n[r]]},i=i[n[r]];i[n[n.length-1]]=s,this.state=o,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await R(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await E(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await x();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await B();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasConnectedNodes()||t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=t.filter(o=>{var i;return(i=s[o])==null?void 0:i.completed}).length;return{completed:n,total:t.length,percentage:Math.round(n/t.length*100),modules:t.map(o=>{var i;return{name:o,completed:((i=s[o])==null?void 0:i.completed)||!1,label:this.getModuleLabel(o)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const a=new q;function F(){return`
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const o of document.querySelectorAll('link[rel="modulepreload"]'))n(o);new MutationObserver(o=>{for(const i of o)if(i.type==="childList")for(const r of i.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(o){const i={};return o.integrity&&(i.integrity=o.integrity),o.referrerPolicy&&(i.referrerPolicy=o.referrerPolicy),o.crossOrigin==="use-credentials"?i.credentials="include":o.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function n(o){if(o.ep)return;o.ep=!0;const i=s(o);fetch(o.href,i)}})();const y="https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net";function P(){return localStorage.getItem("kdashx3-token")}async function c(e,t={}){const s=`${y}${e}`,n=P(),o={"Content-Type":"application/json",...t.headers};n&&(o.Authorization=`Bearer ${n}`);const i=await fetch(s,{...t,headers:o});if(!i.ok){const r=await i.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${i.status}`)}return i.json()}async function R(e,t){return c("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function E(e,t){return c("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function T(){return c("/pairing-tokens",{method:"POST"})}async function x(){return c("/nodes")}async function B(){return c("/tasks")}async function M(e,t="normal"){return c("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t})})}async function L(e,t){return c(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function D(e){return c(`/tasks/${e}/events`)}async function O(e){return c(`/nodes/${e}/disconnect`,{method:"POST"})}async function _(e){return c(`/nodes/${e}`,{method:"DELETE"})}class W{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),o={...this.state};let i=o;for(let r=0;r<n.length-1;r++)i[n[r]]={...i[n[r]]},i=i[n[r]];i[n[n.length-1]]=s,this.state=o,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await E(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await R(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await x();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await B();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasConnectedNodes()||t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=t.filter(o=>{var i;return(i=s[o])==null?void 0:i.completed}).length;return{completed:n,total:t.length,percentage:Math.round(n/t.length*100),modules:t.map(o=>{var i;return{name:o,completed:((i=s[o])==null?void 0:i.completed)||!1,label:this.getModuleLabel(o)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const a=new W;function q(){return`
     <div class="login-page">
       <div class="login-container card">
         <div class="login-brand">
@@ -59,7 +59,7 @@
         </div>
       </div>
     </div>
-  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await a.login(e,t),window.navigate("/dashboard")}catch(o){s.textContent=o.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await a.register(e,t),window.navigate("/dashboard")}catch(o){s.textContent=o.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const W={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function G(){const e=a.getSetupProgress();return`
+  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await a.login(e,t),window.navigate("/dashboard")}catch(o){s.textContent=o.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await a.register(e,t),window.navigate("/dashboard")}catch(o){s.textContent=o.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const G={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function F(){const e=a.getSetupProgress();return`
     <div class="setup-page">
       <header class="page-header">
         <div class="container">
@@ -100,12 +100,101 @@
         
         <!-- Module Cards with Inline Instructions -->
         <div class="modules-list">
-          ${e.modules.map(t=>U(t)).join("")}
+          ${e.modules.map(t=>K(t)).join("")}
         </div>
-        
+
       </main>
+
+      ${U()}
     </div>
-  `}function U(e){const t=W[e.name],s=e.completed,n=H(e.name),o=`instructions-${e.name}`;return`
+  `}function U(){return`
+    <div id="setup-node-info-modal" class="modal hidden">
+      <div class="modal-overlay" onclick="hideSetupNodeInfoModal()"></div>
+      <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2>What is a Node?</h2>
+          <button onclick="hideSetupNodeInfoModal()" class="btn btn-small btn-secondary">✕</button>
+        </div>
+
+        <div class="instruction-content">
+          <div class="instruction-header">
+            <h4>🖥️ What is a Node?</h4>
+            <p>Nodes are machines (computers, servers, VMs) that run your AI agents. KDashX3 orchestrates tasks across all your connected nodes. <strong>Important:</strong> API keys are stored encrypted on YOUR nodes—never in KDashX3 or the backend.</p>
+          </div>
+
+          <div class="instruction-section">
+            <h5>🏆 Recommended Setup (Most Effective):</h5>
+            <div class="recommendation-box">
+              <strong>1. Primary Production Node - VPS (Best)</strong>
+              <ul>
+                <li><strong>Provider:</strong> DigitalOcean, AWS Lightsail, or Hetzner</li>
+                <li><strong>Specs:</strong> 2GB RAM, 1 vCPU minimum (4GB RAM recommended)</li>
+                <li><strong>Cost:</strong> ~$6-12/month</li>
+                <li><strong>Why:</strong> Runs 24/7, reliable internet, consistent performance</li>
+              </ul>
+
+              <strong>2. Development/Testing Node - Local Machine</strong>
+              <ul>
+                <li>Your laptop/desktop for testing workflows</li>
+                <li>Good for development, not for production tasks</li>
+              </ul>
+
+              <strong>3. Lightweight Option - Raspberry Pi 4</strong>
+              <ul>
+                <li>4GB RAM model minimum</li>
+                <li>Good for always-on home automation tasks</li>
+                <li>Limited for heavy AI workloads</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="instruction-steps">
+            <h5>🚀 How to Add a Node:</h5>
+            <ol>
+              <li><strong>Click "Add Node"</strong> to generate a pairing token for your workspace</li>
+              <li>
+                <strong>On your server/computer,</strong> download the node connector:
+                <code>curl -o connector.js https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/connector.js</code>
+              </li>
+              <li>
+                <strong>Run the connector with your token:</strong>
+                <code>node connector.js --api https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net --token [YOUR_TOKEN] --name "My Node"</code>
+              </li>
+              <li>
+                <strong>Add API keys on your node:</strong>
+                <code>export OPENAI_API_KEY=sk-...</code> or create ~/.claw/providers/openai.json
+              </li>
+              <li><strong>Done!</strong> Node appears as "Connected" in your KDashX3 Dashboard</li>
+            </ol>
+          </div>
+
+          <div class="instruction-section">
+            <h5>💡 What is connector.js?</h5>
+            <p>The connector.js is a small Node.js program that runs on YOUR machine and connects to the KDashX3 backend (control plane). It maintains a secure WebSocket connection, receives task assignments, and executes them on your node. Your API keys never leave your machine.</p>
+          </div>
+
+          <div class="instruction-section">
+            <h5>⚠️ Requirements:</h5>
+            <ul>
+              <li>Ubuntu 20.04+, Debian 11+, macOS 12+, or Windows with WSL2</li>
+              <li>Node.js 18+</li>
+              <li>Stable internet connection</li>
+              <li>~1GB disk space minimum, 5GB recommended</li>
+            </ul>
+          </div>
+
+          <div class="instruction-tip">
+            <strong>🔒 BYO Security:</strong> API keys are stored encrypted on YOUR nodes only. KDashX3 never sees or stores your provider keys. Each user's nodes are isolated by workspace—your nodes are only visible to you.
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 1.5rem;">
+          <button onclick="hideSetupNodeInfoModal(); goToNodesAndAdd();" class="btn btn-primary">Add Node Now</button>
+          <button onclick="hideSetupNodeInfoModal()" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  `}function K(e){const t=G[e.name],s=e.completed,n=j(e.name),o=`instructions-${e.name}`;return`
     <div class="module-row ${s?"completed":"pending"}">
       <!-- Main Module Card -->
       <div class="module-main-card">
@@ -119,24 +208,30 @@
             </div>
           </div>
           <div class="module-actions">
-            ${e.name!=="nodes"&&e.name!=="routing"&&e.name!=="providers"?`
+            ${e.name==="nodes"?`
+              <button class="info-btn" onclick="showSetupNodeInfoModal()" title="What is a Node?">
+                <span class="info-icon">ℹ️</span>
+              </button>
+            `:e.name!=="routing"&&e.name!=="providers"?`
               <button class="info-btn" onclick="toggleInstructions('${o}')" title="Show Instructions">
                 <span class="info-icon">ℹ️</span>
               </button>
             `:""}
-            ${s?'<span class="status-check">✓</span>':e.name==="nodes"||e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${$(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${$(e.name)}</a>`}
+            ${s?'<span class="status-check">✓</span>':e.name==="nodes"?`<button onclick="goToNodesAndAdd()" class="btn btn-primary btn-small">${b(e.name)}</button>`:e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${b(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${b(e.name)}</a>`}
           </div>
         </div>
       </div>
       
-      <!-- Expandable Instructions Panel -->
+      <!-- Expandable Instructions Panel (not for nodes - uses modal instead) -->
+      ${e.name!=="nodes"?`
       <div id="${o}" class="instructions-panel" style="display: none;">
         <div class="instructions-content">
           ${n}
         </div>
       </div>
+      `:""}
     </div>
-  `}function H(e){return{workspace:`
+  `}function j(e){return{workspace:`
       <div class="instruction-content">
         <div class="instruction-header">
           <h4>🏢 What is a Workspace?</h4>
@@ -411,7 +506,7 @@
           <strong>✨ Tip:</strong> Run health checks regularly to catch issues early.
         </div>
       </div>
-    `}[e]||""}function $(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function K(){var t,s;const e=a.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
+    `}[e]||""}function b(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function H(){var t,s;const e=a.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -437,7 +532,7 @@
           <div class="form-group">
             <label class="form-label">Timezone</label>
             <select id="timezone" class="form-select">
-              ${j(e.timezone)}
+              ${Y(e.timezone)}
             </select>
             <p class="form-help">Used for scheduling tasks and displaying timestamps</p>
           </div>
@@ -463,7 +558,7 @@
         </div>
       </main>
     </div>
-  `}function j(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}a.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),a.set("setup.workspace.completed",!0),window.navigate("/setup")};function z(){var t;const e=a.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
+  `}function Y(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}a.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),a.set("setup.workspace.completed",!0),window.navigate("/setup")};function z(){var t;const e=a.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -538,7 +633,7 @@
         </div>
       </main>
     </div>
-  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(o=>o.trim()).filter(o=>o.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}a.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),a.set("setup.storage.completed",!0),window.navigate("/setup")};function Y(){const e=a.get("nodes")||[];return`
+  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(o=>o.trim()).filter(o=>o.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}a.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),a.set("setup.storage.completed",!0),window.navigate("/setup")};function V(){const e=a.get("nodes")||[];return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -621,7 +716,7 @@
         </div>
       </main>
     </div>
-  `}window.testBackendConnection=async function(){try{const e=await fetch("https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/health");e.ok?alert("✓ Backend connection successful"):alert("✗ Backend returned error: "+e.status)}catch(e){alert("✗ Cannot connect to backend: "+e.message)}};window.completeHealthChecks=function(){a.set("setup.healthChecks.completed",!0),window.navigate("/setup")};function I(){const e=a.get("tasks"),t=a.get("nodes"),s=a.getSetupProgress(),n=a.isSetupComplete(),o=e.slice(0,5),i=e.filter(d=>d.status==="executing").length,r=e.filter(d=>d.status==="completed").length,l=e.filter(d=>d.status==="failed").length;return n?`
+  `}window.testBackendConnection=async function(){try{const e=await fetch("https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/health");e.ok?alert("✓ Backend connection successful"):alert("✗ Backend returned error: "+e.status)}catch(e){alert("✗ Cannot connect to backend: "+e.message)}};window.completeHealthChecks=function(){a.set("setup.healthChecks.completed",!0),window.navigate("/setup")};window.goToNodesAndAdd=function(){window.navigate("/nodes"),setTimeout(()=>{window.showAddNodeModal&&window.showAddNodeModal()},100)};window.showSetupNodeInfoModal=function(){const e=document.getElementById("setup-node-info-modal");e&&e.classList.remove("hidden")};window.hideSetupNodeInfoModal=function(){const e=document.getElementById("setup-node-info-modal");e&&e.classList.add("hidden")};function I(){const e=a.get("tasks"),t=a.get("nodes"),s=a.getSetupProgress(),n=a.isSetupComplete(),o=e.slice(0,5),i=e.filter(d=>d.status==="executing").length,r=e.filter(d=>d.status==="completed").length,l=e.filter(d=>d.status==="failed").length;return n?`
     <div class="dashboard-page">
       <header class="page-header">
         <div class="container">
@@ -721,7 +816,7 @@
               ${o.map(d=>`
                 <a href="#/tasks/${d.id}" class="task-row">
                   <span class="task-intent">${d.intent.substring(0,50)}${d.intent.length>50?"...":""}</span>
-                  <span class="badge ${V(d.status)}">${d.status}</span>
+                  <span class="badge ${X(d.status)}">${d.status}</span>
                 </a>
               `).join("")}
             </div>
@@ -752,7 +847,7 @@
         </div>
       </main>
     </div>
-  `:X(s)}function V(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function X(e){return`
+  `:Q(s)}function X(e){return{pending:"badge-warning",routing:"badge-info",assigned:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-info"}function Q(e){return`
     <div class="dashboard-page">
       <header class="page-header">
         <div class="container">
@@ -788,7 +883,7 @@
         </div>
       </main>
     </div>
-  `}function Q(){const e=a.get("nodes")||[],t=e.length>0;return a.syncNodes(),`
+  `}function J(){const e=a.get("nodes")||[],t=e.length>0;return a.syncNodes(),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -812,13 +907,13 @@
           </button>
         </div>
         
-        ${t?Z(e):te()}
+        ${t?ee(e):se()}
       </main>
       
-      ${se()}
-      ${J()}
+      ${ne()}
+      ${Z()}
     </div>
-  `}function J(){return`
+  `}function Z(){return`
     <div id="node-info-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideNodeInfoModal()"></div>
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -904,11 +999,11 @@
         </div>
       </div>
     </div>
-  `}function Z(e){return`
+  `}function ee(e){return`
     <div class="nodes-list">
-      ${e.map(t=>ee(t)).join("")}
+      ${e.map(t=>te(t)).join("")}
     </div>
-  `}function ee(e){var o;const t={connected:"badge-success",disconnected:"badge-error",pending:"badge-warning"},s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online||e.status==="connected";return`
+  `}function te(e){var o;const t={connected:"badge-success",disconnected:"badge-error",pending:"badge-warning"},s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online||e.status==="connected";return`
     <div class="node-card card">
       <div class="node-header">
         <div class="node-info">
@@ -949,7 +1044,7 @@
         `:""}
       </div>
     </div>
-  `}function te(){return`
+  `}function se(){return`
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Connected</h2>
@@ -960,7 +1055,7 @@
         Add Your First Node
       </button>
     </div>
-  `}function se(){return`
+  `}function ne(){return`
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
@@ -1010,10 +1105,10 @@
         </div>
       </div>
     </div>
-  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await T(),o=`curl -o connector.js ${b}/connector.js`,i=`node connector.js --api ${b} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=o,document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await a.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=a.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
+  `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await T(),o=`curl -o connector.js ${y}/connector.js`,i=`node connector.js --api ${y} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=o,document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await a.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=a.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
 Status: ${t.status}
 Online: ${t.online?"Yes":"No"}
-Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};window.disconnectNodeById=async function(e){if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await O(e),await a.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(confirm("Permanently remove this node? This cannot be undone."))try{await _(e);const t=a.get("nodes").filter(s=>s.id!==e);a.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};window.showNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.remove("hidden")};window.hideNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.add("hidden")};setInterval(()=>{window.location.hash==="#/nodes"&&a.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function ne(){const e=a.getConnectedNodes();return e.length>0?`
+Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};window.disconnectNodeById=async function(e){if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await O(e),await a.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(confirm("Permanently remove this node? This cannot be undone."))try{await _(e);const t=a.get("nodes").filter(s=>s.id!==e);a.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};window.showNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.remove("hidden")};window.hideNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.add("hidden")};setInterval(()=>{window.location.hash==="#/nodes"&&a.syncNodes()},1e4);const v={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function oe(){const e=a.getConnectedNodes();return e.length>0?`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1023,18 +1118,18 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </header>
       
       <main class="container">
-        ${e.map(s=>ae(s)).join("")}
+        ${e.map(s=>re(s)).join("")}
         
         <div class="providers-fallback card">
           <h3>Fallback Order</h3>
           <p class="text-muted">When primary provider fails, try these in order</p>
-          ${de()}
+          ${le()}
         </div>
       </main>
       
-      ${le()}
+      ${ce()}
     </div>
-  `:oe()}function oe(){return`
+  `:ie()}function ie(){return`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1051,9 +1146,9 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </main>
       
-      ${ie()}
+      ${ae()}
     </div>
-  `}function ie(){return`
+  `}function ae(){return`
     <div id="providers-gating-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProvidersGatingModal()"></div>
       <div class="modal-content">
@@ -1075,7 +1170,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.remove("hidden")};window.hideProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.add("hidden")};function ae(e){const t=a.get("providers").filter(s=>s.nodeId===e.id);return`
+  `}window.showProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.remove("hidden")};window.hideProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.add("hidden")};function re(e){const t=a.get("providers").filter(s=>s.nodeId===e.id);return`
     <div class="node-providers card">
       <div class="node-providers-header">
         <div>
@@ -1093,11 +1188,11 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       `:`
         <div class="providers-list">
-          ${t.map(s=>re(s)).join("")}
+          ${t.map(s=>de(s)).join("")}
         </div>
       `}
     </div>
-  `}function re(e,t){const s=v[e.type]||{name:e.type,icon:"❓"},n={not_configured:{class:"badge-warning",text:"Not Configured"},configured:{class:"badge-success",text:"Configured"},failing:{class:"badge-error",text:"Failing"},testing:{class:"badge-info",text:"Testing..."}},o=n[e.status]||n.not_configured;return`
+  `}function de(e,t){const s=v[e.type]||{name:e.type,icon:"❓"},n={not_configured:{class:"badge-warning",text:"Not Configured"},configured:{class:"badge-success",text:"Configured"},failing:{class:"badge-error",text:"Failing"},testing:{class:"badge-info",text:"Testing..."}},o=n[e.status]||n.not_configured;return`
     <div class="provider-row">
       <div class="provider-info">
         <span class="provider-icon">${s.icon}</span>
@@ -1118,7 +1213,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <button onclick="deleteProvider('${e.id}')" class="btn btn-small btn-danger">Delete</button>
       </div>
     </div>
-  `}function de(){const e=a.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
+  `}function le(){const e=a.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
     <div class="fallback-list">
       ${e.map((t,s)=>{const n=a.get("nodes").find(i=>i.id===t.nodeId),o=v[t.type]||{name:t.type};return`
           <div class="fallback-item">
@@ -1132,7 +1227,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
           </div>
         `}).join("")}
     </div>
-  `}function le(){return`
+  `}function ce(){return`
     <div id="provider-config-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProviderConfigModal()"></div>
       <div class="modal-content">
@@ -1175,7 +1270,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=a.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=v[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,o=document.getElementById("provider-endpoint").value,i=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=a.get("providers");if(t){const l=r.findIndex(d=>d.id===t);l!==-1&&(r[l]={...r[l],type:s,name:n.trim(),endpointUrl:o.trim(),priority:i})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:o.trim(),priority:i,status:"not_configured",lastTested:null});a.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=a.get("providers"),s=t.find(i=>i.id===e);if(!s)return;s.status="testing",a.set("providers",t),window.navigate("/providers"),await new Promise(i=>setTimeout(i,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),a.set("providers",t);const o=t.some(i=>i.status==="configured");a.set("setup.providers.completed",o),window.navigate("/providers")};window.editProvider=function(e){const t=a.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=a.get("providers").filter(n=>n.id!==e);a.set("providers",t);const s=t.some(n=>n.status==="configured");a.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=a.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],a.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=a.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],a.set("providers",t),window.navigate("/providers"))};function ce(){const t=a.get().tasks||[],s=a.hasConnectedNodes();return`
+  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=a.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=v[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,o=document.getElementById("provider-endpoint").value,i=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=a.get("providers");if(t){const l=r.findIndex(d=>d.id===t);l!==-1&&(r[l]={...r[l],type:s,name:n.trim(),endpointUrl:o.trim(),priority:i})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:o.trim(),priority:i,status:"not_configured",lastTested:null});a.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=a.get("providers"),s=t.find(i=>i.id===e);if(!s)return;s.status="testing",a.set("providers",t),window.navigate("/providers"),await new Promise(i=>setTimeout(i,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),a.set("providers",t);const o=t.some(i=>i.status==="configured");a.set("setup.providers.completed",o),window.navigate("/providers")};window.editProvider=function(e){const t=a.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=a.get("providers").filter(n=>n.id!==e);a.set("providers",t);const s=t.some(n=>n.status==="configured");a.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=a.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],a.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=a.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],a.set("providers",t),window.navigate("/providers"))};function ue(){const t=a.get().tasks||[],s=a.hasConnectedNodes();return`
     <div class="tasks-page">
       <header class="page-header">
         <div class="container">
@@ -1185,11 +1280,11 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </header>
       
       <main class="container">
-        ${ue(s)}
-        ${pe(t,s)}
+        ${pe(s)}
+        ${ge(t,s)}
       </main>
     </div>
-  `}function ue(e){return`
+  `}function pe(e){return`
     <div class="tasks-toolbar">
       <a href="#/tasks/new" class="btn btn-primary ${e?"":"disabled"}">
         + New Task
@@ -1204,7 +1299,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         🔄 Refresh
       </button>
     </div>
-  `}function pe(e,t){return t?e.length===0?`
+  `}function ge(e,t){return t?e.length===0?`
       <div class="empty-state card">
         <div class="empty-icon">📋</div>
         <h2 class="empty-title">No Tasks Yet</h2>
@@ -1213,7 +1308,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       </div>
     `:`
     <div class="tasks-list">
-      ${e.map(s=>ge(s)).join("")}
+      ${e.map(s=>ve(s)).join("")}
     </div>
   `:`
       <div class="blocked-state card">
@@ -1222,7 +1317,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <p>You need at least one connected node to create and run tasks.</p>
         <a href="#/nodes" class="btn btn-primary">Add Node</a>
       </div>
-    `}function ge(e){const t={pending:{class:"badge-warning",text:"Pending"},assigned:{class:"badge-info",text:"Assigned"},executing:{class:"badge-info",text:"Executing"},completed:{class:"badge-success",text:"Completed"},failed:{class:"badge-error",text:"Failed"},cancelled:{class:"badge-error",text:"Cancelled"}},s=t[e.status]||t.pending,o=(a.get().nodes||[]).find(i=>i.id===e.node_id);return`
+    `}function ve(e){const t={pending:{class:"badge-warning",text:"Pending"},assigned:{class:"badge-info",text:"Assigned"},executing:{class:"badge-info",text:"Executing"},completed:{class:"badge-success",text:"Completed"},failed:{class:"badge-error",text:"Failed"},cancelled:{class:"badge-error",text:"Cancelled"}},s=t[e.status]||t.pending,o=(a.get().nodes||[]).find(i=>i.id===e.node_id);return`
     <div class="task-card card">
       <div class="task-header">
         <div class="task-info">
@@ -1248,7 +1343,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       `:""}
     </div>
-  `}function ve(){return a.hasConnectedNodes()?`
+  `}function me(){return a.hasConnectedNodes()?`
     <div class="new-task-page">
       <header class="page-header">
         <div class="container">
@@ -1299,7 +1394,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
           <a href="#/nodes" class="btn btn-primary">Add Node</a>
         </div>
       </div>
-    `}function me(e){const s=(a.get().tasks||[]).find(i=>i.id===e);if(!s)return`
+    `}function he(e){const s=(a.get().tasks||[]).find(i=>i.id===e);if(!s)return`
       <div class="error-page">
         <h1>Task Not Found</h1>
         <p>The task you're looking for doesn't exist.</p>
@@ -1376,7 +1471,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
             </div>
           `).join("")}
         </div>
-      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const he={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function y(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,o)=>{const i=y(n,t.items);i.valid||s.push(`Item ${o}: ${i.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,o]of Object.entries(t.properties))if(n in e){const i=y(e[n],o);i.valid||s.push(`${n}: ${i.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function fe(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(f=>setTimeout(f,800));const{intent:t,context:s,constraints:n}=e,o=(s==null?void 0:s.available_nodes)||[],i=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(o))throw new Error("Invalid input: available_nodes must be an array");if(o.length===0)throw new Error("No available nodes for routing");const r=be(t),l=o.filter(f=>$e(f,r));if(l.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const d=l[0],p=ye(t),k=Ie(i,p),m=ke(t,n),N={type:"node_local",path:`${d.workspace_path||"./outputs"}/task-${Date.now()}`},w=we(t),P=Ce(w,p),C={selected_node_id:d.id,required_capabilities:r,provider_preference:p,fallback_order:k.length>0?k:["default"],output_location:N,risk_level:m,approval_required:m==="critical"||m==="high",estimated_tokens:w,estimated_cost:P},h=y(C,he);if(!h.valid)throw console.error("[RoutingBrain] Invalid response schema:",h.errors),new Error(`Routing Brain returned invalid data: ${h.errors.join(", ")}`);return C}function be(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function ye(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function ke(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function we(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function Ce(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function $e(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Ie(e,t){if(!e||e.length===0)return[];const s=e.filter(o=>o.status==="configured");if(s.length===0)return[];const n=[...s].sort((o,i)=>(o.priority||99)-(i.priority||99));if(t&&t!=="auto"){const o=n.filter(r=>r.type===t),i=n.filter(r=>r.type!==t);return[...o,...i].map(r=>r.id)}return n.map(o=>o.id)}function Se(){const e=a.get("routingRules"),t=a.hasConnectedNodes();return t?`
+      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const fe={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function k(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,o)=>{const i=k(n,t.items);i.valid||s.push(`Item ${o}: ${i.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,o]of Object.entries(t.properties))if(n in e){const i=k(e[n],o);i.valid||s.push(`${n}: ${i.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function be(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(f=>setTimeout(f,800));const{intent:t,context:s,constraints:n}=e,o=(s==null?void 0:s.available_nodes)||[],i=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(o))throw new Error("Invalid input: available_nodes must be an array");if(o.length===0)throw new Error("No available nodes for routing");const r=ye(t),l=o.filter(f=>Ie(f,r));if(l.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const d=l[0],p=ke(t),w=Ne(i,p),m=we(t,n),S={type:"node_local",path:`${d.workspace_path||"./outputs"}/task-${Date.now()}`},C=Ce(t),A=$e(C,p),$={selected_node_id:d.id,required_capabilities:r,provider_preference:p,fallback_order:w.length>0?w:["default"],output_location:S,risk_level:m,approval_required:m==="critical"||m==="high",estimated_tokens:C,estimated_cost:A},h=k($,fe);if(!h.valid)throw console.error("[RoutingBrain] Invalid response schema:",h.errors),new Error(`Routing Brain returned invalid data: ${h.errors.join(", ")}`);return $}function ye(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function ke(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function we(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function Ce(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function $e(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function Ie(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Ne(e,t){if(!e||e.length===0)return[];const s=e.filter(o=>o.status==="configured");if(s.length===0)return[];const n=[...s].sort((o,i)=>(o.priority||99)-(i.priority||99));if(t&&t!=="auto"){const o=n.filter(r=>r.type===t),i=n.filter(r=>r.type!==t);return[...o,...i].map(r=>r.id)}return n.map(o=>o.id)}function Se(){const e=a.get("routingRules"),t=a.hasConnectedNodes();return t?`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1388,17 +1483,17 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
       <main class="container">
         <div class="routing-layout">
           <div class="routing-main">
-            ${Ae(t)}
+            ${Re(t)}
             ${Ee(e)}
           </div>
 
           <div class="routing-sidebar">
-            ${Re()}
+            ${Te()}
           </div>
         </div>
       </main>
     </div>
-  `:Ne()}function Ne(){return`
+  `:Ae()}function Ae(){return`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1439,7 +1534,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}window.showRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.remove("hidden")};window.hideRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.add("hidden")};function Ae(e){return`
+  `}window.showRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.remove("hidden")};window.hideRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.add("hidden")};function Re(e){return`
     <div class="routing-simulator card">
       <h2>Test Routing Brain</h2>
       <p class="text-muted">Enter a task intent to see how the routing brain would handle it</p>
@@ -1510,7 +1605,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       `}
     </div>
-  `}function Re(){const e=a.get("setup.routing.data");return`
+  `}function Te(){const e=a.get("setup.routing.data");return`
     <div class="routing-settings card">
       <h3>Routing Settings</h3>
       
@@ -1543,7 +1638,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </ol>
       </div>
     </div>
-  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=a.getConnectedNodes(),o=a.getWorkingProviders(),i=await fe({intent:e,context:{available_nodes:n,configured_providers:o},constraints:{priority:t}});if(!i.selected_node_id||!i.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(l=>l.id===i.selected_node_id);s.innerHTML=`
+  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=a.getConnectedNodes(),o=a.getWorkingProviders(),i=await be({intent:e,context:{available_nodes:n,configured_providers:o},constraints:{priority:t}});if(!i.selected_node_id||!i.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(l=>l.id===i.selected_node_id);s.innerHTML=`
       <div class="routing-decision">
         <h3>Routing Decision</h3>
         
@@ -1610,7 +1705,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         <p>${n.message}</p>
         <button onclick="simulateRouting()" class="btn btn-secondary">Retry</button>
       </div>
-    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=a.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),a.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=a.get("routingRules");t.splice(e,1),a.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;a.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;a.set("setup.routing.data.fallbackEnabled",e)};const Te={workspace:"🏢",nodes:"🖥️",storage:"💾",providers:"🔌",routing:"📡",healthChecks:"✅"},xe={workspace:"#/setup/workspace",nodes:"#/nodes",storage:"#/setup/storage",providers:"#/providers",routing:"#/routing",healthChecks:"#/setup/health"};function Be(){var s,n;const e=a.getSetupProgress(),t=a.get("auth");return`
+    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=a.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),a.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=a.get("routingRules");t.splice(e,1),a.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;a.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;a.set("setup.routing.data.fallbackEnabled",e)};const xe={workspace:"🏢",nodes:"🖥️",storage:"💾",providers:"🔌",routing:"📡",healthChecks:"✅"},Be={workspace:"#/setup/workspace",nodes:"#/nodes",storage:"#/setup/storage",providers:"#/providers",routing:"#/routing",healthChecks:"#/setup/health"};function Me(){var s,n;const e=a.getSetupProgress(),t=a.get("auth");return`
     <div class="settings-page">
       <header class="page-header">
         <div class="container">
@@ -1627,7 +1722,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
             <p class="text-muted">Return to any setup step to make changes</p>
             
             <div class="settings-modules">
-              ${e.modules.map(o=>Me(o)).join("")}
+              ${e.modules.map(o=>Le(o)).join("")}
             </div>
             
             ${e.percentage<100?`
@@ -1711,7 +1806,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </main>
     </div>
-  `}function Me(e){const t=Te[e.name],s=xe[e.name],n=e.completed;return`
+  `}function Le(e){const t=xe[e.name],s=Be[e.name],n=e.completed;return`
     <a href="${s}" class="module-link ${n?"completed":"pending"}">
       <span class="module-icon">${t}</span>
       <div class="module-info">
@@ -1726,7 +1821,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
 
 This cannot be undone.
 
-Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}a.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:I,requiresAuth:!0},"/login":{render:F,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:G,requiresAuth:!0},"/setup/workspace":{render:K,requiresAuth:!0},"/setup/storage":{render:z,requiresAuth:!0},"/setup/health":{render:Y,requiresAuth:!0},"/dashboard":{render:I,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Q,requiresAuth:!0},"/providers":{render:ne,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ce,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:ve,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>me(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:Se,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Be,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:Oe,requiresAuth:!0}};function Le(e){var o,i;const t=a.get("auth");return t.isAuthenticated?`
+Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&prompt('Type "RESET" to confirm complete data reset:')!=="RESET"){alert("Reset cancelled");return}a.reset(),alert("All data has been reset"),window.navigate("/setup")}};const g={"/":{render:I,requiresAuth:!0},"/login":{render:q,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:F,requiresAuth:!0},"/setup/workspace":{render:H,requiresAuth:!0},"/setup/storage":{render:z,requiresAuth:!0},"/setup/health":{render:V,requiresAuth:!0},"/dashboard":{render:I,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:J,requiresAuth:!0},"/providers":{render:oe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:ue,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:me,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>he(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/routing":{render:Se,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Me,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:_e,requiresAuth:!0}};function De(e){var o,i;const t=a.get("auth");return t.isAuthenticated?`
     <header class="global-header">
       <div class="container">
         <div class="header-brand">
@@ -1750,7 +1845,7 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </header>
-  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){a.logout(),window.location.hash="/login",u("/login",!0)};function De(e){const t=g[e]||g["/dashboard"],s=a.get("auth"),n=a.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const o of t.blockedBy){const i=n.find(r=>r.id===o);if(i)return{allowed:!1,blockedBy:i}}return{allowed:!0}}function Oe(){const t=a.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
+  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){a.logout(),window.location.hash="/login",u("/login",!0)};function Oe(e){const t=g[e]||g["/dashboard"],s=a.get("auth"),n=a.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const o of t.blockedBy){const i=n.find(r=>r.id===o);if(i)return{allowed:!1,blockedBy:i}}return{allowed:!0}}function _e(){const t=a.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
     <div class="locked-page">
       <div class="locked-content">
         <div class="lock-icon">🔒</div>
@@ -1762,19 +1857,19 @@ Are you sure?`)){if(!confirm('Final confirmation: Type "RESET" to confirm')&&pro
         </div>
       </div>
     </div>
-  `}async function u(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=De(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,S("/locked");return}}await S(e)}async function S(e){const t=document.getElementById("app"),s=g[e]||g["/dashboard"],n=a.get("auth");t.innerHTML=`
+  `}async function u(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=Oe(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,u(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,N("/locked");return}}await N(e)}async function N(e){const t=document.getElementById("app"),s=g[e]||g["/dashboard"],n=a.get("auth");t.innerHTML=`
     <div class="loading-screen">
       <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
-  `,await new Promise(o=>setTimeout(o,300));try{const o=e==="/setup"||e.startsWith("/setup/"),i=e==="/login",r=i?"":Le(e);if(n.isAuthenticated&&!a.isSetupComplete()&&!o&&!i){const l=await s.render();t.innerHTML=r+_e()+l}else{const l=await s.render();t.innerHTML=r+l}qe()}catch(o){console.error("Render error:",o),t.innerHTML=`
+  `,await new Promise(o=>setTimeout(o,300));try{const o=e==="/setup"||e.startsWith("/setup/"),i=e==="/login",r=i?"":De(e);if(n.isAuthenticated&&!a.isSetupComplete()&&!o&&!i){const l=await s.render();t.innerHTML=r+We()+l}else{const l=await s.render();t.innerHTML=r+l}qe()}catch(o){console.error("Render error:",o),t.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
         <p>${o.message||"Something went wrong"}</p>
         <button onclick="navigate('/dashboard')" class="btn btn-primary">Go Home</button>
       </div>
-    `}}function _e(){const e=a.getSetupProgress();return`
+    `}}function We(){const e=a.getSetupProgress();return`
     <div class="setup-banner">
       <div class="setup-banner-content">
         <span class="setup-icon">⚙️</span>

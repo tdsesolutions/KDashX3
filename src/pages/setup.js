@@ -90,8 +90,101 @@ export function renderSetup() {
         <div class="modules-list">
           ${progress.modules.map(m => renderModuleCardWithInstructions(m)).join('')}
         </div>
-        
+
       </main>
+
+      ${renderSetupNodeInfoModal()}
+    </div>
+  `;
+}
+
+function renderSetupNodeInfoModal() {
+  return `
+    <div id="setup-node-info-modal" class="modal hidden">
+      <div class="modal-overlay" onclick="hideSetupNodeInfoModal()"></div>
+      <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <h2>What is a Node?</h2>
+          <button onclick="hideSetupNodeInfoModal()" class="btn btn-small btn-secondary">✕</button>
+        </div>
+
+        <div class="instruction-content">
+          <div class="instruction-header">
+            <h4>🖥️ What is a Node?</h4>
+            <p>Nodes are machines (computers, servers, VMs) that run your AI agents. KDashX3 orchestrates tasks across all your connected nodes. <strong>Important:</strong> API keys are stored encrypted on YOUR nodes—never in KDashX3 or the backend.</p>
+          </div>
+
+          <div class="instruction-section">
+            <h5>🏆 Recommended Setup (Most Effective):</h5>
+            <div class="recommendation-box">
+              <strong>1. Primary Production Node - VPS (Best)</strong>
+              <ul>
+                <li><strong>Provider:</strong> DigitalOcean, AWS Lightsail, or Hetzner</li>
+                <li><strong>Specs:</strong> 2GB RAM, 1 vCPU minimum (4GB RAM recommended)</li>
+                <li><strong>Cost:</strong> ~$6-12/month</li>
+                <li><strong>Why:</strong> Runs 24/7, reliable internet, consistent performance</li>
+              </ul>
+
+              <strong>2. Development/Testing Node - Local Machine</strong>
+              <ul>
+                <li>Your laptop/desktop for testing workflows</li>
+                <li>Good for development, not for production tasks</li>
+              </ul>
+
+              <strong>3. Lightweight Option - Raspberry Pi 4</strong>
+              <ul>
+                <li>4GB RAM model minimum</li>
+                <li>Good for always-on home automation tasks</li>
+                <li>Limited for heavy AI workloads</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="instruction-steps">
+            <h5>🚀 How to Add a Node:</h5>
+            <ol>
+              <li><strong>Click "Add Node"</strong> to generate a pairing token for your workspace</li>
+              <li>
+                <strong>On your server/computer,</strong> download the node connector:
+                <code>curl -o connector.js https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/connector.js</code>
+              </li>
+              <li>
+                <strong>Run the connector with your token:</strong>
+                <code>node connector.js --api https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net --token [YOUR_TOKEN] --name "My Node"</code>
+              </li>
+              <li>
+                <strong>Add API keys on your node:</strong>
+                <code>export OPENAI_API_KEY=sk-...</code> or create ~/.claw/providers/openai.json
+              </li>
+              <li><strong>Done!</strong> Node appears as "Connected" in your KDashX3 Dashboard</li>
+            </ol>
+          </div>
+
+          <div class="instruction-section">
+            <h5>💡 What is connector.js?</h5>
+            <p>The connector.js is a small Node.js program that runs on YOUR machine and connects to the KDashX3 backend (control plane). It maintains a secure WebSocket connection, receives task assignments, and executes them on your node. Your API keys never leave your machine.</p>
+          </div>
+
+          <div class="instruction-section">
+            <h5>⚠️ Requirements:</h5>
+            <ul>
+              <li>Ubuntu 20.04+, Debian 11+, macOS 12+, or Windows with WSL2</li>
+              <li>Node.js 18+</li>
+              <li>Stable internet connection</li>
+              <li>~1GB disk space minimum, 5GB recommended</li>
+            </ul>
+          </div>
+
+          <div class="instruction-tip">
+            <strong>🔒 BYO Security:</strong> API keys are stored encrypted on YOUR nodes only. KDashX3 never sees or stores your provider keys. Each user's nodes are isolated by workspace—your nodes are only visible to you.
+          </div>
+        </div>
+
+        <div class="modal-actions" style="margin-top: 1.5rem;">
+          <button onclick="hideSetupNodeInfoModal(); goToNodesAndAdd();" class="btn btn-primary">Add Node Now</button>
+          <button onclick="hideSetupNodeInfoModal()" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -119,14 +212,20 @@ function renderModuleCardWithInstructions(module) {
             </div>
           </div>
           <div class="module-actions">
-            ${module.name !== 'nodes' && module.name !== 'routing' && module.name !== 'providers' ? `
+            ${module.name === 'nodes' ? `
+              <button class="info-btn" onclick="showSetupNodeInfoModal()" title="What is a Node?">
+                <span class="info-icon">ℹ️</span>
+              </button>
+            ` : module.name !== 'routing' && module.name !== 'providers' ? `
               <button class="info-btn" onclick="toggleInstructions('${instructionsId}')" title="Show Instructions">
                 <span class="info-icon">ℹ️</span>
               </button>
             ` : ''}
             ${isCompleted 
               ? '<span class="status-check">✓</span>'
-              : (module.name === 'nodes' || module.name === 'routing' || module.name === 'providers') 
+              : module.name === 'nodes'
+                ? `<button onclick="goToNodesAndAdd()" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</button>`
+              : (module.name === 'routing' || module.name === 'providers') 
                 ? `<button onclick="showInstructionsForModule('${module.name}')" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</button>`
                 : `<a href="${config.route}" class="btn btn-primary btn-small">${getModuleCTA(module.name)}</a>`
             }
@@ -134,12 +233,14 @@ function renderModuleCardWithInstructions(module) {
         </div>
       </div>
       
-      <!-- Expandable Instructions Panel -->
+      <!-- Expandable Instructions Panel (not for nodes - uses modal instead) -->
+      ${module.name !== 'nodes' ? `
       <div id="${instructionsId}" class="instructions-panel" style="display: none;">
         <div class="instructions-content">
           ${instructions}
         </div>
       </div>
+      ` : ''}
     </div>
   `;
 }
@@ -784,4 +885,31 @@ window.testBackendConnection = async function() {
 window.completeHealthChecks = function() {
   store.set('setup.healthChecks.completed', true);
   window.navigate('/setup');
+};
+
+// Setup page - Nodes: Go directly to Add Node flow
+window.goToNodesAndAdd = function() {
+  // Navigate to nodes page
+  window.navigate('/nodes');
+  // Open the add node modal after a short delay for render
+  setTimeout(() => {
+    if (window.showAddNodeModal) {
+      window.showAddNodeModal();
+    }
+  }, 100);
+};
+
+// Setup page - Nodes: Show educational info modal
+window.showSetupNodeInfoModal = function() {
+  const modal = document.getElementById('setup-node-info-modal');
+  if (modal) {
+    modal.classList.remove('hidden');
+  }
+};
+
+window.hideSetupNodeInfoModal = function() {
+  const modal = document.getElementById('setup-node-info-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
 };
