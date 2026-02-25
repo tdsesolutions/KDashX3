@@ -31,9 +31,14 @@ test.describe('PHASE A: Intent → Analyze & Route → Execute', () => {
 
     // Step 1: Login
     console.log('Step 1: Logging in...');
+    
+    // Use credentials from environment or create new user
+    const testEmail = process.env.TEST_EMAIL || 'phasea-test@example.com';
+    const testPass = process.env.TEST_PASSWORD || 'testpass123';
+    
     await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'networkidle' });
-    await page.fill('#login-email', 'phasea-test@example.com');
-    await page.fill('#login-password', 'testpass123');
+    await page.fill('#login-email', testEmail);
+    await page.fill('#login-password', testPass);
     await page.click('#login-btn');
     await page.waitForTimeout(3000);
     
