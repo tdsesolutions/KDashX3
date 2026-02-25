@@ -304,10 +304,11 @@ window.executeTask = async function() {
   errorEl.classList.add('hidden');
   
   try {
-    // Step 1: Create task
+    // Step 1: Create task with routing decision
     const task = await createTask(
       currentRoutingDecision.intent,
-      currentRoutingDecision.priority
+      currentRoutingDecision.priority,
+      currentRoutingDecision
     );
     
     // Step 2: Store routing decision

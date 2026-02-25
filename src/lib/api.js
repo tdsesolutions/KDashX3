@@ -87,10 +87,14 @@ export async function getTasks() {
   return apiCall('/tasks');
 }
 
-export async function createTask(intent, priority = 'normal') {
+export async function createTask(intent, priority = 'normal', routingDecision = null) {
   return apiCall('/tasks', {
     method: 'POST',
-    body: JSON.stringify({ intent, priority })
+    body: JSON.stringify({ 
+      intent, 
+      priority,
+      routing_decision: routingDecision 
+    })
   });
 }
 
