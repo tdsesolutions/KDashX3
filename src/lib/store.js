@@ -137,7 +137,13 @@ class Store {
   }
 
   // Computed getters
+  hasNodes() {
+    // PAIRED: Node exists in workspace (regardless of online status)
+    return this.state.nodes.length > 0;
+  }
+
   hasConnectedNodes() {
+    // ONLINE: Node has active session (online flag from backend)
     return this.state.nodes.some(n => n.online && n.status === 'connected');
   }
 
@@ -163,11 +169,19 @@ class Store {
   getBlocks() {
     const blocks = [];
 
-    if (!this.hasConnectedNodes()) {
+    if (!this.hasNodes()) {
+      // No nodes at all - need to pair one
       blocks.push({
         id: 'NODE_REQUIRED',
         message: 'Connect at least one node to execute tasks',
         cta: { text: 'Add Node', href: '#/nodes' }
+      });
+    } else if (!this.hasConnectedNodes()) {
+      // Has nodes but none online - need to start connector
+      blocks.push({
+        id: 'NODE_OFFLINE',
+        message: 'Node paired. Start the connector on your node to go online.',
+        cta: { text: 'Go to Nodes', href: '#/nodes' }
       });
     }
 
@@ -186,14 +200,22 @@ class Store {
   getSetupProgress() {
     const modules = ['workspace', 'nodes', 'storage', 'providers', 'routing', 'healthChecks'];
     const setup = this.state.setup || {};
-    const completed = modules.filter(m => setup[m]?.completed).length;
+
+    // Derive nodes completion from actual node state (has online nodes = complete)
+    const nodesCompleted = this.hasConnectedNodes();
+
+    const completed = modules.filter(m => {
+      if (m === 'nodes') return nodesCompleted;
+      return setup[m]?.completed;
+    }).length;
+
     return {
       completed,
       total: modules.length,
       percentage: Math.round((completed / modules.length) * 100),
       modules: modules.map(m => ({
         name: m,
-        completed: setup[m]?.completed || false,
+        completed: m === 'nodes' ? nodesCompleted : (setup[m]?.completed || false),
         label: this.getModuleLabel(m)
       }))
     };

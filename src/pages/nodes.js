@@ -164,8 +164,11 @@ function renderNodeCard(node) {
     server: '🖥️'
   };
   
-  const isOnline = node.online || node.status === 'connected';
-  
+  // ONLINE: Only true if backend reports active WebSocket (node.online)
+  // PAIRED: Node exists in DB with status (regardless of online state)
+  const isOnline = node.online === true;
+  const isPaired = node.status === 'connected' || node.status === 'paired';
+
   return `
     <div class="node-card card">
       <div class="node-header">
@@ -173,8 +176,12 @@ function renderNodeCard(node) {
           <span class="node-type-icon">${typeIcons[node.type] || '🖥️'}</span>
           <div>
             <h3 class="node-name">${node.name}</h3>
-            <span class="badge ${statusColors[node.status] || 'badge-warning'}">${node.status}</span>
-            ${isOnline ? '<span class="badge badge-success">● Online</span>' : '<span class="badge badge-error">○ Offline</span>'}
+            ${isOnline
+              ? '<span class="badge badge-success">● Online</span>'
+              : (isPaired
+                  ? '<span class="badge badge-warning">○ Paired (start connector)</span>'
+                  : '<span class="badge badge-error">○ Disconnected</span>')
+            }
           </div>
         </div>
         <div class="node-actions">
@@ -183,7 +190,7 @@ function renderNodeCard(node) {
           <button onclick="deleteNodeById('${node.id}')" class="btn btn-small btn-danger">Remove</button>
         </div>
       </div>
-      
+
       <div class="node-details">
         <div class="node-detail">
           <span class="detail-label">OS</span>
@@ -194,8 +201,12 @@ function renderNodeCard(node) {
           <span class="detail-value node-id">${node.id}</span>
         </div>
         <div class="node-detail">
+          <span class="detail-label">Status</span>
+          <span class="detail-value">${isOnline ? 'Connected and reporting' : (isPaired ? 'Registered, waiting for connector' : 'Not connected')}</span>
+        </div>
+        <div class="node-detail">
           <span class="detail-label">Last Heartbeat</span>
-          <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}</span>
+          <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Not reported yet'}</span>
         </div>
         ${capabilities.length ? `
           <div class="node-detail">
@@ -214,7 +225,7 @@ function renderEmptyState() {
   return `
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
-      <h2 class="empty-title">No Nodes Connected</h2>
+      <h2 class="empty-title">No Nodes Yet</h2>
       <p class="empty-description">
         Add your first node to start executing tasks. Nodes are where your API keys live—encrypted on your machines, never in KDashX3.
       </p>

@@ -46,7 +46,23 @@ const moduleConfig = {
 
 export function renderSetup() {
   const progress = store.getSetupProgress();
-  
+  const nodes = store.get('nodes') || [];
+  const hasNodes = nodes.length > 0;
+  const hasOnlineNodes = nodes.some(n => n.online && n.status === 'connected');
+
+  // Override nodes module status based on actual node state
+  const modulesWithStatus = progress.modules.map(m => {
+    if (m.name === 'nodes') {
+      return {
+        ...m,
+        completed: hasOnlineNodes,
+        hasNodes: hasNodes,
+        isOnline: hasOnlineNodes
+      };
+    }
+    return m;
+  });
+
   return `
     <div class="setup-page">
       <header class="page-header">
@@ -88,7 +104,7 @@ export function renderSetup() {
         
         <!-- Module Cards with Inline Instructions -->
         <div class="modules-list">
-          ${progress.modules.map(m => renderModuleCardWithInstructions(m)).join('')}
+          ${modulesWithStatus.map(m => renderModuleCardWithInstructions(m)).join('')}
         </div>
 
       </main>
@@ -194,7 +210,23 @@ function renderModuleCardWithInstructions(module) {
   const isCompleted = module.completed;
   const instructions = getModuleInstructions(module.name);
   const instructionsId = `instructions-${module.name}`;
-  
+
+  // Determine status badge for nodes module
+  let statusBadge;
+  if (module.name === 'nodes') {
+    if (module.isOnline) {
+      statusBadge = '<span class="badge badge-success">✓ Complete</span>';
+    } else if (module.hasNodes) {
+      statusBadge = '<span class="badge badge-warning">○ Paired (waiting for heartbeat)</span>';
+    } else {
+      statusBadge = '<span class="badge badge-warning">○ Pending</span>';
+    }
+  } else {
+    statusBadge = isCompleted
+      ? '<span class="badge badge-success">✓ Complete</span>'
+      : '<span class="badge badge-warning">○ Pending</span>';
+  }
+
   return `
     <div class="module-row ${isCompleted ? 'completed' : 'pending'}">
       <!-- Main Module Card -->
@@ -205,10 +237,7 @@ function renderModuleCardWithInstructions(module) {
             <div class="module-name">${config.title}</div>
             <div class="module-description">${config.description}</div>
             <div class="module-status">
-              ${isCompleted 
-                ? '<span class="badge badge-success">✓ Complete</span>'
-                : '<span class="badge badge-warning">○ Pending</span>'
-              }
+              ${statusBadge}
             </div>
           </div>
           <div class="module-actions">
