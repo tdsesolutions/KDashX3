@@ -1003,20 +1003,20 @@
     <div class="nodes-list">
       ${e.map(t=>te(t)).join("")}
     </div>
-  `}function te(e){var o;const t={connected:"badge-success",disconnected:"badge-error",pending:"badge-warning"},s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online||e.status==="connected";return`
+  `}function te(e){const t=Array.isArray(e.capabilities)?e.capabilities:typeof e.capabilities=="string"?[e.capabilities]:[],s={connected:"badge-success",disconnected:"badge-error",pending:"badge-warning"},n={vm:"☁️",local:"💻",server:"🖥️"},o=e.online||e.status==="connected";return`
     <div class="node-card card">
       <div class="node-header">
         <div class="node-info">
-          <span class="node-type-icon">${s[e.type]||"🖥️"}</span>
+          <span class="node-type-icon">${n[e.type]||"🖥️"}</span>
           <div>
             <h3 class="node-name">${e.name}</h3>
-            <span class="badge ${t[e.status]||"badge-warning"}">${e.status}</span>
-            ${n?'<span class="badge badge-success">● Online</span>':'<span class="badge badge-error">○ Offline</span>'}
+            <span class="badge ${s[e.status]||"badge-warning"}">${e.status}</span>
+            ${o?'<span class="badge badge-success">● Online</span>':'<span class="badge badge-error">○ Offline</span>'}
           </div>
         </div>
         <div class="node-actions">
           <button onclick="testNode('${e.id}')" class="btn btn-small btn-secondary">Test</button>
-          ${n?`<button onclick="disconnectNodeById('${e.id}')" class="btn btn-small" style="background: #f59e0b; color: white;">Disconnect</button>`:""}
+          ${o?`<button onclick="disconnectNodeById('${e.id}')" class="btn btn-small" style="background: #f59e0b; color: white;">Disconnect</button>`:""}
           <button onclick="deleteNodeById('${e.id}')" class="btn btn-small btn-danger">Remove</button>
         </div>
       </div>
@@ -1034,11 +1034,11 @@
           <span class="detail-label">Last Heartbeat</span>
           <span class="detail-value">${e.last_heartbeat?new Date(e.last_heartbeat).toLocaleString():"Never"}</span>
         </div>
-        ${(o=e.capabilities)!=null&&o.length?`
+        ${t.length?`
           <div class="node-detail">
             <span class="detail-label">Capabilities</span>
             <div class="capabilities-list">
-              ${e.capabilities.map(i=>`<span class="capability-tag">${i}</span>`).join("")}
+              ${t.map(i=>`<span class="capability-tag">${i}</span>`).join("")}
             </div>
           </div>
         `:""}

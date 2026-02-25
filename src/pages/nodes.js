@@ -145,6 +145,13 @@ function renderNodesList(nodes) {
 }
 
 function renderNodeCard(node) {
+  // Normalize capabilities to always be an array
+  const capabilities = Array.isArray(node.capabilities) 
+    ? node.capabilities 
+    : (typeof node.capabilities === 'string' 
+        ? [node.capabilities] 
+        : []);
+  
   const statusColors = {
     connected: 'badge-success',
     disconnected: 'badge-error',
@@ -190,11 +197,11 @@ function renderNodeCard(node) {
           <span class="detail-label">Last Heartbeat</span>
           <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Never'}</span>
         </div>
-        ${node.capabilities?.length ? `
+        ${capabilities.length ? `
           <div class="node-detail">
             <span class="detail-label">Capabilities</span>
             <div class="capabilities-list">
-              ${node.capabilities.map(c => `<span class="capability-tag">${c}</span>`).join('')}
+              ${capabilities.map(c => `<span class="capability-tag">${c}</span>`).join('')}
             </div>
           </div>
         ` : ''}
