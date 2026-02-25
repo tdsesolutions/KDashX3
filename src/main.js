@@ -12,7 +12,8 @@ import { renderNodes } from './pages/nodes.js';
 import { renderProviders } from './pages/providers.js';
 import { renderTasks, renderNewTask, renderTaskDetail } from './pages/tasks.js';
 import { renderIntent } from './pages/intent.js';
-import { renderExecution, onExecutionMount, onExecutionUnmount } from './pages/execution.js';
+import { renderExecution as renderExecutionList } from './pages/execution-list.js';
+import { renderExecution as renderExecutionDetail, onExecutionMount, onExecutionUnmount } from './pages/execution.js';
 import { renderRouting } from './pages/routing.js';
 import { renderSettings } from './pages/settings.js';
 import './styles.css';
@@ -83,8 +84,12 @@ const routes = {
     requiresAuth: true
     // Note: Gating handled internally by intent page (shows different message if no online nodes)
   },
+  '/execution': { 
+    render: renderExecutionList, 
+    requiresAuth: true
+  },
   '/execution/:id': { 
-    render: (id) => renderExecution(id), 
+    render: (id) => renderExecutionDetail(id), 
     requiresAuth: true,
     dynamic: true,
     onMount: onExecutionMount,
@@ -116,10 +121,9 @@ function renderGlobalHeader(currentPath) {
   
   const navItems = [
     { path: '/dashboard', label: 'Dashboard' },
-    { path: '/intent', label: 'New Task' },
+    { path: '/intent', label: 'Intent' },
+    { path: '/execution', label: 'Execution' },
     { path: '/nodes', label: 'Nodes' },
-    { path: '/providers', label: 'Providers' },
-    { path: '/routing', label: 'Routing' },
     { path: '/settings', label: 'Settings' }
   ];
   

@@ -21,7 +21,7 @@ export function renderIntent() {
       <div class="intent-page">
         <header class="page-header">
           <div class="container">
-            <h1>New Task</h1>
+            <h1>Intent</h1>
             <p class="text-muted">Create and execute AI-powered tasks</p>
           </div>
         </header>
@@ -43,15 +43,15 @@ export function renderIntent() {
       <div class="intent-page">
         <header class="page-header">
           <div class="container">
-            <h1>New Task</h1>
+            <h1>Intent</h1>
             <p class="text-muted">Create and execute AI-powered tasks</p>
           </div>
         </header>
         <main class="container">
           <div class="blocked-state card">
             <div class="blocked-icon">⏳</div>
-            <h2>Node Paired - Start Connector</h2>
-            <p>Your node is registered but not online. Start the connector on your node to execute tasks.</p>
+            <h2>Node Paired, But Offline</h2>
+            <p>Start the connector on your node to go online and execute tasks.</p>
             <div class="blocked-actions">
               <a href="#/nodes" class="btn btn-primary">Go to Nodes</a>
               <button onclick="refreshNodeStatus()" class="btn btn-secondary">Refresh Status</button>
