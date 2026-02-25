@@ -2499,3 +2499,213 @@ a:hover {
   color: var(--text-muted);
   margin-bottom: 1.5rem;
 }
+
+/* ==================== SETTINGS EMBEDDED TABS ==================== */
+
+.settings-embedded-layout {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.settings-tabs-sidebar {
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+}
+
+.settings-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem;
+}
+
+.settings-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-secondary);
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.settings-tab:hover {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.settings-tab.active {
+  background: var(--accent-blue);
+  color: white;
+}
+
+.tab-icon {
+  font-size: 1.125rem;
+  width: 24px;
+  text-align: center;
+}
+
+.tab-label {
+  flex: 1;
+}
+
+.tab-badge {
+  background: var(--accent-green);
+  color: white;
+  font-size: 0.6875rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.tab-divider {
+  height: 1px;
+  background: var(--border-color);
+  margin: 0.5rem 0;
+}
+
+.tab-logout:hover {
+  background: rgba(220, 38, 38, 0.1);
+  color: var(--accent-red);
+}
+
+/* Content Area */
+.settings-content-area {
+  min-height: 600px;
+}
+
+.embedded-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+}
+
+.embedded-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.embedded-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.embedded-content {
+  min-height: 400px;
+}
+
+.embedded-empty {
+  padding: 2rem 0;
+}
+
+.embedded-gated {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.embedded-gated .gated-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.embedded-gated h3 {
+  margin-bottom: 0.5rem;
+}
+
+.embedded-gated p {
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Coming Soon */
+.coming-soon {
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.coming-soon-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.coming-soon h3 {
+  margin-bottom: 0.5rem;
+}
+
+.coming-soon p {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+}
+
+/* Account */
+.account-info {
+  max-width: 400px;
+}
+
+.account-field {
+  margin-bottom: 1.5rem;
+}
+
+.account-field label {
+  display: block;
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.account-value {
+  padding: 0.75rem 1rem;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-md);
+  font-size: 0.9375rem;
+}
+
+.account-actions {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .settings-embedded-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .settings-tabs-sidebar {
+    position: static;
+  }
+  
+  .settings-tabs {
+    flex-direction: row;
+    flex-wrap: wrap;
+    overflow-x: auto;
+  }
+  
+  .settings-tab {
+    flex: 1;
+    min-width: 100px;
+    justify-content: center;
+  }
+  
+  .tab-divider {
+    display: none;
+  }
+}

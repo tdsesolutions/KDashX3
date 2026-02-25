@@ -1,30 +1,30 @@
 /**
- * Settings Page - Configuration and Module Links
+ * Settings Page - Embedded Configuration Tabs
+ * 
+ * Nodes, Providers, Routing embedded as tabs
+ * Storage and Account as additional tabs
  */
 
 import { store } from '../lib/store.js';
+import { renderNodesList, renderEmptyState as renderNodesEmpty, renderAddNodeModal } from './nodes.js';
+import { renderProviders as renderProvidersContent } from './providers.js';
+import { renderRouting as renderRoutingContent } from './routing.js';
 
-const moduleIcons = {
-  workspace: '🏢',
-  nodes: '🖥️',
-  storage: '💾',
-  providers: '🔌',
-  routing: '📡',
-  healthChecks: '✅'
-};
-
-const moduleRoutes = {
-  workspace: '#/setup/workspace',
-  nodes: '#/nodes',
-  storage: '#/setup/storage',
-  providers: '#/providers',
-  routing: '#/routing',
-  healthChecks: '#/setup/health'
-};
+// Track active tab
+let activeSettingsTab = 'nodes';
 
 export function renderSettings() {
-  const progress = store.getSetupProgress();
   const auth = store.get('auth');
+  const nodes = store.get('nodes') || [];
+  
+  // Get URL hash to determine active tab
+  const hash = window.location.hash;
+  if (hash.includes('tab=')) {
+    const tabMatch = hash.match(/tab=(\w+)/);
+    if (tabMatch) {
+      activeSettingsTab = tabMatch[1];
+    }
+  }
   
   return `
     <div class="settings-page">
@@ -36,93 +36,63 @@ export function renderSettings() {
       </header>
       
       <main class="container">
-        <div class="settings-layout">
-          <!-- Setup Modules -->
-          <div class="settings-section card">
-            <h2>Setup Modules</h2>
-            <p class="text-muted">Return to any setup step to make changes</p>
-            
-            <div class="settings-modules">
-              ${progress.modules.map(m => renderModuleLink(m)).join('')}
-            </div>
-            
-            ${progress.percentage < 100 ? `
-              <a href="#/setup" class="btn btn-primary btn-full">
-                Continue Setup (${progress.percentage}%)
-              </a>
-            ` : ''}
+        <div class="settings-embedded-layout">
+          <!-- Left Sidebar Tabs -->
+          <div class="settings-tabs-sidebar">
+            <nav class="settings-tabs">
+              <button 
+                onclick="switchSettingsTab('nodes')" 
+                class="settings-tab ${activeSettingsTab === 'nodes' ? 'active' : ''}"
+              >
+                <span class="tab-icon">🖥️</span>
+                <span class="tab-label">Nodes</span>
+                ${nodes.length > 0 ? `<span class="tab-badge">${nodes.length}</span>` : ''}
+              </button>
+              
+              <button 
+                onclick="switchSettingsTab('providers')" 
+                class="settings-tab ${activeSettingsTab === 'providers' ? 'active' : ''}"
+              >
+                <span class="tab-icon">🔌</span>
+                <span class="tab-label">Providers</span>
+              </button>
+              
+              <button 
+                onclick="switchSettingsTab('routing')" 
+                class="settings-tab ${activeSettingsTab === 'routing' ? 'active' : ''}"
+              >
+                <span class="tab-icon">📡</span>
+                <span class="tab-label">Routing</span>
+              </button>
+              
+              <button 
+                onclick="switchSettingsTab('storage')" 
+                class="settings-tab ${activeSettingsTab === 'storage' ? 'active' : ''}"
+              >
+                <span class="tab-icon">💾</span>
+                <span class="tab-label">Storage</span>
+              </button>
+              
+              <div class="tab-divider"></div>
+              
+              <button 
+                onclick="switchSettingsTab('account')" 
+                class="settings-tab ${activeSettingsTab === 'account' ? 'active' : ''}"
+              >
+                <span class="tab-icon">👤</span>
+                <span class="tab-label">Account</span>
+              </button>
+              
+              <button onclick="handleLogout()" class="settings-tab tab-logout">
+                <span class="tab-icon">🚪</span>
+                <span class="tab-label">Logout</span>
+              </button>
+            </nav>
           </div>
           
-          <!-- Configuration Pages -->
-          <div class="settings-section card">
-            <h2>Configuration</h2>
-            <div class="config-links">
-              <a href="#/nodes" class="config-link">
-                <span class="config-icon">🖥️</span>
-                <div class="config-info">
-                  <span class="config-name">Nodes</span>
-                  <span class="config-desc">Manage compute nodes</span>
-                </div>
-                <span class="config-arrow">→</span>
-              </a>
-              
-              <a href="#/providers" class="config-link">
-                <span class="config-icon">🔌</span>
-                <div class="config-info">
-                  <span class="config-name">Providers</span>
-                  <span class="config-desc">Configure LLM providers</span>
-                </div>
-                <span class="config-arrow">→</span>
-              </a>
-              
-              <a href="#/routing" class="config-link">
-                <span class="config-icon">📡</span>
-                <div class="config-info">
-                  <span class="config-name">Routing</span>
-                  <span class="config-desc">Routing rules and testing</span>
-                </div>
-                <span class="config-arrow">→</span>
-              </a>
-              
-              <a href="#/tasks" class="config-link">
-                <span class="config-icon">📋</span>
-                <div class="config-info">
-                  <span class="config-name">Tasks</span>
-                  <span class="config-desc">View task history</span>
-                </div>
-                <span class="config-arrow">→</span>
-              </a>
-            </div>
-          </div>
-          
-          <!-- Account -->
-          <div class="settings-section card">
-            <h2>Account</h2>
-            <div class="account-info">
-              <div class="account-field">
-                <span class="field-label">Email</span>
-                <span class="field-value">${auth.user?.email || 'Not set'}</span>
-              </div>
-              <div class="account-field">
-                <span class="field-label">Name</span>
-                <span class="field-value">${auth.user?.name || 'Not set'}</span>
-              </div>
-            </div>
-            <div class="account-actions">
-              <button onclick="logout()" class="btn btn-secondary">Sign Out</button>
-            </div>
-          </div>
-          
-          <!-- Danger Zone -->
-          <div class="settings-section card danger-zone">
-            <h2>Danger Zone</h2>
-            <div class="danger-item">
-              <div class="danger-info">
-                <h4>Reset All Data</h4>
-                <p>Clear all settings, nodes, and tasks. Cannot be undone.</p>
-              </div>
-              <button onclick="resetAllData()" class="btn btn-danger">Reset</button>
-            </div>
+          <!-- Right Content Area -->
+          <div class="settings-content-area">
+            ${renderActiveSettingsTab()}
           </div>
         </div>
       </main>
@@ -130,52 +100,201 @@ export function renderSettings() {
   `;
 }
 
-function renderModuleLink(module) {
-  const icon = moduleIcons[module.name];
-  const route = moduleRoutes[module.name];
-  const isCompleted = module.completed;
+function renderActiveSettingsTab() {
+  switch (activeSettingsTab) {
+    case 'nodes':
+      return renderEmbeddedNodes();
+    case 'providers':
+      return renderEmbeddedProviders();
+    case 'routing':
+      return renderEmbeddedRouting();
+    case 'storage':
+      return renderEmbeddedStorage();
+    case 'account':
+      return renderEmbeddedAccount();
+    default:
+      return renderEmbeddedNodes();
+  }
+}
+
+function renderEmbeddedNodes() {
+  const nodes = store.get('nodes') || [];
+  const hasNodes = nodes.length > 0;
+  const hasOnlineNodes = store.hasConnectedNodes();
   
   return `
-    <a href="${route}" class="module-link ${isCompleted ? 'completed' : 'pending'}">
-      <span class="module-icon">${icon}</span>
-      <div class="module-info">
-        <span class="module-name">${module.label}</span>
-        <span class="module-status">
-          ${isCompleted 
-            ? '<span class="badge badge-success">✓ Complete</span>'
-            : '<span class="badge badge-warning">○ Pending</span>'
-          }
-        </span>
+    <div class="embedded-panel">
+      <div class="embedded-header">
+        <div>
+          <h2>Nodes</h2>
+          <p class="text-muted">Manage your compute nodes. API keys stay on these nodes.</p>
+        </div>
+        <button onclick="showAddNodeModal()" class="btn btn-primary">
+          <span>+</span> Add Node
+        </button>
       </div>
-      <span class="module-arrow">→</span>
-    </a>
+      
+      ${!hasNodes ? `
+        <div class="embedded-empty">
+          ${renderNodesEmpty()}
+        </div>
+      ` : `
+        <div class="embedded-content">
+          <div class="nodes-toolbar">
+            <button onclick="refreshEmbeddedNodes()" class="btn btn-secondary">
+              🔄 Refresh
+            </button>
+          </div>
+          ${renderNodesList(nodes)}
+        </div>
+      `}
+      
+      ${renderAddNodeModal()}
+    </div>
   `;
 }
 
-// Actions
-window.logout = function() {
-  if (confirm('Sign out of Mission Control?')) {
-    store.set('auth', {
-      isAuthenticated: false,
-      user: null,
-      token: null
-    });
-    window.navigate('/login');
+function renderEmbeddedProviders() {
+  const nodes = store.get('nodes') || [];
+  const hasOnlineNodes = store.hasConnectedNodes();
+  
+  if (!hasOnlineNodes) {
+    return `
+      <div class="embedded-panel">
+        <div class="embedded-header">
+          <h2>Providers</h2>
+        </div>
+        <div class="embedded-gated">
+          <div class="gated-icon">🔌</div>
+          <h3>Configure Providers</h3>
+          <p>Providers are configured on your connected nodes.</p>
+          ${nodes.length === 0 ? `
+            <p class="text-muted">Add a node first to configure providers.</p>
+            <button onclick="switchSettingsTab('nodes')" class="btn btn-primary">Go to Nodes</button>
+          ` : `
+            <p class="text-muted">Node paired, but offline. Start the connector to go online.</p>
+            <button onclick="switchSettingsTab('nodes')" class="btn btn-primary">Check Node Status</button>
+          `}
+        </div>
+      </div>
+    `;
   }
+  
+  return `
+    <div class="embedded-panel">
+      <div class="embedded-header">
+        <h2>Providers</h2>
+        <p class="text-muted">LLM providers configured on your nodes</p>
+      </div>
+      <div class="embedded-content">
+        ${renderProvidersContent()}
+      </div>
+    </div>
+  `;
+}
+
+function renderEmbeddedRouting() {
+  const nodes = store.get('nodes') || [];
+  const hasOnlineNodes = store.hasConnectedNodes();
+  
+  if (!hasOnlineNodes) {
+    return `
+      <div class="embedded-panel">
+        <div class="embedded-header">
+          <h2>Routing</h2>
+        </div>
+        <div class="embedded-gated">
+          <div class="gated-icon">📡</div>
+          <h3>Routing Configuration</h3>
+          <p>Routing rules are applied when dispatching tasks to your nodes.</p>
+          ${nodes.length === 0 ? `
+            <p class="text-muted">Add a node first to configure routing.</p>
+            <button onclick="switchSettingsTab('nodes')" class="btn btn-primary">Go to Nodes</button>
+          ` : `
+            <p class="text-muted">Node paired, but offline. Start the connector to go online.</p>
+            <button onclick="switchSettingsTab('nodes')" class="btn btn-primary">Check Node Status</button>
+          `}
+        </div>
+      </div>
+    `;
+  }
+  
+  return `
+    <div class="embedded-panel">
+      <div class="embedded-header">
+        <h2>Routing</h2>
+        <p class="text-muted">Task routing rules and preferences</p>
+      </div>
+      <div class="embedded-content">
+        ${renderRoutingContent()}
+      </div>
+    </div>
+  `;
+}
+
+function renderEmbeddedStorage() {
+  return `
+    <div class="embedded-panel">
+      <div class="embedded-header">
+        <h2>Storage & Permissions</h2>
+        <p class="text-muted">Configure allowed folders and write-fence</p>
+      </div>
+      <div class="embedded-content">
+        <div class="coming-soon">
+          <div class="coming-soon-icon">💾</div>
+          <h3>Storage Configuration</h3>
+          <p>Storage settings are managed per-node.</p>
+          <a href="#/setup/storage" class="btn btn-primary">Configure in Setup</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderEmbeddedAccount() {
+  const auth = store.get('auth');
+  
+  return `
+    <div class="embedded-panel">
+      <div class="embedded-header">
+        <h2>Account</h2>
+        <p class="text-muted">Your account information</p>
+      </div>
+      <div class="embedded-content">
+        <div class="account-info">
+          <div class="account-field">
+            <label>Email</label>
+            <div class="account-value">${auth.user?.email || 'N/A'}</div>
+          </div>
+          <div class="account-field">
+            <label>Workspace</label>
+            <div class="account-value">${store.get('workspace')?.name || 'Default'}</div>
+          </div>
+          <div class="account-actions">
+            <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// Tab switching
+window.switchSettingsTab = function(tab) {
+  activeSettingsTab = tab;
+  window.location.hash = `#/settings?tab=${tab}`;
+  // Re-render
+  const app = document.getElementById('app');
+  const content = renderSettings();
+  const header = document.querySelector('.global-header')?.outerHTML || '';
+  app.innerHTML = header + content;
+  attachNavHandlers();
 };
 
-window.resetAllData = function() {
-  if (!confirm('WARNING: This will delete ALL data including nodes, tasks, and settings.\n\nThis cannot be undone.\n\nAre you sure?')) return;
-  
-  if (!confirm('Final confirmation: Type "RESET" to confirm')) {
-    const confirmation = prompt('Type "RESET" to confirm complete data reset:');
-    if (confirmation !== 'RESET') {
-      alert('Reset cancelled');
-      return;
-    }
-  }
-  
-  store.reset();
-  alert('All data has been reset');
-  window.navigate('/setup');
+window.refreshEmbeddedNodes = async function() {
+  await store.syncNodes();
+  switchSettingsTab('nodes');
 };
+
+// Node functions are already on window from nodes.js
+// Just ensure they're available for the embedded view

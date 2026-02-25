@@ -123,7 +123,6 @@ function renderGlobalHeader(currentPath) {
     { path: '/dashboard', label: 'Dashboard' },
     { path: '/intent', label: 'Intent' },
     { path: '/execution', label: 'Execution' },
-    { path: '/nodes', label: 'Nodes' },
     { path: '/settings', label: 'Settings' }
   ];
   

@@ -136,7 +136,7 @@ function renderNodeInfoModal() {
   `;
 }
 
-function renderNodesList(nodes) {
+export function renderNodesList(nodes) {
   return `
     <div class="nodes-list">
       ${nodes.map(node => renderNodeCard(node)).join('')}
@@ -221,7 +221,7 @@ function renderNodeCard(node) {
   `;
 }
 
-function renderEmptyState() {
+export function renderEmptyState() {
   return `
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
@@ -236,7 +236,7 @@ function renderEmptyState() {
   `;
 }
 
-function renderAddNodeModal() {
+export function renderAddNodeModal() {
   return `
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
