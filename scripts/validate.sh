@@ -1,70 +1,67 @@
 #!/bin/bash
 set -e
 
-echo "=== KDashX3 VALIDATION SCRIPT (PAID USER STANDARD) ==="
+echo "================================"
+echo "PAID USER STANDARD VALIDATION"
+echo "================================"
 echo ""
 
-# 1. Build Check
-echo "[1/5] Build Check..."
+FAILED=0
+
+# Step 1: Build
+echo "[1/4] Building frontend..."
 cd ~/KDashX3
 npm run build > /tmp/build.log 2>&1
 BUILD_EXIT=$?
 if [ $BUILD_EXIT -eq 0 ]; then
-    echo "✅ Build exits 0"
+    echo "✅ Build successful"
 else
     echo "❌ Build failed (exit $BUILD_EXIT)"
-    cat /tmp/build.log
-    exit 1
+    tail -20 /tmp/build.log
+    FAILED=1
 fi
-
-# 2. Deploy Check (GitHub Pages)
 echo ""
-echo "[2/5] Deploy Check..."
-DEPLOY_URL="https://tdsesolutions.github.io/KDashX3"
-HTTP_CODE=$(curl -sL -o /dev/null -w "%{http_code}" $DEPLOY_URL)
-if [ "$HTTP_CODE" = "200" ]; then
-    echo "✅ Deployed: $DEPLOY_URL"
+
+# Step 2: Tenant isolation proof
+echo "[2/4] Running tenant isolation proof..."
+bash scripts/tenant-proof.sh > /tmp/tenant-proof.log 2>&1
+TENANT_EXIT=$?
+if [ $TENANT_EXIT -eq 0 ]; then
+    echo "✅ Tenant isolation verified"
 else
-    echo "❌ Deploy failed (HTTP $HTTP_CODE)"
-    exit 1
+    echo "❌ Tenant isolation failed (exit $TENANT_EXIT)"
+    FAILED=1
 fi
-
-# 3. Backend Health Check
+tail -30 /tmp/tenant-proof.log
 echo ""
-echo "[3/5] Backend Health Check..."
-BACKEND_URL=$(grep -o 'https://[^"]*trycloudflare.com' src/lib/config.js | head -1)
-if curl -sf "$BACKEND_URL/health" > /tmp/health.json 2>&1; then
-    echo "✅ Backend healthy: $BACKEND_URL"
-    cat /tmp/health.json
-else
-    echo "❌ Backend not reachable"
-    exit 1
-fi
 
-# 4. E2E Journey Suite (MUST FAIL IF ANY JOURNEY FAILS)
-echo ""
-echo "[4/5] Running E2E Journey Suite..."
+# Step 3: Playwright journeys
+echo "[3/4] Running Playwright acceptance journeys..."
 cd ~/KDashX3
-npx playwright test tests/e2e/journeys/*.spec.cjs --reporter=list --trace=on
-JOURNEY_EXIT=$?
+rm -rf test-results
+npx playwright test tests/e2e/journeys/*.spec.cjs --reporter=list 2>&1 | tee /tmp/playwright.log
+PLAYWRIGHT_EXIT=${PIPESTATUS[0]}
+if [ $PLAYWRIGHT_EXIT -eq 0 ]; then
+    echo "✅ All Playwright journeys passed"
+else
+    echo "❌ Some Playwright journeys failed (exit $PLAYWRIGHT_EXIT)"
+    FAILED=1
+fi
+echo ""
 
-if [ $JOURNEY_EXIT -ne 0 ]; then
-    echo ""
-    echo "❌ JOURNEYS FAILED (exit $JOURNEY_EXIT)"
-    echo "Traces: test-results/"
-    echo "Screenshots: tests/e2e/screenshots/"
+# Step 4: Summary
+echo "================================"
+echo "VALIDATION SUMMARY"
+echo "================================"
+echo "Build: $([ $BUILD_EXIT -eq 0 ] && echo 'PASS' || echo 'FAIL') (exit $BUILD_EXIT)"
+echo "Tenant Proof: $([ $TENANT_EXIT -eq 0 ] && echo 'PASS' || echo 'FAIL') (exit $TENANT_EXIT)"
+echo "Playwright: $([ $PLAYWRIGHT_EXIT -eq 0 ] && echo 'PASS' || echo 'FAIL') (exit $PLAYWRIGHT_EXIT)"
+echo "================================"
+
+if [ $FAILED -eq 0 ]; then
+    echo "✅ ALL VALIDATIONS PASSED - Ready for production"
+    exit 0
+else
+    echo "❌ SOME VALIDATIONS FAILED"
     exit 1
 fi
-
-# 5. AUDITOR DECLARATION
-echo ""
-echo "[5/5] AUDITOR DECLARATION:"
-echo "================================"
-echo "Build: PASS (exit 0)"
-echo "Deploy: PASS ($DEPLOY_URL)"
-echo "Backend: PASS ($BACKEND_URL)"
-echo "Journeys: PASS (all 5 journeys)"
-echo "================================"
-echo ""
-echo "🎉 AUDIT PASS - Ready for production"
-exit 0

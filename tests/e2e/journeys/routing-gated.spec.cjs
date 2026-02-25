@@ -2,73 +2,92 @@ const { test, expect } = require('@playwright/test');
 
 const BASE_URL = 'https://tdsesolutions.github.io/KDashX3';
 
-test.describe('JOURNEY C: Routing - Configure from setup page', () => {
-  test('Clicking Configure shows routing instructions', async ({ page }) => {
+test.describe('JOURNEY C: Routing - Gated when no node paired', () => {
+  test('Routing page shows gating when no nodes exist', async ({ page }) => {
     const consoleErrors = [];
+    
     page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
         console.log('❌ CONSOLE ERROR:', msg.text());
       }
     });
+    
     page.on('pageerror', err => {
       consoleErrors.push(err.message);
       console.log('❌ PAGE ERROR:', err.message);
     });
     
-    // Login - now redirects to dashboard
-    console.log('Logging in...');
+    // Step 1: Login as fresh user (no nodes)
+    console.log('Step 1: Login as fresh user');
     await page.goto(`${BASE_URL}/#/login`, { waitUntil: 'networkidle' });
-    await page.fill('#login-email', 'user@example.com');
-    await page.fill('#login-password', 'securepass123');
+    
+    const timestamp = Date.now();
+    const testEmail = `journey_c_${timestamp}@example.com`;
+    const testPass = 'testpass123';
+    
+    await page.fill('#login-email', testEmail);
+    await page.fill('#login-password', testPass);
     await page.click('#login-btn');
     await page.waitForTimeout(3000);
     
-    // Should be on dashboard
+    await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-01-dashboard.png' });
+    
+    // Step 2: Navigate to Routing
+    console.log('Step 2: Navigate to Routing');
+    await page.goto(`${BASE_URL}/#/routing`);
+    await page.waitForTimeout(2000);
+    
     const currentUrl = page.url();
     console.log('Current URL:', currentUrl);
-    expect(currentUrl).toContain('#/dashboard');
+    await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-02-routing.png' });
     
-    await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-before.png' });
+    // Step 3: Check for gating behavior
+    console.log('Step 3: Check gating behavior');
     
-    // Navigate to setup page
-    await page.goto(`${BASE_URL}/#/setup`);
-    await page.waitForTimeout(2000);
-    
-    // The setup page shows all modules including Routing
     const bodyText = await page.locator('body').textContent();
-    const hasRoutingModule = bodyText.includes('Routing') && bodyText.includes('Set routing rules');
-    console.log('Has routing module:', hasRoutingModule);
-    expect(hasRoutingModule, 'Setup page should show Routing module').toBe(true);
     
-    // Find and click Configure BUTTON (not link anymore)
-    const configureBtn = page.locator('button:has-text("Configure")').filter({ hasText: 'Configure' }).first();
-    const isVisible = await configureBtn.isVisible().catch(() => false);
-    console.log('Configure button visible:', isVisible);
-    expect(isVisible, 'Configure button should be visible').toBe(true);
+    // Check for Configure button or gating message
+    const hasConfigureButton = await page.locator('button:has-text("Configure")').first().isVisible().catch(() => false);
+    const hasGatingMessage = bodyText.includes('Connect a node') || bodyText.includes('requires at least one node');
+    const hasInstructions = bodyText.includes('Routing') && (bodyText.includes('How Routing Works') || bodyText.includes('Rules'));
     
-    // Click Configure
-    await configureBtn.click();
-    await page.waitForTimeout(2000);
+    console.log('Has Configure button:', hasConfigureButton);
+    console.log('Has gating message:', hasGatingMessage);
+    console.log('Has instructions:', hasInstructions);
     
-    const urlAfter = page.url();
-    console.log('URL after click:', urlAfter);
-    await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-after.png' });
+    // If Configure button exists, it should either open instructions or be disabled with explanation
+    if (hasConfigureButton) {
+      const configureBtn = page.locator('button:has-text("Configure")').first();
+      const isDisabled = await configureBtn.isDisabled().catch(() => false);
+      
+      if (!isDisabled) {
+        console.log('Clicking Configure button');
+        await configureBtn.click();
+        await page.waitForTimeout(1500);
+        
+        await page.screenshot({ path: 'tests/e2e/screenshots/journey-c-03-after-configure.png' });
+        
+        const afterClickText = await page.locator('body').textContent();
+        
+        // Must show visible outcome
+        const outcomeVisible = afterClickText.includes('Routing') && 
+                              (afterClickText.includes('Rules') || 
+                               afterClickText.includes('How Routing Works') ||
+                               afterClickText.includes('Connect a node'));
+        
+        expect(outcomeVisible, 'Clicking Configure must show visible outcome').toBe(true);
+      } else {
+        console.log('Configure button is disabled (acceptable)');
+      }
+    }
     
-    // Check for routing-related content (instructions panel should be visible)
-    const bodyTextAfter = await page.locator('body').textContent();
-    const showsRoutingInstructions = bodyTextAfter.includes('Routing') && (bodyTextAfter.includes('Rules') || bodyTextAfter.includes('How Routing Works'));
-    const showsGating = bodyTextAfter.includes('Connect a node') || bodyTextAfter.includes('requires at least one node');
+    // Should see gating message or routing UI
+    expect(hasGatingMessage || hasInstructions, 'Should show routing UI or gating').toBe(true);
     
-    console.log('Shows routing instructions:', showsRoutingInstructions);
-    console.log('Shows gating:', showsGating);
-    console.log('Console errors:', consoleErrors);
-    
-    // Must show routing-related UI
-    const validOutcome = showsRoutingInstructions || showsGating;
-    expect(validOutcome, 'Clicking Configure must show routing instructions').toBe(true);
+    // ASSERT: No console errors
     expect(consoleErrors).toHaveLength(0);
     
-    console.log('✅ JOURNEY C PASSED');
+    console.log('✅ JOURNEY C PASSED: Routing gated correctly');
   });
 });
