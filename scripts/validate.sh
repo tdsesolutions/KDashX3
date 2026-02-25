@@ -56,8 +56,22 @@ else
 fi
 echo ""
 
-# Step 4: Check UI files have correct URLs
-echo "[4/4] Checking UI configuration..."
+# Step 4: Phase A E2E Journey Test (optional but preferred)
+echo "[4/5] Running Phase A execution flow journey..."
+cd ~/KDashX3
+npx playwright test tests/e2e/journeys/phasea-execution-flow.spec.cjs --reporter=line > /tmp/phasea.log 2>&1
+PHASEA_EXIT=$?
+if [ $PHASEA_EXIT -eq 0 ]; then
+    echo "✅ Phase A journey passed"
+else
+    echo "⚠️ Phase A journey failed or incomplete (may need online node)"
+    echo "   Check screenshots in tests/e2e/screenshots/"
+fi
+tail -10 /tmp/phasea.log
+echo ""
+
+# Step 5: Check UI files have correct URLs
+echo "[5/5] Checking UI configuration..."
 if grep -q "instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net" ~/KDashX3/src/lib/config.js; then
     echo "✅ API_BASE_URL uses stable Tailscale URL"
 else
