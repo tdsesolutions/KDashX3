@@ -95,7 +95,7 @@ window.hideRoutingGatingModal = function() {
   document.getElementById('routing-gating-modal')?.classList.add('hidden');
 };
 
-function renderRoutingSimulator(hasNodes) {
+export function renderRoutingSimulator(hasNodes) {
   return `
     <div class="routing-simulator card">
       <h2>Test Routing Brain</h2>
@@ -142,7 +142,7 @@ function renderRoutingSimulator(hasNodes) {
   `;
 }
 
-function renderRoutingRules(rules) {
+export function renderRoutingRules(rules) {
   return `
     <div class="routing-rules card">
       <div class="rules-header">
@@ -174,7 +174,7 @@ function renderRoutingRules(rules) {
   `;
 }
 
-function renderRoutingSettings() {
+export function renderRoutingSettings() {
   const config = store.get('setup.routing.data');
   
   return `

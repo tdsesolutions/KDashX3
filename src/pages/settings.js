@@ -7,8 +7,8 @@
 
 import { store } from '../lib/store.js';
 import { renderNodesList, renderEmptyState as renderNodesEmpty, renderAddNodeModal } from './nodes.js';
-import { renderProviders as renderProvidersContent } from './providers.js';
-import { renderRouting as renderRoutingContent } from './routing.js';
+import { renderNodeProviders, renderFallbackOrder, renderProviderConfigModal } from './providers.js';
+import { renderRoutingSimulator, renderRoutingRules, renderRoutingSettings } from './routing.js';
 
 // Track active tab
 let activeSettingsTab = 'nodes';
@@ -155,9 +155,10 @@ function renderEmbeddedNodes() {
 }
 
 function renderEmbeddedProviders() {
-  const nodes = store.get('nodes') || [];
+  const connectedNodes = store.getConnectedNodes();
+  const allNodes = store.get('nodes') || [];
   const hasOnlineNodes = store.hasConnectedNodes();
-  
+
   if (!hasOnlineNodes) {
     return `
       <div class="embedded-panel">
@@ -168,7 +169,7 @@ function renderEmbeddedProviders() {
           <div class="gated-icon">🔌</div>
           <h3>Configure Providers</h3>
           <p>Providers are configured on your connected nodes.</p>
-          ${nodes.length === 0 ? `
+          ${allNodes.length === 0 ? `
             <p class="text-muted">Add a node first to configure providers.</p>
             <button onclick="switchSettingsTab('nodes')" class="btn btn-primary">Go to Nodes</button>
           ` : `
@@ -179,24 +180,34 @@ function renderEmbeddedProviders() {
       </div>
     `;
   }
-  
+
   return `
     <div class="embedded-panel">
       <div class="embedded-header">
-        <h2>Providers</h2>
-        <p class="text-muted">LLM providers configured on your nodes</p>
+        <div>
+          <h2>Providers</h2>
+          <p class="text-muted">LLM providers configured on your nodes</p>
+        </div>
       </div>
       <div class="embedded-content">
-        ${renderProvidersContent()}
+        ${connectedNodes.map(node => renderNodeProviders(node)).join('')}
+
+        <div class="providers-fallback card">
+          <h3>Fallback Order</h3>
+          <p class="text-muted">When primary provider fails, try these in order</p>
+          ${renderFallbackOrder()}
+        </div>
       </div>
+      ${renderProviderConfigModal()}
     </div>
   `;
 }
 
 function renderEmbeddedRouting() {
-  const nodes = store.get('nodes') || [];
+  const allNodes = store.get('nodes') || [];
   const hasOnlineNodes = store.hasConnectedNodes();
-  
+  const rules = store.get('routingRules') || [];
+
   if (!hasOnlineNodes) {
     return `
       <div class="embedded-panel">
@@ -207,7 +218,7 @@ function renderEmbeddedRouting() {
           <div class="gated-icon">📡</div>
           <h3>Routing Configuration</h3>
           <p>Routing rules are applied when dispatching tasks to your nodes.</p>
-          ${nodes.length === 0 ? `
+          ${allNodes.length === 0 ? `
             <p class="text-muted">Add a node first to configure routing.</p>
             <button onclick="switchSettingsTab('nodes')" class="btn btn-primary">Go to Nodes</button>
           ` : `
@@ -218,15 +229,25 @@ function renderEmbeddedRouting() {
       </div>
     `;
   }
-  
+
   return `
     <div class="embedded-panel">
       <div class="embedded-header">
-        <h2>Routing</h2>
-        <p class="text-muted">Task routing rules and preferences</p>
+        <div>
+          <h2>Routing</h2>
+          <p class="text-muted">Task routing rules and preferences</p>
+        </div>
       </div>
       <div class="embedded-content">
-        ${renderRoutingContent()}
+        <div class="routing-layout">
+          <div class="routing-main">
+            ${renderRoutingSimulator(hasOnlineNodes)}
+            ${renderRoutingRules(rules)}
+          </div>
+          <div class="routing-sidebar">
+            ${renderRoutingSettings()}
+          </div>
+        </div>
       </div>
     </div>
   `;

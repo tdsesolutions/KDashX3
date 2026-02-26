@@ -101,7 +101,7 @@ window.hideProvidersGatingModal = function() {
   document.getElementById('providers-gating-modal')?.classList.add('hidden');
 };
 
-function renderNodeProviders(node) {
+export function renderNodeProviders(node) {
   const providers = store.get('providers').filter(p => p.nodeId === node.id);
   
   return `
@@ -163,7 +163,7 @@ function renderProviderRow(provider, node) {
   `;
 }
 
-function renderFallbackOrder() {
+export function renderFallbackOrder() {
   const providers = store.get('providers').filter(p => p.status === 'configured');
   
   if (providers.length === 0) {
@@ -191,7 +191,7 @@ function renderFallbackOrder() {
   `;
 }
 
-function renderProviderConfigModal() {
+export function renderProviderConfigModal() {
   return `
     <div id="provider-config-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProviderConfigModal()"></div>
