@@ -162,11 +162,11 @@ function renderSetupNodeInfoModal() {
               <li><strong>Click "Add Node"</strong> to generate a pairing token for your workspace</li>
               <li>
                 <strong>On your server/computer,</strong> download the node connector:
-                <code>curl -o connector.js https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/connector.js</code>
+                <code>curl -o connector.js https://mc.tdsesolutions.com/connector.js</code>
               </li>
               <li>
                 <strong>Run the connector with your token:</strong>
-                <code>node connector.js --api https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net --token [YOUR_TOKEN] --name "My Node"</code>
+                <code>node connector.js --api https://mc.tdsesolutions.com --token [YOUR_TOKEN] --name "My Node"</code>
               </li>
               <li>
                 <strong>Add API keys on your node:</strong>
@@ -336,11 +336,11 @@ function getModuleInstructions(moduleName) {
             <li><strong>Click "Add Node" below</strong> to generate a pairing token for your workspace</li>
             <li>
               <strong>On your server/computer,</strong> download the node connector:
-              <code>curl -o connector.js https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/connector.js</code>
+              <code>curl -o connector.js https://mc.tdsesolutions.com/connector.js</code>
             </li>
             <li>
               <strong>Run the connector with your token:</strong>
-              <code>node connector.js --api https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net --token [YOUR_TOKEN] --name "My Node"</code>
+              <code>node connector.js --api https://mc.tdsesolutions.com --token [YOUR_TOKEN] --name "My Node"</code>
             </li>
             <li>
               <strong>Add API keys on your node:</strong>
@@ -900,7 +900,7 @@ export function renderHealthChecks() {
 
 window.testBackendConnection = async function() {
   try {
-    const response = await fetch('https://instance-2026clawbot-vm0210-142930.tail0f5b68.ts.net/health');
+    const response = await fetch('https://mc.tdsesolutions.com/health');
     if (response.ok) {
       alert('✓ Backend connection successful');
     } else {
