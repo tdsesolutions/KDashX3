@@ -9,10 +9,13 @@ import { API_BASE_URL } from '../lib/config.js';
 export function renderNodes() {
   const nodes = store.get('nodes') || [];
   const hasNodes = nodes.length > 0;
-  
+
   // Sync nodes on load
   store.syncNodes();
-  
+
+  // Trigger health check on render
+  setTimeout(checkApiHealth, 0);
+
   return `
     <div class="nodes-page">
       <header class="page-header">
@@ -26,8 +29,21 @@ export function renderNodes() {
           <p class="text-muted">Manage your compute nodes. API keys stay on these nodes.</p>
         </div>
       </header>
-      
+
       <main class="container">
+        <!-- API Health Banner -->
+        <div id="api-health-banner" class="api-health-banner hidden" style="background: #fee2e2; border: 1px solid #ef4444; border-radius: 8px; padding: 1rem; margin-bottom: 1rem;">
+          <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span style="font-size: 1.25rem;">⚠️</span>
+            <div style="flex: 1;">
+              <strong style="color: #b91c1c;">Can't reach Mission Control API.</strong>
+              <p style="margin: 0.25rem 0 0 0; color: #7f1d1d; font-size: 0.875rem;">
+                Try hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).<br>
+                If it still fails, check your network.
+              </p>
+            </div>
+          </div>
+        </div>
         <div class="nodes-toolbar">
           <button onclick="showAddNodeModal()" class="btn btn-primary">
             <span>+</span> Add Node
@@ -304,6 +320,13 @@ window.hideAddNodeModal = function() {
 };
 
 window.generatePairingToken = async function() {
+  // Health check
+  await checkApiHealth();
+  if (!apiHealthStatus.healthy) {
+    alert("Can't reach Mission Control API.\n\nTry hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).\nIf it still fails, check your network.");
+    return;
+  }
+
   const btn = document.getElementById('create-pairing-btn');
   const name = document.getElementById('node-name').value || 'New Node';
   const type = document.getElementById('node-type').value;
@@ -352,10 +375,17 @@ Last heartbeat: ${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleSt
 };
 
 window.disconnectNodeById = async function(nodeId) {
+  // Health check
+  await checkApiHealth();
+  if (!apiHealthStatus.healthy) {
+    alert("Can't reach Mission Control API.\n\nTry hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).\nIf it still fails, check your network.");
+    return;
+  }
+
   if (!confirm('Disconnect this node? It will go offline but can be reconnected later.')) {
     return;
   }
-  
+
   try {
     await disconnectNode(nodeId);
     await store.syncNodes();
@@ -367,10 +397,17 @@ window.disconnectNodeById = async function(nodeId) {
 };
 
 window.deleteNodeById = async function(nodeId) {
+  // Health check
+  await checkApiHealth();
+  if (!apiHealthStatus.healthy) {
+    alert("Can't reach Mission Control API.\n\nTry hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).\nIf it still fails, check your network.");
+    return;
+  }
+
   if (!confirm('Permanently remove this node? This cannot be undone.')) {
     return;
   }
-  
+
   try {
     await deleteNode(nodeId);
     // Remove from local store
@@ -404,3 +441,54 @@ setInterval(() => {
     store.syncNodes();
   }
 }, 10000);
+
+// API Health Check
+let apiHealthStatus = { healthy: true, checked: false };
+
+window.checkApiHealth = async function() {
+  try {
+    const response = await fetch(`${API_BASE_URL}/health`, { method: 'GET', mode: 'cors' });
+    apiHealthStatus = { healthy: response.ok, checked: true };
+  } catch (err) {
+    apiHealthStatus = { healthy: false, checked: true };
+  }
+  updateHealthBanner();
+};
+
+function updateHealthBanner() {
+  const banner = document.getElementById('api-health-banner');
+  if (!banner) return;
+
+  if (!apiHealthStatus.healthy) {
+    banner.classList.remove('hidden');
+    // Disable critical action buttons
+    document.querySelectorAll('.nodes-toolbar button, .node-card button').forEach(btn => {
+      if (btn.textContent.includes('Remove') ||
+          btn.textContent.includes('Disconnect') ||
+          btn.textContent.includes('Add Node') ||
+          btn.id === 'create-pairing-btn') {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+      }
+    });
+  } else {
+    banner.classList.add('hidden');
+    // Re-enable buttons
+    document.querySelectorAll('.nodes-toolbar button, .node-card button').forEach(btn => {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+    });
+  }
+}
+
+// Health check before critical actions
+window.requireApiHealth = async function(actionFn) {
+  await checkApiHealth();
+  if (!apiHealthStatus.healthy) {
+    alert("Can't reach Mission Control API. Please check your connection and try again.");
+    return;
+  }
+  return actionFn();
+};

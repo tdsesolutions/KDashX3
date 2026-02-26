@@ -35,7 +35,15 @@ jobs:
       
       - name: Build
         run: npm run build
-      
+
+      - name: Fail if tailnet URL leaked into build
+        run: |
+          if grep -R "ts.net" -n dist/; then
+            echo "ERROR: dist contains a tailnet URL (ts.net). Refusing to deploy."
+            exit 1
+          fi
+          echo "OK: No ts.net URLs found in dist."
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
       
