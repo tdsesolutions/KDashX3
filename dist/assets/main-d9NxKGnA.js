@@ -2363,7 +2363,7 @@ Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"
         </div>
       </div>
     </div>
-  `}async function y(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=ct(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,y(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,_("/locked");return}}await _(e)}function pt(e){if(b[e])return{route:b[e],params:null};for(const[t,s]of Object.entries(b))if(s.dynamic){const n=t.replace(/:\w+/g,"([^/]+)"),a=new RegExp(`^${n}$`),i=e.match(a);if(i)return{route:s,params:i[1]}}return{route:b["/dashboard"],params:null}}async function _(e){const t=document.getElementById("app"),s=o.get("auth");t.innerHTML=`
+  `}async function y(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=ct(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,y(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,_("/locked");return}}await _(e)}function pt(e){const t=e.split("?")[0];if(b[t])return{route:b[t],params:null};for(const[s,n]of Object.entries(b))if(n.dynamic){const a=s.replace(/:\w+/g,"([^/]+)"),i=new RegExp(`^${a}$`),r=t.match(i);if(r)return{route:n,params:r[1]}}return{route:b["/dashboard"],params:null}}async function _(e){const t=document.getElementById("app"),s=o.get("auth");t.innerHTML=`
     <div class="loading-screen">
       <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
       <div class="spinner"></div>

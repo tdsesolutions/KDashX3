@@ -266,9 +266,12 @@ export async function navigate(path, skipHistory = false) {
 
 // Match route with support for dynamic segments
 function matchRoute(path) {
+  // Strip query string for matching (e.g., /settings?tab=providers -> /settings)
+  const pathWithoutQuery = path.split('?')[0];
+  
   // Exact match first
-  if (routes[path]) {
-    return { route: routes[path], params: null };
+  if (routes[pathWithoutQuery]) {
+    return { route: routes[pathWithoutQuery], params: null };
   }
   
   // Try dynamic routes
@@ -278,7 +281,7 @@ function matchRoute(path) {
       // e.g., '/tasks/:id' -> /^\/tasks\/([^\/]+)$/
       const pattern = routePath.replace(/:\w+/g, '([^/]+)');
       const regex = new RegExp(`^${pattern}$`);
-      const match = path.match(regex);
+      const match = pathWithoutQuery.match(regex);
       
       if (match) {
         return { route, params: match[1] };
