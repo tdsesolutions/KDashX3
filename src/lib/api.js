@@ -75,6 +75,13 @@ export async function createPairingToken() {
   return apiCall('/pairing-tokens', { method: 'POST' });
 }
 
+export async function createReconnectToken(nodeId) {
+  return apiCall('/pairing-tokens/reconnect', {
+    method: 'POST',
+    body: JSON.stringify({ node_id: nodeId })
+  });
+}
+
 // ==================== NODES ====================
 
 export async function getNodes() {

@@ -180,9 +180,15 @@ function renderNodeCard(node) {
     server: '🖥️'
   };
   
-  // ONLINE: Only true if backend reports active WebSocket (node.online)
-  // PAIRED: Node exists in DB with status (regardless of online state)
-  const isOnline = node.online === true;
+  // ACCURATE ONLINE STATUS: Check heartbeat within 90 seconds
+  const HEARTBEAT_THRESHOLD = 90 * 1000; // 90 seconds
+  const lastHeartbeat = node.last_heartbeat ? new Date(node.last_heartbeat).getTime() : 0;
+  const timeSinceHeartbeat = Date.now() - lastHeartbeat;
+  const hasRecentHeartbeat = lastHeartbeat > 0 && timeSinceHeartbeat < HEARTBEAT_THRESHOLD;
+  
+  // ONLINE: Node reports online=true AND has recent heartbeat
+  const isOnline = node.online === true && hasRecentHeartbeat;
+  const isStale = node.online === true && !hasRecentHeartbeat; // Was online but heartbeat stale
   const isPaired = node.status === 'connected' || node.status === 'paired';
 
   return `
@@ -194,18 +200,28 @@ function renderNodeCard(node) {
             <h3 class="node-name">${node.name}</h3>
             ${isOnline
               ? '<span class="badge badge-success">● Online</span>'
-              : (isPaired
-                  ? '<span class="badge badge-warning">○ Paired (start connector)</span>'
-                  : '<span class="badge badge-error">○ Disconnected</span>')
+              : (isStale
+                  ? '<span class="badge badge-warning">○ Stale (reconnect needed)</span>'
+                  : (isPaired
+                      ? '<span class="badge badge-warning">○ Paired (start connector)</span>'
+                      : '<span class="badge badge-error">○ Disconnected</span>'))
             }
           </div>
         </div>
         <div class="node-actions">
           <button onclick="testNode('${node.id}')" class="btn btn-small btn-secondary">Test</button>
+          ${!isOnline ? `<button onclick="showReconnectModal('${node.id}')" class="btn btn-small btn-primary">Reconnect</button>` : ''}
           ${isOnline ? `<button onclick="disconnectNodeById('${node.id}')" class="btn btn-small" style="background: #f59e0b; color: white;">Disconnect</button>` : ''}
           <button onclick="deleteNodeById('${node.id}')" class="btn btn-small btn-danger">Remove</button>
         </div>
       </div>
+
+      ${isStale ? `
+        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 0.75rem; margin: 0.75rem 0; border-radius: 4px;">
+          <strong>⚠️ Node appears offline</strong>
+          <p style="margin: 0.25rem 0 0 0; font-size: 0.875rem;">Last heartbeat was ${Math.round(timeSinceHeartbeat / 1000)}s ago. Click "Reconnect" to restore connection.</p>
+        </div>
+      ` : ''}
 
       <div class="node-details">
         <div class="node-detail">
@@ -218,11 +234,11 @@ function renderNodeCard(node) {
         </div>
         <div class="node-detail">
           <span class="detail-label">Status</span>
-          <span class="detail-value">${isOnline ? 'Connected and reporting' : (isPaired ? 'Registered, waiting for connector' : 'Not connected')}</span>
+          <span class="detail-value">${isOnline ? 'Connected and reporting' : (isStale ? 'Connection stale - reconnect required' : (isPaired ? 'Registered, waiting for connector' : 'Not connected'))}</span>
         </div>
         <div class="node-detail">
           <span class="detail-label">Last Heartbeat</span>
-          <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() : 'Not reported yet'}</span>
+          <span class="detail-value">${node.last_heartbeat ? new Date(node.last_heartbeat).toLocaleString() + ` (${Math.round(timeSinceHeartbeat / 1000)}s ago)` : 'Not reported yet'}</span>
         </div>
         ${capabilities.length ? `
           <div class="node-detail">
@@ -491,4 +507,147 @@ window.requireApiHealth = async function(actionFn) {
     return;
   }
   return actionFn();
+};
+
+// RECONNECT MODAL FUNCTIONS
+window.showReconnectModal = async function(nodeId) {
+  // Get node details
+  const nodes = store.get('nodes') || [];
+  const node = nodes.find(n => n.id === nodeId);
+  
+  if (!node) {
+    alert('Node not found');
+    return;
+  }
+  
+  // Create modal if it doesn't exist
+  let modal = document.getElementById('reconnect-node-modal');
+  if (!modal) {
+    const modalHtml = `
+      <div id="reconnect-node-modal" class="modal hidden">
+        <div class="modal-overlay" onclick="hideReconnectModal()"></div>
+        <div class="modal-content" style="max-width: 700px;">
+          <h2>Reconnect this node</h2>
+          <p class="text-muted">Run these commands on <strong id="reconnect-node-name"></strong> to restore connection.</p>
+          
+          <div id="reconnect-loading" style="text-align: center; padding: 2rem;">
+            <div class="spinner"></div>
+            <p>Generating reconnect token...</p>
+          </div>
+          
+          <div id="reconnect-commands" class="hidden">
+            <div class="alert alert-info">
+              <strong>Step 1:</strong> Download the connector (if not already present):
+              <pre class="command-block" id="reconnect-download-cmd"></pre>
+              <button onclick="copyReconnectCommand('download')" class="btn btn-small btn-secondary">Copy</button>
+            </div>
+            
+            <div class="alert alert-info" style="margin-top: 1rem;">
+              <strong>Step 2:</strong> Run the connector with your reconnect token:
+              <pre class="command-block" id="reconnect-run-cmd"></pre>
+              <button onclick="copyReconnectCommand('run')" class="btn btn-small btn-secondary">Copy</button>
+            </div>
+            
+            <div class="alert alert-warning" style="margin-top: 1rem;">
+              <strong>⚠️ Important:</strong> Leave this terminal running. The token expires in 10 minutes.
+            </div>
+          </div>
+          
+          <div id="reconnect-error" class="alert alert-error hidden" style="margin-top: 1rem;">
+            <strong>Error:</strong> <span id="reconnect-error-msg"></span>
+          </div>
+          
+          <div class="modal-actions" style="margin-top: 1.5rem;">
+            <button onclick="refreshNodesAfterReconnect()" class="btn btn-primary">🔄 Refresh Status</button>
+            <button onclick="hideReconnectModal()" class="btn btn-secondary">Close</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    modal = document.getElementById('reconnect-node-modal');
+  }
+  
+  // Show modal
+  modal.classList.remove('hidden');
+  document.getElementById('reconnect-node-name').textContent = node.name;
+  document.getElementById('reconnect-loading').classList.remove('hidden');
+  document.getElementById('reconnect-commands').classList.add('hidden');
+  document.getElementById('reconnect-error').classList.add('hidden');
+  
+  // Generate reconnect token
+  try {
+    const response = await fetch(`${API_BASE_URL}/pairing-tokens/reconnect`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('kdashx3-token')}`
+      },
+      body: JSON.stringify({ node_id: nodeId })
+    });
+    
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to create reconnect token');
+    }
+    
+    const data = await response.json();
+    
+    // Store token for copy functions
+    window.currentReconnectToken = data.token;
+    window.currentNodeName = node.name;
+    window.currentNodeType = node.type || 'vm';
+    
+    // Show commands
+    document.getElementById('reconnect-loading').classList.add('hidden');
+    document.getElementById('reconnect-commands').classList.remove('hidden');
+    
+    // Set command text
+    const downloadCmd = `curl -fsSL -o connector.js ${API_BASE_URL}/connector.js`;
+    const runCmd = `node connector.js --api ${API_BASE_URL} --token ${data.token} --name "${node.name}" --type ${node.type || 'vm'}`;
+    
+    document.getElementById('reconnect-download-cmd').textContent = downloadCmd;
+    document.getElementById('reconnect-run-cmd').textContent = runCmd;
+    
+  } catch (err) {
+    document.getElementById('reconnect-loading').classList.add('hidden');
+    document.getElementById('reconnect-error').classList.remove('hidden');
+    document.getElementById('reconnect-error-msg').textContent = err.message;
+  }
+};
+
+window.hideReconnectModal = function() {
+  const modal = document.getElementById('reconnect-node-modal');
+  if (modal) {
+    modal.classList.add('hidden');
+  }
+  window.currentReconnectToken = null;
+};
+
+window.copyReconnectCommand = function(type) {
+  let text = '';
+  if (type === 'download') {
+    text = document.getElementById('reconnect-download-cmd').textContent;
+  } else {
+    text = document.getElementById('reconnect-run-cmd').textContent;
+  }
+  
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Command copied to clipboard!');
+  }).catch(() => {
+    // Fallback
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textarea);
+    alert('Command copied to clipboard!');
+  });
+};
+
+window.refreshNodesAfterReconnect = async function() {
+  await store.syncNodes();
+  alert('Node status refreshed');
+  window.navigate('/nodes');
 };
