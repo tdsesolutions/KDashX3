@@ -1,4 +1,4 @@
-(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const a of document.querySelectorAll('link[rel="modulepreload"]'))n(a);new MutationObserver(a=>{for(const i of a)if(i.type==="childList")for(const r of i.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(a){const i={};return a.integrity&&(i.integrity=a.integrity),a.referrerPolicy&&(i.referrerPolicy=a.referrerPolicy),a.crossOrigin==="use-credentials"?i.credentials="include":a.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function n(a){if(a.ep)return;a.ep=!0;const i=s(a);fetch(a.href,i)}})();const x="https://mc.tdsesolutions.com";function te(){return localStorage.getItem("kdashx3-token")}async function u(e,t={}){const s=`${x}${e}`,n=te(),a={"Content-Type":"application/json",...t.headers};n&&(a.Authorization=`Bearer ${n}`);const i=await fetch(s,{...t,headers:a});if(!i.ok){const r=await i.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${i.status}`)}return i.json()}async function se(e,t){return u("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function ne(e,t){return u("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function ae(){return u("/pairing-tokens",{method:"POST"})}async function ie(){return u("/nodes")}async function oe(){return u("/tasks")}async function F(e,t="normal",s=null){return u("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t,routing_decision:s})})}async function re(e){return u(`/tasks/${e}`)}async function W(e,t){return u(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function U(e){return u(`/tasks/${e}/events`)}async function de(e){return u(`/nodes/${e}/disconnect`,{method:"POST"})}async function le(e){return u(`/nodes/${e}`,{method:"DELETE"})}class ce{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),a={...this.state};let i=a;for(let r=0;r<n.length-1;r++)i[n[r]]={...i[n[r]]},i=i[n[r]];i[n[n.length-1]]=s,this.state=a,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await ne(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await se(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await ie();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await oe();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasNodes(){return this.state.nodes.length>0}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasNodes()?this.hasConnectedNodes()||t.push({id:"NODE_OFFLINE",message:"Node paired. Start the connector on your node to go online.",cta:{text:"Go to Nodes",href:"#/nodes"}}):t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=this.hasConnectedNodes(),a=t.filter(i=>{var r;return i==="nodes"?n:(r=s[i])==null?void 0:r.completed}).length;return{completed:a,total:t.length,percentage:Math.round(a/t.length*100),modules:t.map(i=>{var r;return{name:i,completed:i==="nodes"?n:((r=s[i])==null?void 0:r.completed)||!1,label:this.getModuleLabel(i)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const o=new ce;function ue(){return`
+(function(){const t=document.createElement("link").relList;if(t&&t.supports&&t.supports("modulepreload"))return;for(const a of document.querySelectorAll('link[rel="modulepreload"]'))n(a);new MutationObserver(a=>{for(const i of a)if(i.type==="childList")for(const r of i.addedNodes)r.tagName==="LINK"&&r.rel==="modulepreload"&&n(r)}).observe(document,{childList:!0,subtree:!0});function s(a){const i={};return a.integrity&&(i.integrity=a.integrity),a.referrerPolicy&&(i.referrerPolicy=a.referrerPolicy),a.crossOrigin==="use-credentials"?i.credentials="include":a.crossOrigin==="anonymous"?i.credentials="omit":i.credentials="same-origin",i}function n(a){if(a.ep)return;a.ep=!0;const i=s(a);fetch(a.href,i)}})();const x="https://mc.tdsesolutions.com";function ee(){return localStorage.getItem("kdashx3-token")}async function u(e,t={}){const s=`${x}${e}`,n=ee(),a={"Content-Type":"application/json",...t.headers};n&&(a.Authorization=`Bearer ${n}`);const i=await fetch(s,{...t,headers:a});if(!i.ok){const r=await i.json().catch(()=>({error:"Unknown error"}));throw new Error(r.error||`HTTP ${i.status}`)}return i.json()}async function te(e,t){return u("/auth/register",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function se(e,t){return u("/auth/login",{method:"POST",body:JSON.stringify({email:e,password:t})})}async function ne(){return u("/pairing-tokens",{method:"POST"})}async function ae(){return u("/nodes")}async function ie(){return u("/tasks")}async function oe(e,t="normal",s=null){return u("/tasks",{method:"POST",body:JSON.stringify({intent:e,priority:t,routing_decision:s})})}async function re(e){return u("/tasks",{method:"POST",body:JSON.stringify(e)})}async function de(e){return u(`/tasks/${e}`)}async function F(e,t){return u(`/tasks/${e}/dispatch`,{method:"POST",body:JSON.stringify({node_id:t})})}async function W(e){return u(`/tasks/${e}/events`)}async function le(e){return u(`/nodes/${e}/disconnect`,{method:"POST"})}async function ce(e){return u(`/nodes/${e}`,{method:"DELETE"})}class ue{constructor(){this.state=this.loadFromCache(),this.listeners=new Set,this.syncInterval=null}subscribe(t){return this.listeners.add(t),()=>this.listeners.delete(t)}notify(t){this.listeners.forEach(s=>s(this.state,t))}get(t=null){return t?t.split(".").reduce((s,n)=>s==null?void 0:s[n],this.state):{...this.state}}set(t,s){const n=t.split("."),a={...this.state};let i=a;for(let r=0;r<n.length-1;r++)i[n[r]]={...i[n[r]]},i=i[n[r]];i[n[n.length-1]]=s,this.state=a,this.persistToCache(),this.notify(t)}loadFromCache(){try{const t=localStorage.getItem("kdashx3-store");if(t)return JSON.parse(t)}catch(t){console.warn("Failed to load from cache:",t)}return{auth:{isAuthenticated:!1,token:null,user:null},workspace:null,nodes:[],providers:[],tasks:[],setup:{workspace:{completed:!1,data:{}},nodes:{completed:!1,data:{}},storage:{completed:!1,data:{}},providers:{completed:!1,data:{}},routing:{completed:!1,data:{}},healthChecks:{completed:!1,data:{}}},ui:{loading:{},errors:{}}}}persistToCache(){try{localStorage.setItem("kdashx3-store",JSON.stringify(this.state))}catch(t){console.warn("Failed to persist to cache:",t)}}async login(t,s){const n=await se(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}async register(t,s){const n=await te(t,s);return localStorage.setItem("kdashx3-token",n.token),this.set("auth",{isAuthenticated:!0,token:n.token,user:n.user}),this.set("workspace",n.workspace),n}logout(){localStorage.removeItem("kdashx3-token"),localStorage.removeItem("kdashx3-store"),this.state=this.loadFromCache(),this.notify("logout")}async syncNodes(){try{const t=await ae();return this.set("nodes",t),t}catch(t){return console.error("Failed to sync nodes:",t),[]}}async syncTasks(){try{const t=await ie();return this.set("tasks",t),t}catch(t){return console.error("Failed to sync tasks:",t),[]}}hasNodes(){return this.state.nodes.length>0}hasConnectedNodes(){return this.state.nodes.some(t=>t.online&&t.status==="connected")}getConnectedNodes(){return this.state.nodes.filter(t=>t.online&&t.status==="connected")}isSetupComplete(){return this.state.workspace&&this.state.nodes.length>0}hasWorkingProvider(){return this.state.providers&&this.state.providers.some(t=>t.status==="configured")}getWorkingProviders(){return this.state.providers?this.state.providers.filter(t=>t.status==="configured"):[]}getBlocks(){const t=[];return this.hasNodes()?this.hasConnectedNodes()||t.push({id:"NODE_OFFLINE",message:"Node paired. Start the connector on your node to go online.",cta:{text:"Go to Nodes",href:"#/nodes"}}):t.push({id:"NODE_REQUIRED",message:"Connect at least one node to execute tasks",cta:{text:"Add Node",href:"#/nodes"}}),this.hasWorkingProvider()||t.push({id:"PROVIDER_REQUIRED",message:"Configure at least one provider to use AI features",cta:{text:"Configure Providers",href:"#/providers"}}),t}getSetupProgress(){const t=["workspace","nodes","storage","providers","routing","healthChecks"],s=this.state.setup||{},n=this.hasConnectedNodes(),a=t.filter(i=>{var r;return i==="nodes"?n:(r=s[i])==null?void 0:r.completed}).length;return{completed:a,total:t.length,percentage:Math.round(a/t.length*100),modules:t.map(i=>{var r;return{name:i,completed:i==="nodes"?n:((r=s[i])==null?void 0:r.completed)||!1,label:this.getModuleLabel(i)}})}}getModuleLabel(t){return{workspace:"Workspace",nodes:"Nodes",storage:"Storage & Permissions",providers:"Providers",routing:"Routing Rules",healthChecks:"Health Checks"}[t]||t}}const o=new ue;function pe(){return`
     <div class="login-page">
       <div class="login-container card">
         <div class="login-brand">
@@ -59,7 +59,7 @@
         </div>
       </div>
     </div>
-  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await o.login(e,t),window.navigate("/dashboard")}catch(a){s.textContent=a.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await o.register(e,t),window.navigate("/dashboard")}catch(a){s.textContent=a.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const pe={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function ve(){const e=o.getSetupProgress(),t=o.get("nodes")||[],s=t.length>0,n=t.some(i=>i.online&&i.status==="connected"),a=e.modules.map(i=>i.name==="nodes"?{...i,completed:n,hasNodes:s,isOnline:n}:i);return`
+  `}window.showTab=function(e){document.querySelectorAll(".tab-btn").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.remove("active")),document.querySelectorAll(".login-panel").forEach(s=>s.classList.add("hidden")),document.getElementById(`tab-${e}`).classList.add("active");const t=document.getElementById(`${e}-panel`);t.classList.remove("hidden"),t.classList.add("active")};window.handleLogin=async function(){const e=document.getElementById("login-email").value,t=document.getElementById("login-password").value,s=document.getElementById("login-error"),n=document.getElementById("login-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Signing in...";try{await o.login(e,t),window.navigate("/dashboard")}catch(a){s.textContent=a.message||"Login failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Sign In"}};window.handleRegister=async function(){const e=document.getElementById("register-email").value,t=document.getElementById("register-password").value,s=document.getElementById("register-error"),n=document.getElementById("register-btn");if(!e||!t){s.textContent="Please enter email and password",s.classList.remove("hidden");return}if(t.length<6){s.textContent="Password must be at least 6 characters",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating account...";try{await o.register(e,t),window.navigate("/dashboard")}catch(a){s.textContent=a.message||"Registration failed",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Account"}};const ve={workspace:{icon:"🏢",title:"Workspace",description:"Organization name and preferences",route:"#/setup/workspace"},nodes:{icon:"🖥️",title:"Nodes",description:"Add and connect compute nodes",route:"#/nodes"},storage:{icon:"💾",title:"Storage & Permissions",description:"Configure allowed folders and write-fence",route:"#/setup/storage"},providers:{icon:"🔌",title:"Providers",description:"Configure LLM providers on nodes",route:"#/providers"},routing:{icon:"📡",title:"Routing Defaults",description:"Set routing rules and preferences",route:"#/routing"},healthChecks:{icon:"✅",title:"Health Checks",description:"Verify system readiness",route:"#/setup/health"}};function ge(){const e=o.getSetupProgress(),t=o.get("nodes")||[],s=t.length>0,n=t.some(i=>i.online&&i.status==="connected"),a=e.modules.map(i=>i.name==="nodes"?{...i,completed:n,hasNodes:s,isOnline:n}:i);return`
     <div class="setup-page">
       <header class="page-header">
         <div class="container">
@@ -100,14 +100,14 @@
         
         <!-- Module Cards with Inline Instructions -->
         <div class="modules-list">
-          ${a.map(i=>he(i)).join("")}
+          ${a.map(i=>me(i)).join("")}
         </div>
 
       </main>
 
-      ${ge()}
+      ${he()}
     </div>
-  `}function ge(){return`
+  `}function he(){return`
     <div id="setup-node-info-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideSetupNodeInfoModal()"></div>
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -194,7 +194,7 @@
         </div>
       </div>
     </div>
-  `}function he(e){const t=pe[e.name],s=e.completed,n=me(e.name),a=`instructions-${e.name}`;let i;return e.name==="nodes"?e.isOnline?i='<span class="badge badge-success">✓ Complete</span>':e.hasNodes?i='<span class="badge badge-warning">○ Paired (waiting for heartbeat)</span>':i='<span class="badge badge-warning">○ Pending</span>':i=s?'<span class="badge badge-success">✓ Complete</span>':'<span class="badge badge-warning">○ Pending</span>',`
+  `}function me(e){const t=ve[e.name],s=e.completed,n=be(e.name),a=`instructions-${e.name}`;let i;return e.name==="nodes"?e.isOnline?i='<span class="badge badge-success">✓ Complete</span>':e.hasNodes?i='<span class="badge badge-warning">○ Paired (waiting for heartbeat)</span>':i='<span class="badge badge-warning">○ Pending</span>':i=s?'<span class="badge badge-success">✓ Complete</span>':'<span class="badge badge-warning">○ Pending</span>',`
     <div class="module-row ${s?"completed":"pending"}">
       <!-- Main Module Card -->
       <div class="module-main-card">
@@ -231,7 +231,7 @@
       </div>
       `:""}
     </div>
-  `}function me(e){return{workspace:`
+  `}function be(e){return{workspace:`
       <div class="instruction-content">
         <div class="instruction-header">
           <h4>🏢 What is a Workspace?</h4>
@@ -506,7 +506,7 @@
           <strong>✨ Tip:</strong> Run health checks regularly to catch issues early.
         </div>
       </div>
-    `}[e]||""}function E(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function be(){var t,s;const e=o.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
+    `}[e]||""}function E(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function fe(){var t,s;const e=o.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -532,7 +532,7 @@
           <div class="form-group">
             <label class="form-label">Timezone</label>
             <select id="timezone" class="form-select">
-              ${fe(e.timezone)}
+              ${ye(e.timezone)}
             </select>
             <p class="form-help">Used for scheduling tasks and displaying timestamps</p>
           </div>
@@ -558,7 +558,7 @@
         </div>
       </main>
     </div>
-  `}function fe(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}o.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),o.set("setup.workspace.completed",!0),window.navigate("/setup")};function ye(){var t;const e=o.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
+  `}function ye(e){return[{value:"UTC",label:"UTC (Coordinated Universal Time)"},{value:"America/New_York",label:"Eastern Time (ET)"},{value:"America/Chicago",label:"Central Time (CT)"},{value:"America/Denver",label:"Mountain Time (MT)"},{value:"America/Los_Angeles",label:"Pacific Time (PT)"},{value:"Europe/London",label:"London (GMT)"},{value:"Europe/Paris",label:"Paris (CET)"},{value:"Asia/Tokyo",label:"Tokyo (JST)"}].map(s=>`<option value="${s.value}" ${s.value===e?"selected":""}>${s.label}</option>`).join("")}window.saveWorkspace=function(){const e=document.getElementById("org-name").value,t=document.getElementById("timezone").value,s=document.getElementById("notify-email").checked,n=document.getElementById("notify-webhook").checked;if(!e.trim()){alert("Please enter an organization name");return}o.set("setup.workspace.data",{orgName:e.trim(),timezone:t,notifications:{email:s,webhook:n}}),o.set("setup.workspace.completed",!0),window.navigate("/setup")};function ke(){var t;const e=o.get("setup.storage.data")||{allowedFolders:[],defaultOutputFolder:"",maxFileSize:104857600};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -633,7 +633,7 @@
         </div>
       </main>
     </div>
-  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(a=>a.trim()).filter(a=>a.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}o.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),o.set("setup.storage.completed",!0),window.navigate("/setup")};function ke(){const e=o.get("nodes")||[];return`
+  `}window.saveStorage=function(){const e=document.getElementById("allowed-folders").value,t=document.getElementById("output-folder").value,s=parseInt(document.getElementById("max-file-size").value)||100,n=e.split(",").map(a=>a.trim()).filter(a=>a.length>0);if(n.length===0){alert("Please specify at least one allowed folder");return}o.set("setup.storage.data",{allowedFolders:n,defaultOutputFolder:t||n[0],maxFileSize:s*1024*1024}),o.set("setup.storage.completed",!0),window.navigate("/setup")};function we(){const e=o.get("nodes")||[];return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -762,7 +762,7 @@
         </div>
         
         <!-- Primary CTA Section -->
-        ${we(s,n)}
+        ${$e(s,n)}
         
         <!-- Multi-Agent Orchestration Panel -->
         <div class="orchestration-panel card">
@@ -804,7 +804,7 @@
               <h3>Active Tasks</h3>
               <a href="#/execution" class="btn btn-small btn-secondary">View All</a>
             </div>
-            ${$e(e)}
+            ${Ce(e)}
           </div>
           
           <!-- Quick Navigation -->
@@ -833,10 +833,10 @@
           </div>
         </div>
         
-        ${l?Ce(l,n):""}
+        ${l?xe(l,n):""}
       </main>
     </div>
-  `}function we(e,t,s){return t?e?`
+  `}function $e(e,t,s){return t?e?`
     <div class="primary-cta card cta-active">
       <div class="cta-content">
         <h2>Create a New Task</h2>
@@ -867,7 +867,7 @@
           </a>
         </div>
       </div>
-    `}function $e(e){const t=e.filter(s=>s.status==="pending"||s.status==="dispatched"||s.status==="executing").slice(0,5);return t.length===0?`
+    `}function Ce(e){const t=e.filter(s=>s.status==="pending"||s.status==="dispatched"||s.status==="executing").slice(0,5);return t.length===0?`
       <div class="empty-state-small">
         <p class="text-muted">No active tasks</p>
         <a href="#/intent" class="btn btn-primary btn-small">Create Intent</a>
@@ -880,11 +880,11 @@
             <span class="task-intent">${s.intent.substring(0,40)}${s.intent.length>40?"...":""}</span>
             <span class="task-meta">${new Date(s.created_at).toLocaleDateString()}</span>
           </div>
-          <span class="badge ${xe(s.status)}">${Ie(s.status)}</span>
+          <span class="badge ${Ie(s.status)}">${Ne(s.status)}</span>
         </a>
       `).join("")}
     </div>
-  `}function Ce(e,t){return e.id==="NODE_OFFLINE"&&t?`
+  `}function xe(e,t){return e.id==="NODE_OFFLINE"&&t?`
       <div class="node-status-banner card banner-offline">
         <div class="banner-content">
           <span class="banner-icon">⏳</span>
@@ -898,7 +898,7 @@
           <button onclick="refreshDashboardNodes()" class="btn btn-secondary">Refresh Status</button>
         </div>
       </div>
-    `:""}function xe(e){return{pending:"badge-warning",dispatched:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-warning"}function Ie(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Running",completed:"Done",failed:"Failed"}[e]||e}window.refreshDashboardNodes=async function(){await o.syncNodes(),window.navigate("/dashboard")};function Ne(){const e=o.get("nodes")||[],t=e.length>0;return o.syncNodes(),setTimeout(checkApiHealth,0),`
+    `:""}function Ie(e){return{pending:"badge-warning",dispatched:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-warning"}function Ne(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Running",completed:"Done",failed:"Failed"}[e]||e}window.refreshDashboardNodes=async function(){await o.syncNodes(),window.navigate("/dashboard")};function Se(){const e=o.get("nodes")||[],t=e.length>0;return o.syncNodes(),setTimeout(checkApiHealth,0),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -935,13 +935,13 @@
           </button>
         </div>
         
-        ${t?H(e):G()}
+        ${t?U(e):H()}
       </main>
       
-      ${j()}
-      ${Se()}
+      ${G()}
+      ${Ee()}
     </div>
-  `}function Se(){return`
+  `}function Ee(){return`
     <div id="node-info-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideNodeInfoModal()"></div>
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -1027,11 +1027,11 @@
         </div>
       </div>
     </div>
-  `}function H(e){return`
+  `}function U(e){return`
     <div class="nodes-list">
-      ${e.map(t=>Ee(t)).join("")}
+      ${e.map(t=>Ae(t)).join("")}
     </div>
-  `}function Ee(e){const t=Array.isArray(e.capabilities)?e.capabilities:typeof e.capabilities=="string"?[e.capabilities]:[],s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online===!0,a=e.status==="connected"||e.status==="paired";return`
+  `}function Ae(e){const t=Array.isArray(e.capabilities)?e.capabilities:typeof e.capabilities=="string"?[e.capabilities]:[],s={vm:"☁️",local:"💻",server:"🖥️"},n=e.online===!0,a=e.status==="connected"||e.status==="paired";return`
     <div class="node-card card">
       <div class="node-header">
         <div class="node-info">
@@ -1075,7 +1075,7 @@
         `:""}
       </div>
     </div>
-  `}function G(){return`
+  `}function H(){return`
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Yet</h2>
@@ -1086,7 +1086,7 @@
         Add Your First Node
       </button>
     </div>
-  `}function j(){return`
+  `}function G(){return`
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
@@ -1139,16 +1139,16 @@
   `}window.showAddNodeModal=function(){document.getElementById("add-node-modal").classList.remove("hidden"),document.getElementById("pairing-section").classList.add("hidden"),document.getElementById("create-pairing-btn").classList.remove("hidden"),document.getElementById("create-pairing-btn").textContent="Generate Pairing Token",document.getElementById("create-pairing-btn").disabled=!1};window.hideAddNodeModal=function(){document.getElementById("add-node-modal").classList.add("hidden")};window.generatePairingToken=async function(){if(await checkApiHealth(),!m.healthy){alert(`Can't reach Mission Control API.
 
 Try hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).
-If it still fails, check your network.`);return}const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await ae(),a=`curl -o connector.js ${x}/connector.js`,i=`node connector.js --api ${x} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=a,document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=o.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
+If it still fails, check your network.`);return}const e=document.getElementById("create-pairing-btn"),t=document.getElementById("node-name").value||"New Node",s=document.getElementById("node-type").value;e.disabled=!0,e.textContent="Generating...";try{const n=await ne(),a=`curl -o connector.js ${x}/connector.js`,i=`node connector.js --api ${x} --token ${n.token} --name "${t}" --type ${s}`;document.getElementById("download-command").textContent=a,document.getElementById("pairing-command").textContent=i,document.getElementById("pairing-section").classList.remove("hidden"),e.classList.add("hidden")}catch(n){alert("Failed to create pairing token: "+n.message),e.disabled=!1,e.textContent="Generate Pairing Token"}};window.copyPairingCommand=function(){const e=document.getElementById("pairing-command").textContent;navigator.clipboard.writeText(e).then(()=>{alert("Command copied! Run this on your node to connect.")})};window.refreshNodes=async function(){await o.syncNodes(),window.navigate("/nodes")};window.testNode=function(e){const t=o.get("nodes").find(s=>s.id===e);t&&alert(`Node: ${t.name}
 Status: ${t.status}
 Online: ${t.online?"Yes":"No"}
 Last heartbeat: ${t.last_heartbeat?new Date(t.last_heartbeat).toLocaleString():"Never"}`)};window.disconnectNodeById=async function(e){if(await checkApiHealth(),!m.healthy){alert(`Can't reach Mission Control API.
 
 Try hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).
-If it still fails, check your network.`);return}if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await de(e),await o.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(await checkApiHealth(),!m.healthy){alert(`Can't reach Mission Control API.
+If it still fails, check your network.`);return}if(confirm("Disconnect this node? It will go offline but can be reconnected later."))try{await le(e),await o.syncNodes(),alert("Node disconnected"),window.navigate("/nodes")}catch(t){alert("Failed to disconnect: "+t.message)}};window.deleteNodeById=async function(e){if(await checkApiHealth(),!m.healthy){alert(`Can't reach Mission Control API.
 
 Try hard refresh: Cmd+Option+R (Mac) / Ctrl+Shift+R (Windows).
-If it still fails, check your network.`);return}if(confirm("Permanently remove this node? This cannot be undone."))try{await le(e);const t=o.get("nodes").filter(s=>s.id!==e);o.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};window.showNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.remove("hidden")};window.hideNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.add("hidden")};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);let m={healthy:!0,checked:!1};window.checkApiHealth=async function(){try{m={healthy:(await fetch(`${x}/health`,{method:"GET",mode:"cors"})).ok,checked:!0}}catch{m={healthy:!1,checked:!0}}Ae()};function Ae(){const e=document.getElementById("api-health-banner");e&&(m.healthy?(e.classList.add("hidden"),document.querySelectorAll(".nodes-toolbar button, .node-card button").forEach(t=>{t.disabled=!1,t.style.opacity="1",t.style.cursor="pointer"})):(e.classList.remove("hidden"),document.querySelectorAll(".nodes-toolbar button, .node-card button").forEach(t=>{(t.textContent.includes("Remove")||t.textContent.includes("Disconnect")||t.textContent.includes("Add Node")||t.id==="create-pairing-btn")&&(t.disabled=!0,t.style.opacity="0.5",t.style.cursor="not-allowed")})))}window.requireApiHealth=async function(e){if(await checkApiHealth(),!m.healthy){alert("Can't reach Mission Control API. Please check your connection and try again.");return}return e()};const I={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function Pe(){const e=o.getConnectedNodes();return e.length>0?`
+If it still fails, check your network.`);return}if(confirm("Permanently remove this node? This cannot be undone."))try{await ce(e);const t=o.get("nodes").filter(s=>s.id!==e);o.set("nodes",t),alert("Node removed"),window.navigate("/nodes")}catch(t){alert("Failed to remove: "+t.message)}};window.showNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.remove("hidden")};window.hideNodeInfoModal=function(){const e=document.getElementById("node-info-modal");e&&e.classList.add("hidden")};setInterval(()=>{window.location.hash==="#/nodes"&&o.syncNodes()},1e4);let m={healthy:!0,checked:!1};window.checkApiHealth=async function(){try{m={healthy:(await fetch(`${x}/health`,{method:"GET",mode:"cors"})).ok,checked:!0}}catch{m={healthy:!1,checked:!0}}Pe()};function Pe(){const e=document.getElementById("api-health-banner");e&&(m.healthy?(e.classList.add("hidden"),document.querySelectorAll(".nodes-toolbar button, .node-card button").forEach(t=>{t.disabled=!1,t.style.opacity="1",t.style.cursor="pointer"})):(e.classList.remove("hidden"),document.querySelectorAll(".nodes-toolbar button, .node-card button").forEach(t=>{(t.textContent.includes("Remove")||t.textContent.includes("Disconnect")||t.textContent.includes("Add Node")||t.id==="create-pairing-btn")&&(t.disabled=!0,t.style.opacity="0.5",t.style.cursor="not-allowed")})))}window.requireApiHealth=async function(e){if(await checkApiHealth(),!m.healthy){alert("Can't reach Mission Control API. Please check your connection and try again.");return}return e()};const I={openai:{name:"OpenAI",icon:"🤖"},anthropic:{name:"Anthropic",icon:"🧠"},google:{name:"Google AI",icon:"🔍"},local:{name:"Local Model",icon:"🏠"},custom:{name:"Custom API",icon:"⚙️"}};function Te(){const e=o.getConnectedNodes();return e.length>0?`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1158,18 +1158,18 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
       </header>
       
       <main class="container">
-        ${e.map(s=>K(s)).join("")}
+        ${e.map(s=>j(s)).join("")}
         
         <div class="providers-fallback card">
           <h3>Fallback Order</h3>
           <p class="text-muted">When primary provider fails, try these in order</p>
-          ${z()}
+          ${K()}
         </div>
       </main>
       
-      ${Y()}
+      ${z()}
     </div>
-  `:Te()}function Te(){return`
+  `:Re()}function Re(){return`
     <div class="providers-page">
       <header class="page-header">
         <div class="container">
@@ -1186,9 +1186,9 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </main>
       
-      ${Re()}
+      ${Le()}
     </div>
-  `}function Re(){return`
+  `}function Le(){return`
     <div id="providers-gating-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProvidersGatingModal()"></div>
       <div class="modal-content">
@@ -1210,7 +1210,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}window.showProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.remove("hidden")};window.hideProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.add("hidden")};function K(e){const t=o.get("providers").filter(s=>s.nodeId===e.id);return`
+  `}window.showProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.remove("hidden")};window.hideProvidersGatingModal=function(){var e;(e=document.getElementById("providers-gating-modal"))==null||e.classList.add("hidden")};function j(e){const t=o.get("providers").filter(s=>s.nodeId===e.id);return`
     <div class="node-providers card">
       <div class="node-providers-header">
         <div>
@@ -1253,7 +1253,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         <button onclick="deleteProvider('${e.id}')" class="btn btn-small btn-danger">Delete</button>
       </div>
     </div>
-  `}function z(){const e=o.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
+  `}function K(){const e=o.get("providers").filter(t=>t.status==="configured");return e.length===0?'<p class="text-muted">No configured providers available for fallback</p>':`
     <div class="fallback-list">
       ${e.map((t,s)=>{const n=o.get("nodes").find(i=>i.id===t.nodeId),a=I[t.type]||{name:t.type};return`
           <div class="fallback-item">
@@ -1267,7 +1267,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           </div>
         `}).join("")}
     </div>
-  `}function Y(){return`
+  `}function z(){return`
     <div id="provider-config-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideProviderConfigModal()"></div>
       <div class="modal-content">
@@ -1310,7 +1310,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=o.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=I[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,a=document.getElementById("provider-endpoint").value,i=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=o.get("providers");if(t){const d=r.findIndex(l=>l.id===t);d!==-1&&(r[d]={...r[d],type:s,name:n.trim(),endpointUrl:a.trim(),priority:i})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:a.trim(),priority:i,status:"not_configured",lastTested:null});o.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=o.get("providers"),s=t.find(i=>i.id===e);if(!s)return;s.status="testing",o.set("providers",t),window.navigate("/providers"),await new Promise(i=>setTimeout(i,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),o.set("providers",t);const a=t.some(i=>i.status==="configured");o.set("setup.providers.completed",a),window.navigate("/providers")};window.editProvider=function(e){const t=o.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=o.get("providers").filter(n=>n.id!==e);o.set("providers",t);const s=t.some(n=>n.status==="configured");o.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=o.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],o.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=o.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],o.set("providers",t),window.navigate("/providers"))};function Le(){const t=o.get().tasks||[],s=o.hasConnectedNodes();return`
+  `}window.showProviderConfigModal=function(e,t=null){if(document.getElementById("provider-node-id").value=e,document.getElementById("provider-id").value=t||"",t){const s=o.get("providers").find(n=>n.id===t);s&&(document.getElementById("provider-type").value=s.type,document.getElementById("provider-name").value=s.name||"",document.getElementById("provider-endpoint").value=s.endpointUrl||"",document.getElementById("provider-priority").value=s.priority||1)}else document.getElementById("provider-type").value="openai",document.getElementById("provider-name").value="",document.getElementById("provider-endpoint").value="",document.getElementById("provider-priority").value="1";document.getElementById("provider-config-modal").classList.remove("hidden")};window.hideProviderConfigModal=function(){document.getElementById("provider-config-modal").classList.add("hidden")};window.onProviderTypeChange=function(){const e=document.getElementById("provider-type").value,t=document.getElementById("provider-name");if(!t.value){const s=I[e];t.value=s?`My ${s.name}`:""}};window.saveProvider=function(){const e=document.getElementById("provider-node-id").value,t=document.getElementById("provider-id").value,s=document.getElementById("provider-type").value,n=document.getElementById("provider-name").value,a=document.getElementById("provider-endpoint").value,i=parseInt(document.getElementById("provider-priority").value)||1;if(!n.trim()){alert("Please enter a display name");return}const r=o.get("providers");if(t){const d=r.findIndex(l=>l.id===t);d!==-1&&(r[d]={...r[d],type:s,name:n.trim(),endpointUrl:a.trim(),priority:i})}else r.push({id:"provider-"+Date.now(),nodeId:e,type:s,name:n.trim(),endpointUrl:a.trim(),priority:i,status:"not_configured",lastTested:null});o.set("providers",r),hideProviderConfigModal(),window.navigate("/providers")};window.testProvider=async function(e){const t=o.get("providers"),s=t.find(i=>i.id===e);if(!s)return;s.status="testing",o.set("providers",t),window.navigate("/providers"),await new Promise(i=>setTimeout(i,2e3));const n=Math.random()>.3;s.status=n?"configured":"failing",s.lastTested=new Date().toISOString(),o.set("providers",t);const a=t.some(i=>i.status==="configured");o.set("setup.providers.completed",a),window.navigate("/providers")};window.editProvider=function(e){const t=o.get("providers").find(s=>s.id===e);t&&showProviderConfigModal(t.nodeId,e)};window.deleteProvider=function(e){if(!confirm("Delete this provider configuration?"))return;const t=o.get("providers").filter(n=>n.id!==e);o.set("providers",t);const s=t.some(n=>n.status==="configured");o.set("setup.providers.completed",s),window.navigate("/providers")};window.moveProviderUp=function(e){const t=o.get("providers"),s=t.findIndex(n=>n.id===e);s>0&&([t[s],t[s-1]]=[t[s-1],t[s]],o.set("providers",t),window.navigate("/providers"))};window.moveProviderDown=function(e){const t=o.get("providers"),s=t.findIndex(n=>n.id===e);s<t.length-1&&([t[s],t[s+1]]=[t[s+1],t[s]],o.set("providers",t),window.navigate("/providers"))};function Me(){const t=o.get().tasks||[],s=o.hasConnectedNodes();return`
     <div class="tasks-page">
       <header class="page-header">
         <div class="container">
@@ -1320,11 +1320,11 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
       </header>
       
       <main class="container">
-        ${Me(s)}
+        ${_e(s)}
         ${De(t,s)}
       </main>
     </div>
-  `}function Me(e){return`
+  `}function _e(e){return`
     <div class="tasks-toolbar">
       <a href="#/tasks/new" class="btn btn-primary ${e?"":"disabled"}">
         + New Task
@@ -1364,18 +1364,18 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           <h3 class="task-intent">${e.intent}</h3>
           <div class="task-meta">
             <span class="badge ${s.class}">${s.text}</span>
-            ${a?`<span class="task-node">on ${a.name}</span>`:""}
+            ${a?`<span class="task-node">on ${a.name}</span>`:e.node_id?`<span class="task-node">node: ${e.node_id.slice(0,8)}...</span>`:'<span class="task-node">unassigned</span>'}
             <span class="task-time">${new Date(e.created_at).toLocaleString()}</span>
           </div>
         </div>
         <div class="task-actions">
           <a href="#/tasks/${e.id}" class="btn btn-small btn-secondary">View</a>
-          ${e.status==="pending"?`
+          ${e.status==="pending"&&!e.node_id?`
             <button onclick="dispatchTaskToNode('${e.id}')" class="btn btn-small btn-primary">Dispatch</button>
           `:""}
         </div>
       </div>
-      
+
       ${e.error?`
         <div class="task-error">
           <span class="error-icon">⚠️</span>
@@ -1383,7 +1383,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       `:""}
     </div>
-  `}function _e(){return o.hasConnectedNodes()?`
+  `}function qe(){return o.hasConnectedNodes()?`
     <div class="new-task-page">
       <header class="page-header">
         <div class="container">
@@ -1434,13 +1434,13 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           <a href="#/nodes" class="btn btn-primary">Add Node</a>
         </div>
       </div>
-    `}function qe(e){const s=(o.get().tasks||[]).find(i=>i.id===e);if(!s)return`
+    `}function Fe(e){var i;const s=(o.get().tasks||[]).find(r=>r.id===e);if(!s)return`
       <div class="error-page">
         <h1>Task Not Found</h1>
         <p>The task you're looking for doesn't exist.</p>
         <a href="#/tasks" class="btn btn-primary">Back to Tasks</a>
       </div>
-    `;const a=(o.get().nodes||[]).find(i=>i.id===s.node_id);return`
+    `;const a=(o.get().nodes||[]).find(r=>r.id===s.node_id);return`
     <div class="task-detail-page">
       <header class="page-header">
         <div class="container">
@@ -1480,16 +1480,51 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
                   <span class="meta-label">Created</span>
                   <span class="meta-value">${new Date(s.created_at).toLocaleString()}</span>
                 </div>
-                ${a?`
+
+                <!-- EXECUTION VISIBILITY FIELDS -->
+                <div class="meta-item">
+                  <span class="meta-label">Assigned Node</span>
+                  <span class="meta-value">${a?a.name:s.node_id||"unassigned"}</span>
+                </div>
+
+                ${(i=s.routing_decision)!=null&&i.planner_provider?`
                   <div class="meta-item">
-                    <span class="meta-label">Node</span>
-                    <span class="meta-value">${a.name}</span>
+                    <span class="meta-label">Planner Provider</span>
+                    <span class="meta-value">${s.routing_decision.planner_provider}</span>
+                  </div>
+                `:""}
+
+                ${s.dispatch_time?`
+                  <div class="meta-item">
+                    <span class="meta-label">Dispatched</span>
+                    <span class="meta-value">${new Date(s.dispatch_time).toLocaleString()}</span>
+                  </div>
+                `:""}
+
+                ${s.executor_status?`
+                  <div class="meta-item">
+                    <span class="meta-label">Executor Status</span>
+                    <span class="meta-value">${s.executor_status}</span>
+                  </div>
+                `:""}
+
+                ${s.storage_mode?`
+                  <div class="meta-item">
+                    <span class="meta-label">Storage Mode</span>
+                    <span class="meta-value">${s.storage_mode}</span>
+                  </div>
+                `:""}
+
+                ${s.storage_path?`
+                  <div class="meta-item">
+                    <span class="meta-label">Storage Path</span>
+                    <span class="meta-value" style="font-family: monospace; font-size: 0.75rem; word-break: break-all;">${s.storage_path}</span>
                   </div>
                 `:""}
               </div>
             </div>
-            
-            ${s.status==="pending"?`
+
+            ${s.status==="pending"&&!s.node_id?`
               <div class="task-actions-card card">
                 <h3>Actions</h3>
                 <button onclick="dispatchTaskToNode('${s.id}')" class="btn btn-primary btn-full">
@@ -1501,7 +1536,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </main>
     </div>
-  `}window.submitTask=async function(){const e=document.getElementById("task-intent").value,t=document.getElementById("task-priority").value,s=document.getElementById("task-error"),n=document.getElementById("create-task-btn");if(!e.trim()){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}const a=o.get().currentWorkspace;if(!a){s.textContent="No workspace selected",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating...";try{await F(a.id,e.trim(),t),o.loadTasks(),window.navigate("/tasks")}catch(i){s.textContent=i.message||"Failed to create task",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Task"}};window.dispatchTaskToNode=async function(e){const t=o.get().nodes.filter(n=>n.status==="connected"||n.online);if(t.length===0){alert("No connected nodes available");return}const s=t[0];try{await W(e,s.id),alert(`Task dispatched to ${s.name}`),o.loadTasks(),window.navigate("/tasks")}catch(n){alert("Failed to dispatch task: "+n.message)}};window.refreshTasks=function(){o.loadTasks(),window.navigate("/tasks")};window.loadTaskEvents=async function(e){const t=document.getElementById("task-events-list");t.innerHTML='<p class="text-muted">Loading...</p>';try{const s=await U(e);s.length===0?t.innerHTML='<p class="text-muted">No events yet</p>':t.innerHTML=`
+  `}window.submitTask=async function(){const e=document.getElementById("task-intent").value,t=document.getElementById("task-priority").value,s=document.getElementById("task-error"),n=document.getElementById("create-task-btn");if(!e.trim()){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}const a=o.get().currentWorkspace;if(!a){s.textContent="No workspace selected",s.classList.remove("hidden");return}const i=o.getConnectedNodes(),r=o.get("nodes")||[];let d=null;if(i.length===1)d=i[0].id;else if(i.length>1)d=i[0].id;else if(r.length===0){s.textContent="No active node available. Add a node first.",s.classList.remove("hidden");return}n.disabled=!0,n.textContent="Creating...";try{const l={workspace_id:a.id,intent:e.trim(),priority:t,node_id:d,routing_decision:d?{selected_node_id:d,assignment_reason:i.length===1?"single_node_auto":"first_healthy_default"}:null};await re(l),o.syncTasks(),window.navigate("/tasks")}catch(l){s.textContent=l.message||"Failed to create task",s.classList.remove("hidden"),n.disabled=!1,n.textContent="Create Task"}};window.dispatchTaskToNode=async function(e){const t=o.get().nodes.filter(n=>n.status==="connected"||n.online);if(t.length===0){alert("No connected nodes available");return}const s=t[0];try{await F(e,s.id),alert(`Task dispatched to ${s.name}`),o.loadTasks(),window.navigate("/tasks")}catch(n){alert("Failed to dispatch task: "+n.message)}};window.refreshTasks=function(){o.loadTasks(),window.navigate("/tasks")};window.loadTaskEvents=async function(e){const t=document.getElementById("task-events-list");t.innerHTML='<p class="text-muted">Loading...</p>';try{const s=await W(e);s.length===0?t.innerHTML='<p class="text-muted">No events yet</p>':t.innerHTML=`
         <div class="events-list">
           ${s.map(n=>`
             <div class="event-item">
@@ -1511,7 +1546,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
             </div>
           `).join("")}
         </div>
-      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const Fe={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function A(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,a)=>{const i=A(n,t.items);i.valid||s.push(`Item ${a}: ${i.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,a]of Object.entries(t.properties))if(n in e){const i=A(e[n],a);i.valid||s.push(`${n}: ${i.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function V(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(S=>setTimeout(S,800));const{intent:t,context:s,constraints:n}=e,a=(s==null?void 0:s.available_nodes)||[],i=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(a))throw new Error("Invalid input: available_nodes must be an array");if(a.length===0)throw new Error("No available nodes for routing");const r=We(t),d=a.filter(S=>Ke(S,r));if(d.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const l=d[0],c=Ue(t),b=ze(i,c),p=He(t,n),w={type:"node_local",path:`${l.workspace_path||"./outputs"}/task-${Date.now()}`},P=Ge(t),ee=je(P,c),T={selected_node_id:l.id,required_capabilities:r,provider_preference:c,fallback_order:b.length>0?b:["default"],output_location:w,risk_level:p,approval_required:p==="critical"||p==="high",estimated_tokens:P,estimated_cost:ee},N=A(T,Fe);if(!N.valid)throw console.error("[RoutingBrain] Invalid response schema:",N.errors),new Error(`Routing Brain returned invalid data: ${N.errors.join(", ")}`);return T}function We(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function Ue(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function He(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function Ge(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function je(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function Ke(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function ze(e,t){if(!e||e.length===0)return[];const s=e.filter(a=>a.status==="configured");if(s.length===0)return[];const n=[...s].sort((a,i)=>(a.priority||99)-(i.priority||99));if(t&&t!=="auto"){const a=n.filter(r=>r.type===t),i=n.filter(r=>r.type!==t);return[...a,...i].map(r=>r.id)}return n.map(a=>a.id)}function Ye(){const e=o.hasConnectedNodes();return(o.get("nodes")||[]).length>0?e?`
+      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};const We={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function A(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,a)=>{const i=A(n,t.items);i.valid||s.push(`Item ${a}: ${i.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,a]of Object.entries(t.properties))if(n in e){const i=A(e[n],a);i.valid||s.push(`${n}: ${i.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function Y(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(S=>setTimeout(S,800));const{intent:t,context:s,constraints:n}=e,a=(s==null?void 0:s.available_nodes)||[],i=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(a))throw new Error("Invalid input: available_nodes must be an array");if(a.length===0)throw new Error("No available nodes for routing");const r=Ue(t),d=a.filter(S=>ze(S,r));if(d.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const l=d[0],c=He(t),b=Ye(i,c),p=Ge(t,n),w={type:"node_local",path:`${l.workspace_path||"./outputs"}/task-${Date.now()}`},P=je(t),Z=Ke(P,c),T={selected_node_id:l.id,required_capabilities:r,provider_preference:c,fallback_order:b.length>0?b:["default"],output_location:w,risk_level:p,approval_required:p==="critical"||p==="high",estimated_tokens:P,estimated_cost:Z},N=A(T,We);if(!N.valid)throw console.error("[RoutingBrain] Invalid response schema:",N.errors),new Error(`Routing Brain returned invalid data: ${N.errors.join(", ")}`);return T}function Ue(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function He(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function Ge(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function je(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function Ke(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function ze(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Ye(e,t){if(!e||e.length===0)return[];const s=e.filter(a=>a.status==="configured");if(s.length===0)return[];const n=[...s].sort((a,i)=>(a.priority||99)-(i.priority||99));if(t&&t!=="auto"){const a=n.filter(r=>r.type===t),i=n.filter(r=>r.type!==t);return[...a,...i].map(r=>r.id)}return n.map(a=>a.id)}function Ve(){const e=o.hasConnectedNodes();return(o.get("nodes")||[]).length>0?e?`
     <div class="intent-page">
       <header class="page-header">
         <div class="container">
@@ -1667,7 +1702,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           </div>
         </main>
       </div>
-    `}let h=null;window.analyzeAndRoute=async function(){const e=document.getElementById("intent-text"),t=document.getElementById("intent-priority"),s=document.getElementById("intent-error");document.getElementById("analyze-btn");const n=e.value.trim(),a=t.value;if(!n){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}s.classList.add("hidden");const r=(o.get("nodes")||[]).filter(d=>d.online&&d.status==="connected");if(r.length===0){s.textContent="No online nodes available. Start your connector first.",s.classList.remove("hidden");return}document.getElementById("intent-step-input").classList.add("hidden"),document.getElementById("intent-step-analysis").classList.remove("hidden"),document.getElementById("analysis-loading").classList.remove("hidden"),document.getElementById("analysis-result").classList.add("hidden");try{const l=await V({intent:n,priority:a,context:{available_nodes:r,configured_providers:[]},constraints:{}});h={...l,intent:n,priority:a,analyzed_at:new Date().toISOString()};const c=r.find(w=>w.id===l.selected_node_id);document.getElementById("plan-intent-text").textContent=n,document.getElementById("plan-node-name").textContent=(c==null?void 0:c.name)||"Unknown Node",document.getElementById("plan-node-id").textContent=l.selected_node_id;const b=document.getElementById("plan-capabilities");b.innerHTML=l.required_capabilities.map(w=>`<span class="capability-tag">${w}</span>`).join(""),document.getElementById("plan-provider").textContent=l.provider_preference,document.getElementById("plan-risk").textContent=l.risk_level,document.getElementById("plan-tokens").textContent=l.estimated_tokens.toLocaleString(),document.getElementById("plan-cost").textContent=`$${l.estimated_cost.toFixed(4)}`;const p=document.getElementById("plan-approval-section");l.approval_required?p.classList.remove("hidden"):p.classList.add("hidden"),document.getElementById("analysis-loading").classList.add("hidden"),document.getElementById("analysis-result").classList.remove("hidden")}catch(d){document.getElementById("analysis-loading").classList.add("hidden"),document.getElementById("intent-step-input").classList.remove("hidden"),document.getElementById("intent-step-analysis").classList.add("hidden"),s.textContent="Routing failed: "+d.message,s.classList.remove("hidden")}};window.backToIntent=function(){document.getElementById("intent-step-input").classList.remove("hidden"),document.getElementById("intent-step-analysis").classList.add("hidden"),h=null};window.executeTask=async function(){const e=document.getElementById("execute-btn"),t=document.getElementById("execute-error");if(!h){t.textContent="No routing decision available. Please analyze again.",t.classList.remove("hidden");return}e.disabled=!0,e.textContent="Creating Task...",t.classList.add("hidden");try{const s=await F(h.intent,h.priority,h);await W(s.id,h.selected_node_id),window.navigate(`/execution/${s.id}`)}catch(s){e.disabled=!1,e.innerHTML='<span class="btn-icon">🚀</span> Execute Task',t.textContent="Execution failed: "+s.message,t.classList.remove("hidden")}};window.refreshNodeStatus=async function(){await o.syncNodes(),window.navigate("/intent")};function Ve(){const e=o.get("tasks")||[],t=o.hasConnectedNodes(),s=(o.get("nodes")||[]).length>0,n=[...e].sort((r,d)=>new Date(d.created_at)-new Date(r.created_at)),a=n.filter(r=>r.status==="pending"||r.status==="dispatched"||r.status==="executing"),i=n.filter(r=>r.status==="completed"||r.status==="failed");return`
+    `}let h=null;window.analyzeAndRoute=async function(){const e=document.getElementById("intent-text"),t=document.getElementById("intent-priority"),s=document.getElementById("intent-error");document.getElementById("analyze-btn");const n=e.value.trim(),a=t.value;if(!n){s.textContent="Please describe what you want to do",s.classList.remove("hidden");return}s.classList.add("hidden");const r=(o.get("nodes")||[]).filter(d=>d.online&&d.status==="connected");if(r.length===0){s.textContent="No online nodes available. Start your connector first.",s.classList.remove("hidden");return}document.getElementById("intent-step-input").classList.add("hidden"),document.getElementById("intent-step-analysis").classList.remove("hidden"),document.getElementById("analysis-loading").classList.remove("hidden"),document.getElementById("analysis-result").classList.add("hidden");try{const l=await Y({intent:n,priority:a,context:{available_nodes:r,configured_providers:[]},constraints:{}});h={...l,intent:n,priority:a,analyzed_at:new Date().toISOString()};const c=r.find(w=>w.id===l.selected_node_id);document.getElementById("plan-intent-text").textContent=n,document.getElementById("plan-node-name").textContent=(c==null?void 0:c.name)||"Unknown Node",document.getElementById("plan-node-id").textContent=l.selected_node_id;const b=document.getElementById("plan-capabilities");b.innerHTML=l.required_capabilities.map(w=>`<span class="capability-tag">${w}</span>`).join(""),document.getElementById("plan-provider").textContent=l.provider_preference,document.getElementById("plan-risk").textContent=l.risk_level,document.getElementById("plan-tokens").textContent=l.estimated_tokens.toLocaleString(),document.getElementById("plan-cost").textContent=`$${l.estimated_cost.toFixed(4)}`;const p=document.getElementById("plan-approval-section");l.approval_required?p.classList.remove("hidden"):p.classList.add("hidden"),document.getElementById("analysis-loading").classList.add("hidden"),document.getElementById("analysis-result").classList.remove("hidden")}catch(d){document.getElementById("analysis-loading").classList.add("hidden"),document.getElementById("intent-step-input").classList.remove("hidden"),document.getElementById("intent-step-analysis").classList.add("hidden"),s.textContent="Routing failed: "+d.message,s.classList.remove("hidden")}};window.backToIntent=function(){document.getElementById("intent-step-input").classList.remove("hidden"),document.getElementById("intent-step-analysis").classList.add("hidden"),h=null};window.executeTask=async function(){const e=document.getElementById("execute-btn"),t=document.getElementById("execute-error");if(!h){t.textContent="No routing decision available. Please analyze again.",t.classList.remove("hidden");return}e.disabled=!0,e.textContent="Creating Task...",t.classList.add("hidden");try{const s=await oe(h.intent,h.priority,h);await F(s.id,h.selected_node_id),window.navigate(`/execution/${s.id}`)}catch(s){e.disabled=!1,e.innerHTML='<span class="btn-icon">🚀</span> Execute Task',t.textContent="Execution failed: "+s.message,t.classList.remove("hidden")}};window.refreshNodeStatus=async function(){await o.syncNodes(),window.navigate("/intent")};function Xe(){const e=o.get("tasks")||[],t=o.hasConnectedNodes(),s=(o.get("nodes")||[]).length>0,n=[...e].sort((r,d)=>new Date(d.created_at)-new Date(r.created_at)),a=n.filter(r=>r.status==="pending"||r.status==="dispatched"||r.status==="executing"),i=n.filter(r=>r.status==="completed"||r.status==="failed");return`
     <div class="execution-page">
       <header class="page-header">
         <div class="container">
@@ -1711,7 +1746,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
             </div>
           `:`
             <div class="execution-list">
-              ${a.map(r=>B(r)).join("")}
+              ${a.map(r=>L(r)).join("")}
             </div>
           `}
         </div>
@@ -1724,7 +1759,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
               <span class="badge badge-secondary">${i.length}</span>
             </div>
             <div class="execution-list">
-              ${i.slice(0,10).map(r=>B(r)).join("")}
+              ${i.slice(0,10).map(r=>L(r)).join("")}
             </div>
             ${i.length>10?`
               <p class="text-muted text-center">+ ${i.length-10} more tasks</p>
@@ -1733,23 +1768,23 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         `:""}
       </main>
     </div>
-  `}function B(e){const s=(o.get("nodes")||[]).find(i=>i.id===e.node_id),n={pending:{icon:"⏳",class:"status-pending",label:"Pending"},dispatched:{icon:"🚀",class:"status-dispatched",label:"Dispatched"},executing:{icon:"⚡",class:"status-executing",label:"Executing"},completed:{icon:"✅",class:"status-completed",label:"Completed"},failed:{icon:"❌",class:"status-failed",label:"Failed"}},a=n[e.status]||n.pending;return`
+  `}function L(e){const s=(o.get("nodes")||[]).find(i=>i.id===e.node_id),n={pending:{icon:"⏳",class:"status-pending",label:"Pending"},dispatched:{icon:"🚀",class:"status-dispatched",label:"Dispatched"},executing:{icon:"⚡",class:"status-executing",label:"Executing"},completed:{icon:"✅",class:"status-completed",label:"Completed"},failed:{icon:"❌",class:"status-failed",label:"Failed"}},a=n[e.status]||n.pending;return`
     <a href="#/execution/${e.id}" class="execution-item ${a.class}">
       <div class="execution-status-icon">${a.icon}</div>
       <div class="execution-content">
         <div class="execution-header">
-          <span class="execution-intent">${L(e.intent.substring(0,60))}${e.intent.length>60?"...":""}</span>
-          <span class="execution-time">${Qe(e.created_at)}</span>
+          <span class="execution-intent">${B(e.intent.substring(0,60))}${e.intent.length>60?"...":""}</span>
+          <span class="execution-time">${Je(e.created_at)}</span>
         </div>
         <div class="execution-meta">
-          <span class="badge badge-${Xe(e.status)}">${a.label}</span>
-          ${s?`<span class="execution-node">on ${L(s.name)}</span>`:""}
+          <span class="badge badge-${Qe(e.status)}">${a.label}</span>
+          ${s?`<span class="execution-node">on ${B(s.name)}</span>`:""}
           ${e.priority!=="normal"?`<span class="priority-badge priority-${e.priority}">${e.priority}</span>`:""}
         </div>
       </div>
       <div class="execution-arrow">→</div>
     </a>
-  `}function Xe(e){return{pending:"warning",dispatched:"info",executing:"info",completed:"success",failed:"error"}[e]||"warning"}function Qe(e){if(!e)return"";const t=new Date(e),n=new Date-t;if(n<36e5){const a=Math.floor(n/6e4);return a<1?"Just now":`${a}m ago`}return n<864e5?`${Math.floor(n/36e5)}h ago`:t.toLocaleDateString()}function L(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}window.refreshExecutionPage=async function(){await o.syncNodes(),window.navigate("/execution")};let y=null,g=null;function Je(e){g=e;const s=(o.get("tasks")||[]).find(d=>d.id===e);if(!s)return`
+  `}function Qe(e){return{pending:"warning",dispatched:"info",executing:"info",completed:"success",failed:"error"}[e]||"warning"}function Je(e){if(!e)return"";const t=new Date(e),n=new Date-t;if(n<36e5){const a=Math.floor(n/6e4);return a<1?"Just now":`${a}m ago`}return n<864e5?`${Math.floor(n/36e5)}h ago`:t.toLocaleDateString()}function B(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}window.refreshExecutionPage=async function(){await o.syncNodes(),window.navigate("/execution")};let y=null,g=null;function Ze(e){g=e;const s=(o.get("tasks")||[]).find(d=>d.id===e);if(!s)return`
       <div class="execution-page">
         <header class="page-header">
           <div class="container">
@@ -1771,7 +1806,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           <a href="#/tasks" class="back-link">← Back to Tasks</a>
           <h1>Execution</h1>
           <div class="execution-status-header">
-            <span class="badge badge-${Ze(s.status)}">${M(s.status)}</span>
+            <span class="badge badge-${et(s.status)}">${M(s.status)}</span>
             ${r?'<span class="live-indicator">● Live</span>':""}
           </div>
         </div>
@@ -1821,7 +1856,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
             ${s.result?`
               <div class="execution-card card result-success">
                 <h3>✅ Result</h3>
-                <pre class="result-content">${et(s.result)}</pre>
+                <pre class="result-content">${tt(s.result)}</pre>
               </div>
             `:""}
             
@@ -1894,16 +1929,16 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </main>
     </div>
-  `}function Ze(e){return{pending:"warning",dispatched:"info",executing:"info",completed:"success",failed:"error"}[e]||"warning"}function M(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Executing",completed:"Completed",failed:"Failed"}[e]||e}function et(e){if(typeof e=="string")return e;try{return JSON.stringify(e,null,2)}catch{return String(e)}}let C=!0;window.startExecutionPolling=function(e){y&&clearInterval(y),g=e;let t=2e3;loadExecutionLogs(e),y=setInterval(async()=>{if(!g)return;const n=(o.get("tasks")||[]).find(a=>a.id===g);n||await o.syncTasks(),await loadExecutionLogs(g),n&&(n.status==="completed"||n.status==="failed")&&(t=5e3)},t)};window.stopExecutionPolling=function(){y&&(clearInterval(y),y=null),g=null};window.loadExecutionLogs=async function(e){const t=document.getElementById("execution-logs");if(t)try{const s=await U(e);if(s.length===0){const i=(o.get("tasks")||[]).find(d=>d.id===e),r=i&&(i.status==="dispatched"||i.status==="executing");t.innerHTML=`
+  `}function et(e){return{pending:"warning",dispatched:"info",executing:"info",completed:"success",failed:"error"}[e]||"warning"}function M(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Executing",completed:"Completed",failed:"Failed"}[e]||e}function tt(e){if(typeof e=="string")return e;try{return JSON.stringify(e,null,2)}catch{return String(e)}}let C=!0;window.startExecutionPolling=function(e){y&&clearInterval(y),g=e;let t=2e3;loadExecutionLogs(e),y=setInterval(async()=>{if(!g)return;const n=(o.get("tasks")||[]).find(a=>a.id===g);n||await o.syncTasks(),await loadExecutionLogs(g),n&&(n.status==="completed"||n.status==="failed")&&(t=5e3)},t)};window.stopExecutionPolling=function(){y&&(clearInterval(y),y=null),g=null};window.loadExecutionLogs=async function(e){const t=document.getElementById("execution-logs");if(t)try{const s=await W(e);if(s.length===0){const i=(o.get("tasks")||[]).find(d=>d.id===e),r=i&&(i.status==="dispatched"||i.status==="executing");t.innerHTML=`
         <div class="logs-placeholder">
           ${r?'<div class="spinner-small"></div> Waiting for node to report logs...':"No logs available for this task"}
         </div>
-      `;return}const n=s.map(a=>{var d,l;const i=new Date(a.created_at).toLocaleTimeString();let r="";switch(a.event_type){case"created":r='<span class="log-type">📋</span> Task created';break;case"dispatched":r=`<span class="log-type">🚀</span> Dispatched to ${(a.payload||{}).node_name||"node"}`;break;case"log":const b=((d=a.payload)==null?void 0:d.line)||"";r=`<span class="log-type">📝</span> <pre class="log-line">${D(b)}</pre>`;break;case"completed":r='<span class="log-type">✅</span> Task completed successfully';break;case"failed":const p=((l=a.payload)==null?void 0:l.error)||"Unknown error";r=`<span class="log-type">❌</span> Task failed: ${D(p)}`;break;default:r=`<span class="log-type">📌</span> ${a.event_type}`}return`
+      `;return}const n=s.map(a=>{var d,l;const i=new Date(a.created_at).toLocaleTimeString();let r="";switch(a.event_type){case"created":r='<span class="log-type">📋</span> Task created';break;case"dispatched":r=`<span class="log-type">🚀</span> Dispatched to ${(a.payload||{}).node_name||"node"}`;break;case"log":const b=((d=a.payload)==null?void 0:d.line)||"";r=`<span class="log-type">📝</span> <pre class="log-line">${_(b)}</pre>`;break;case"completed":r='<span class="log-type">✅</span> Task completed successfully';break;case"failed":const p=((l=a.payload)==null?void 0:l.error)||"Unknown error";r=`<span class="log-type">❌</span> Task failed: ${_(p)}`;break;default:r=`<span class="log-type">📌</span> ${a.event_type}`}return`
         <div class="log-entry">
           <span class="log-time">${i}</span>
           <span class="log-content">${r}</span>
         </div>
-      `}).join("");t.innerHTML=`<div class="logs-list">${n}</div>`,C&&(t.scrollTop=t.scrollHeight)}catch(s){console.error("Failed to load logs:",s),t.innerHTML=`<div class="logs-error">Failed to load logs: ${s.message}</div>`}};window.refreshExecutionLogs=function(){g&&loadExecutionLogs(g)};window.toggleAutoScroll=function(){C=!C;const e=document.getElementById("autoscroll-btn");e&&(e.textContent=`Auto-scroll: ${C?"ON":"OFF"}`)};window.rerunTask=function(e){const s=(o.get("tasks")||[]).find(n=>n.id===e);s&&(sessionStorage.setItem("rerun-intent",s.intent),window.navigate("/intent"))};function D(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}function tt(e){(o.get("tasks")||[]).find(n=>n.id===e)||re(e).then(n=>{if(n){const a=o.get("tasks")||[],i=a.findIndex(r=>r.id===n.id);i>=0?a[i]=n:a.push(n),o.set("tasks",a),window.navigate(`/execution/${e}`,!0)}}).catch(()=>{}),startExecutionPolling(e)}function st(){stopExecutionPolling()}function nt(){const e=o.get("routingRules"),t=o.hasConnectedNodes();return t?`
+      `}).join("");t.innerHTML=`<div class="logs-list">${n}</div>`,C&&(t.scrollTop=t.scrollHeight)}catch(s){console.error("Failed to load logs:",s),t.innerHTML=`<div class="logs-error">Failed to load logs: ${s.message}</div>`}};window.refreshExecutionLogs=function(){g&&loadExecutionLogs(g)};window.toggleAutoScroll=function(){C=!C;const e=document.getElementById("autoscroll-btn");e&&(e.textContent=`Auto-scroll: ${C?"ON":"OFF"}`)};window.rerunTask=function(e){const s=(o.get("tasks")||[]).find(n=>n.id===e);s&&(sessionStorage.setItem("rerun-intent",s.intent),window.navigate("/intent"))};function _(e){const t=document.createElement("div");return t.textContent=e,t.innerHTML}function st(e){(o.get("tasks")||[]).find(n=>n.id===e)||de(e).then(n=>{if(n){const a=o.get("tasks")||[],i=a.findIndex(r=>r.id===n.id);i>=0?a[i]=n:a.push(n),o.set("tasks",a),window.navigate(`/execution/${e}`,!0)}}).catch(()=>{}),startExecutionPolling(e)}function nt(){stopExecutionPolling()}function at(){const e=o.get("routingRules"),t=o.hasConnectedNodes();return t?`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1915,17 +1950,17 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
       <main class="container">
         <div class="routing-layout">
           <div class="routing-main">
-            ${X(t)}
-            ${Q(e)}
+            ${V(t)}
+            ${X(e)}
           </div>
 
           <div class="routing-sidebar">
-            ${J()}
+            ${Q()}
           </div>
         </div>
       </main>
     </div>
-  `:at()}function at(){return`
+  `:it()}function it(){return`
     <div class="routing-page">
       <header class="page-header">
         <div class="container">
@@ -1942,9 +1977,9 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </main>
 
-      ${it()}
+      ${ot()}
     </div>
-  `}function it(){return`
+  `}function ot(){return`
     <div id="routing-gating-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideRoutingGatingModal()"></div>
       <div class="modal-content">
@@ -1966,7 +2001,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}window.showRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.remove("hidden")};window.hideRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.add("hidden")};function X(e){return`
+  `}window.showRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.remove("hidden")};window.hideRoutingGatingModal=function(){var e;(e=document.getElementById("routing-gating-modal"))==null||e.classList.add("hidden")};function V(e){return`
     <div class="routing-simulator card">
       <h2>Test Routing Brain</h2>
       <p class="text-muted">Enter a task intent to see how the routing brain would handle it</p>
@@ -2009,7 +2044,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         <!-- Results rendered here -->
       </div>
     </div>
-  `}function Q(e){return`
+  `}function X(e){return`
     <div class="routing-rules card">
       <div class="rules-header">
         <h2>Routing Rules</h2>
@@ -2037,7 +2072,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       `}
     </div>
-  `}function J(){const e=o.get("setup.routing.data");return`
+  `}function Q(){const e=o.get("setup.routing.data");return`
     <div class="routing-settings card">
       <h3>Routing Settings</h3>
       
@@ -2070,7 +2105,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </ol>
       </div>
     </div>
-  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=o.getConnectedNodes(),a=o.getWorkingProviders(),i=await V({intent:e,context:{available_nodes:n,configured_providers:a},constraints:{priority:t}});if(!i.selected_node_id||!i.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(d=>d.id===i.selected_node_id);s.innerHTML=`
+  `}window.simulateRouting=async function(){const e=document.getElementById("routing-intent").value,t=document.getElementById("routing-priority").value,s=document.getElementById("routing-result");if(!e.trim()){alert("Please enter a task intent");return}s.innerHTML='<div class="routing-loading"><div class="spinner"></div><p>Analyzing intent...</p></div>',s.classList.remove("hidden");try{const n=o.getConnectedNodes(),a=o.getWorkingProviders(),i=await Y({intent:e,context:{available_nodes:n,configured_providers:a},constraints:{priority:t}});if(!i.selected_node_id||!i.risk_level)throw new Error("Invalid routing decision: missing required fields");const r=n.find(d=>d.id===i.selected_node_id);s.innerHTML=`
       <div class="routing-decision">
         <h3>Routing Decision</h3>
         
@@ -2137,7 +2172,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         <p>${n.message}</p>
         <button onclick="simulateRouting()" class="btn btn-secondary">Retry</button>
       </div>
-    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=o.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),o.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=o.get("routingRules");t.splice(e,1),o.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;o.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;o.set("setup.routing.data.fallbackEnabled",e)};let v="nodes";function Z(){o.get("auth");const e=o.get("nodes")||[],t=window.location.hash;if(t.includes("tab=")){const s=t.match(/tab=(\w+)/);s&&(v=s[1])}return`
+    `}};window.hideRoutingResult=function(){document.getElementById("routing-result").classList.add("hidden")};window.createTaskFromRouting=function(e){const t=decodeURIComponent(e);localStorage.setItem("kdashx2-new-task-intent",t),window.navigate("/tasks/new")};window.addRoutingRule=function(){const e=prompt("Enter keyword to match:");if(!e)return;const t=prompt("Enter target action:");if(!t)return;const s=o.get("routingRules");s.push({keyword:e.toLowerCase(),target:t,priority:100}),o.set("routingRules",s),window.navigate("/routing")};window.deleteRoutingRule=function(e){if(!confirm("Delete this rule?"))return;const t=o.get("routingRules");t.splice(e,1),o.set("routingRules",t),window.navigate("/routing")};window.updateRiskThreshold=function(){const e=document.getElementById("risk-threshold").value;o.set("setup.routing.data.defaultRiskThreshold",e)};window.updateFallbackEnabled=function(){const e=document.getElementById("fallback-enabled").checked;o.set("setup.routing.data.fallbackEnabled",e)};let v="nodes";function J(){o.get("auth");const e=o.get("nodes")||[],t=window.location.hash;if(t.includes("tab=")){const s=t.match(/tab=(\w+)/);s&&(v=s[1])}return`
     <div class="settings-page">
       <header class="page-header">
         <div class="container">
@@ -2203,12 +2238,12 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           
           <!-- Right Content Area -->
           <div class="settings-content-area">
-            ${ot()}
+            ${rt()}
           </div>
         </div>
       </main>
     </div>
-  `}function ot(){switch(v){case"nodes":return O();case"providers":return rt();case"routing":return dt();case"storage":return lt();case"account":return ct();default:return O()}}function O(){const e=o.get("nodes")||[],t=e.length>0;return o.hasConnectedNodes(),`
+  `}function rt(){switch(v){case"nodes":return D();case"providers":return dt();case"routing":return lt();case"storage":return ct();case"account":return ut();default:return D()}}function D(){const e=o.get("nodes")||[],t=e.length>0;return o.hasConnectedNodes(),`
     <div class="embedded-panel">
       <div class="embedded-header">
         <div>
@@ -2227,17 +2262,17 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
               🔄 Refresh
             </button>
           </div>
-          ${H(e)}
+          ${U(e)}
         </div>
       `:`
         <div class="embedded-empty">
-          ${G()}
+          ${H()}
         </div>
       `}
       
-      ${j()}
+      ${G()}
     </div>
-  `}function rt(){const e=o.getConnectedNodes(),t=o.get("nodes")||[];return o.hasConnectedNodes()?`
+  `}function dt(){const e=o.getConnectedNodes(),t=o.get("nodes")||[];return o.hasConnectedNodes()?`
     <div class="embedded-panel">
       <div class="embedded-header">
         <div>
@@ -2246,15 +2281,15 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
       <div class="embedded-content">
-        ${e.map(n=>K(n)).join("")}
+        ${e.map(n=>j(n)).join("")}
 
         <div class="providers-fallback card">
           <h3>Fallback Order</h3>
           <p class="text-muted">When primary provider fails, try these in order</p>
-          ${z()}
+          ${K()}
         </div>
       </div>
-      ${Y()}
+      ${z()}
     </div>
   `:`
       <div class="embedded-panel">
@@ -2274,7 +2309,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           `}
         </div>
       </div>
-    `}function dt(){const e=o.get("nodes")||[],t=o.hasConnectedNodes(),s=o.get("routingRules")||[];return t?`
+    `}function lt(){const e=o.get("nodes")||[],t=o.hasConnectedNodes(),s=o.get("routingRules")||[];return t?`
     <div class="embedded-panel">
       <div class="embedded-header">
         <div>
@@ -2285,11 +2320,11 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
       <div class="embedded-content">
         <div class="routing-layout">
           <div class="routing-main">
-            ${X(t)}
-            ${Q(s)}
+            ${V(t)}
+            ${X(s)}
           </div>
           <div class="routing-sidebar">
-            ${J()}
+            ${Q()}
           </div>
         </div>
       </div>
@@ -2312,7 +2347,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
           `}
         </div>
       </div>
-    `}function lt(){return`
+    `}function ct(){return`
     <div class="embedded-panel">
       <div class="embedded-header">
         <h2>Storage & Permissions</h2>
@@ -2327,7 +2362,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}function ct(){var t,s;return`
+  `}function ut(){var t,s;return`
     <div class="embedded-panel">
       <div class="embedded-header">
         <h2>Account</h2>
@@ -2349,7 +2384,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}window.switchSettingsTab=function(e){var a;v=e,window.location.hash=`#/settings?tab=${e}`;const t=document.getElementById("app"),s=Z(),n=((a=document.querySelector(".global-header"))==null?void 0:a.outerHTML)||"";t.innerHTML=n+s,attachNavHandlers()};window.refreshEmbeddedNodes=async function(){await o.syncNodes(),switchSettingsTab("nodes")};let $=null,_=null;const f={"/":{render:R,requiresAuth:!0},"/login":{render:ue,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:ve,requiresAuth:!0},"/setup/workspace":{render:be,requiresAuth:!0},"/setup/storage":{render:ye,requiresAuth:!0},"/setup/health":{render:ke,requiresAuth:!0},"/dashboard":{render:R,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Ne,requiresAuth:!0},"/providers":{render:Pe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:Le,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:_e,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>qe(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/intent":{render:Ye,requiresAuth:!0},"/execution":{render:Ve,requiresAuth:!0},"/execution/:id":{render:e=>Je(e),requiresAuth:!0,dynamic:!0,onMount:tt,onUnmount:st},"/routing":{render:nt,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:Z,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:vt,requiresAuth:!0}};function ut(e){var a,i;const t=o.get("auth");return t.isAuthenticated?`
+  `}window.switchSettingsTab=function(e){var a;v=e,window.location.hash=`#/settings?tab=${e}`;const t=document.getElementById("app"),s=J(),n=((a=document.querySelector(".global-header"))==null?void 0:a.outerHTML)||"";t.innerHTML=n+s,attachNavHandlers()};window.refreshEmbeddedNodes=async function(){await o.syncNodes(),switchSettingsTab("nodes")};let $=null,O=null;const f={"/":{render:R,requiresAuth:!0},"/login":{render:pe,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:ge,requiresAuth:!0},"/setup/workspace":{render:fe,requiresAuth:!0},"/setup/storage":{render:ke,requiresAuth:!0},"/setup/health":{render:we,requiresAuth:!0},"/dashboard":{render:R,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Se,requiresAuth:!0},"/providers":{render:Te,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:Me,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:qe,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>Fe(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/intent":{render:Ve,requiresAuth:!0},"/execution":{render:Xe,requiresAuth:!0},"/execution/:id":{render:e=>Ze(e),requiresAuth:!0,dynamic:!0,onMount:st,onUnmount:nt},"/routing":{render:at,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:J,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:gt,requiresAuth:!0}};function pt(e){var a,i;const t=o.get("auth");return t.isAuthenticated?`
     <header class="global-header">
       <div class="container">
         <div class="header-brand">
@@ -2373,7 +2408,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </header>
-  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){o.logout(),window.location.hash="/login",k("/login",!0)};function pt(e){const t=f[e]||f["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const a of t.blockedBy){const i=n.find(r=>r.id===a);if(i)return{allowed:!1,blockedBy:i}}return{allowed:!0}}function vt(){const t=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
+  `:""}window.toggleUserMenu=function(){const e=document.getElementById("user-dropdown");e&&e.classList.toggle("hidden")};document.addEventListener("click",e=>{const t=document.querySelector(".user-menu"),s=document.getElementById("user-dropdown");t&&s&&!t.contains(e.target)&&s.classList.add("hidden")});window.handleLogout=function(){o.logout(),window.location.hash="/login",k("/login",!0)};function vt(e){const t=f[e]||f["/dashboard"],s=o.get("auth"),n=o.getBlocks();if(t.requiresAuth&&!s.isAuthenticated)return{allowed:!1,redirect:"/login"};if(!t.requiresAuth&&s.isAuthenticated&&t.redirectIfAuthed)return{allowed:!1,redirect:t.redirectIfAuthed};if(t.blockedBy)for(const a of t.blockedBy){const i=n.find(r=>r.id===a);if(i)return{allowed:!1,blockedBy:i}}return{allowed:!0}}function gt(){const t=o.getBlocks()[0]||{message:"Setup required",cta:{text:"Go to Setup",href:"#/setup"}};return`
     <div class="locked-page">
       <div class="locked-content">
         <div class="lock-icon">🔒</div>
@@ -2385,19 +2420,19 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}async function k(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=pt(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,k(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,q("/locked");return}}await q(e)}function gt(e){const t=e.split("?")[0];if(f[t])return{route:f[t],params:null};for(const[s,n]of Object.entries(f))if(n.dynamic){const a=s.replace(/:\w+/g,"([^/]+)"),i=new RegExp(`^${a}$`),r=t.match(i);if(r)return{route:n,params:r[1]}}return{route:f["/dashboard"],params:null}}async function q(e){const t=document.getElementById("app"),s=o.get("auth");t.innerHTML=`
+  `}async function k(e,t=!1){e.startsWith("/")||(e="/"+e),t||(window.location.hash=e);const s=vt(e);if(!s.allowed){if(s.redirect){window.location.hash=s.redirect,k(s.redirect,!0);return}if(s.blockedBy){window.__currentBlock=s.blockedBy,q("/locked");return}}await q(e)}function ht(e){const t=e.split("?")[0];if(f[t])return{route:f[t],params:null};for(const[s,n]of Object.entries(f))if(n.dynamic){const a=s.replace(/:\w+/g,"([^/]+)"),i=new RegExp(`^${a}$`),r=t.match(i);if(r)return{route:n,params:r[1]}}return{route:f["/dashboard"],params:null}}async function q(e){const t=document.getElementById("app"),s=o.get("auth");t.innerHTML=`
     <div class="loading-screen">
       <img src="assets/brand/KDashX3.png" alt="KDashX3" class="loading-logo">
       <div class="spinner"></div>
       <p>Loading...</p>
     </div>
-  `,await new Promise(n=>setTimeout(n,300));try{$&&$.onUnmount&&$.onUnmount(_);const{route:n,params:a}=gt(e);$=n,_=a;const i=e==="/setup"||e.startsWith("/setup/"),r=e==="/login",d=r?"":ut(e);let l;a&&n.render.length>0?l=await n.render(a):l=await n.render(),s.isAuthenticated&&!o.isSetupComplete()&&!i&&!r?t.innerHTML=d+ht()+l:t.innerHTML=d+l,mt(),n.onMount&&n.onMount(a)}catch(n){console.error("Render error:",n),t.innerHTML=`
+  `,await new Promise(n=>setTimeout(n,300));try{$&&$.onUnmount&&$.onUnmount(O);const{route:n,params:a}=ht(e);$=n,O=a;const i=e==="/setup"||e.startsWith("/setup/"),r=e==="/login",d=r?"":pt(e);let l;a&&n.render.length>0?l=await n.render(a):l=await n.render(),s.isAuthenticated&&!o.isSetupComplete()&&!i&&!r?t.innerHTML=d+mt()+l:t.innerHTML=d+l,bt(),n.onMount&&n.onMount(a)}catch(n){console.error("Render error:",n),t.innerHTML=`
       <div class="error-screen">
         <h1>Error Loading Page</h1>
         <p>${n.message||"Something went wrong"}</p>
         <button onclick="navigate('/dashboard')" class="btn btn-primary">Go Home</button>
       </div>
-    `}}function ht(){const e=o.getSetupProgress();return`
+    `}}function mt(){const e=o.getSetupProgress();return`
     <div class="setup-banner">
       <div class="setup-banner-content">
         <span class="setup-icon">⚙️</span>
@@ -2411,4 +2446,4 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         <a href="#/setup" class="btn btn-small btn-primary">Continue Setup</a>
       </div>
     </div>
-  `}function mt(){document.querySelectorAll('a[href^="#/"]').forEach(e=>{e.addEventListener("click",t=>{const s=e.getAttribute("href");s.startsWith("#/")&&(t.preventDefault(),k(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const e=window.location.hash.slice(1)||"/";k(e,!0)});document.addEventListener("DOMContentLoaded",()=>{const e=window.location.hash.slice(1)||"/";k(e,!0)});window.navigate=k;window.store=o;
+  `}function bt(){document.querySelectorAll('a[href^="#/"]').forEach(e=>{e.addEventListener("click",t=>{const s=e.getAttribute("href");s.startsWith("#/")&&(t.preventDefault(),k(s.slice(1)))})})}window.addEventListener("hashchange",()=>{const e=window.location.hash.slice(1)||"/";k(e,!0)});document.addEventListener("DOMContentLoaded",()=>{const e=window.location.hash.slice(1)||"/";k(e,!0)});window.navigate=k;window.store=o;

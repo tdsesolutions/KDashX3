@@ -1,9 +1,16 @@
 /**
  * Tasks Page - Real Task Management
+ *
+ * ARCHITECTURE NOTES:
+ * - Backend = Brain + Router (decides WHERE to run)
+ * - Providers (Claw) = Planner ONLY (decides WHAT to do)
+ * - Nodes = Executors (actually RUN tasks)
+ * - Execution ALWAYS goes through assigned node when available
+ * - Providers do NOT execute tasks directly when nodes exist
  */
 
 import { store } from '../lib/store.js';
-import { createTask, getTasks, getTaskEvents, dispatchTask } from '../lib/api.js';
+import { createTask, createTaskWithAssignment, getTasks, getTaskEvents, dispatchTask } from '../lib/api.js';
 
 export function renderTasks() {
   const state = store.get();
@@ -85,11 +92,11 @@ function renderTaskCard(task) {
     failed: { class: 'badge-error', text: 'Failed' },
     cancelled: { class: 'badge-error', text: 'Cancelled' }
   };
-  
+
   const badge = statusBadges[task.status] || statusBadges.pending;
   const nodes = store.get().nodes || [];
   const node = nodes.find(n => n.id === task.node_id);
-  
+
   return `
     <div class="task-card card">
       <div class="task-header">
@@ -97,18 +104,18 @@ function renderTaskCard(task) {
           <h3 class="task-intent">${task.intent}</h3>
           <div class="task-meta">
             <span class="badge ${badge.class}">${badge.text}</span>
-            ${node ? `<span class="task-node">on ${node.name}</span>` : ''}
+            ${node ? `<span class="task-node">on ${node.name}</span>` : (task.node_id ? `<span class="task-node">node: ${task.node_id.slice(0, 8)}...</span>` : '<span class="task-node">unassigned</span>')}
             <span class="task-time">${new Date(task.created_at).toLocaleString()}</span>
           </div>
         </div>
         <div class="task-actions">
           <a href="#/tasks/${task.id}" class="btn btn-small btn-secondary">View</a>
-          ${task.status === 'pending' ? `
+          ${task.status === 'pending' && !task.node_id ? `
             <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-small btn-primary">Dispatch</button>
           ` : ''}
         </div>
       </div>
-      
+
       ${task.error ? `
         <div class="task-error">
           <span class="error-icon">⚠️</span>
@@ -239,16 +246,51 @@ export function renderTaskDetail(taskId) {
                   <span class="meta-label">Created</span>
                   <span class="meta-value">${new Date(task.created_at).toLocaleString()}</span>
                 </div>
-                ${node ? `
+
+                <!-- EXECUTION VISIBILITY FIELDS -->
+                <div class="meta-item">
+                  <span class="meta-label">Assigned Node</span>
+                  <span class="meta-value">${node ? node.name : (task.node_id || 'unassigned')}</span>
+                </div>
+
+                ${task.routing_decision?.planner_provider ? `
                   <div class="meta-item">
-                    <span class="meta-label">Node</span>
-                    <span class="meta-value">${node.name}</span>
+                    <span class="meta-label">Planner Provider</span>
+                    <span class="meta-value">${task.routing_decision.planner_provider}</span>
+                  </div>
+                ` : ''}
+
+                ${task.dispatch_time ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Dispatched</span>
+                    <span class="meta-value">${new Date(task.dispatch_time).toLocaleString()}</span>
+                  </div>
+                ` : ''}
+
+                ${task.executor_status ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Executor Status</span>
+                    <span class="meta-value">${task.executor_status}</span>
+                  </div>
+                ` : ''}
+
+                ${task.storage_mode ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Storage Mode</span>
+                    <span class="meta-value">${task.storage_mode}</span>
+                  </div>
+                ` : ''}
+
+                ${task.storage_path ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Storage Path</span>
+                    <span class="meta-value" style="font-family: monospace; font-size: 0.75rem; word-break: break-all;">${task.storage_path}</span>
                   </div>
                 ` : ''}
               </div>
             </div>
-            
-            ${task.status === 'pending' ? `
+
+            ${task.status === 'pending' && !task.node_id ? `
               <div class="task-actions-card card">
                 <h3>Actions</h3>
                 <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-primary btn-full">
@@ -269,26 +311,58 @@ window.submitTask = async function() {
   const priority = document.getElementById('task-priority').value;
   const errorEl = document.getElementById('task-error');
   const btn = document.getElementById('create-task-btn');
-  
+
   if (!intent.trim()) {
     errorEl.textContent = 'Please describe what you want to do';
     errorEl.classList.remove('hidden');
     return;
   }
-  
+
   const workspace = store.get().currentWorkspace;
   if (!workspace) {
     errorEl.textContent = 'No workspace selected';
     errorEl.classList.remove('hidden');
     return;
   }
-  
+
+  // DETERMINISTIC NODE ASSIGNMENT
+  // If nodes exist, assign to first healthy node automatically
+  const connectedNodes = store.getConnectedNodes();
+  const allNodes = store.get('nodes') || [];
+  let assignedNodeId = null;
+
+  if (connectedNodes.length === 1) {
+    // Exactly one node - auto-assign
+    assignedNodeId = connectedNodes[0].id;
+  } else if (connectedNodes.length > 1) {
+    // Multiple nodes - default to first healthy node
+    assignedNodeId = connectedNodes[0].id;
+  } else if (allNodes.length === 0) {
+    // No nodes at all - show error
+    errorEl.textContent = 'No active node available. Add a node first.';
+    errorEl.classList.remove('hidden');
+    return;
+  }
+  // If nodes exist but none connected, task creates unassigned (user can dispatch later)
+
   btn.disabled = true;
   btn.textContent = 'Creating...';
-  
+
   try {
-    await createTask(workspace.id, intent.trim(), priority);
-    store.loadTasks();
+    // Create task with deterministic node assignment
+    const taskData = {
+      workspace_id: workspace.id,
+      intent: intent.trim(),
+      priority,
+      node_id: assignedNodeId,
+      routing_decision: assignedNodeId ? {
+        selected_node_id: assignedNodeId,
+        assignment_reason: connectedNodes.length === 1 ? 'single_node_auto' : 'first_healthy_default'
+      } : null
+    };
+
+    await createTaskWithAssignment(taskData);
+    store.syncTasks();
     window.navigate('/tasks');
   } catch (err) {
     errorEl.textContent = err.message || 'Failed to create task';
