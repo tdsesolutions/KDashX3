@@ -85,17 +85,37 @@ function renderTasksList(tasks, hasNodes) {
 
 function renderTaskCard(task) {
   const statusBadges = {
-    pending: { class: 'badge-warning', text: 'Pending' },
-    assigned: { class: 'badge-info', text: 'Assigned' },
-    executing: { class: 'badge-info', text: 'Executing' },
+    created: { class: 'badge-info', text: 'Created' },
+    planning: { class: 'badge-info', text: 'Planning' },
+    planned: { class: 'badge-info', text: 'Planned' },
+    awaiting_approval: { class: 'badge-warning', text: 'Awaiting Approval' },
+    approved: { class: 'badge-info', text: 'Approved' },
+    dispatched: { class: 'badge-info', text: 'Dispatched' },
+    running: { class: 'badge-info', text: 'Running' },
     completed: { class: 'badge-success', text: 'Completed' },
     failed: { class: 'badge-error', text: 'Failed' },
-    cancelled: { class: 'badge-error', text: 'Cancelled' }
+    rejected: { class: 'badge-error', text: 'Rejected' },
+    blocked_no_node: { class: 'badge-warning', text: 'Blocked: No Node' },
+    blocked_no_provider: { class: 'badge-warning', text: 'Blocked: No Provider' }
   };
 
-  const badge = statusBadges[task.status] || statusBadges.pending;
+  const badge = statusBadges[task.status] || { class: 'badge-info', text: task.status };
   const nodes = store.get().nodes || [];
   const node = nodes.find(n => n.id === task.node_id);
+
+  // Determine execution location display
+  let executionLocation = '';
+  if (task.status === 'blocked_no_node') {
+    executionLocation = '<span class="task-node" style="color: #b91c1c;">⚠️ No node connected</span>';
+  } else if (task.status === 'blocked_no_provider') {
+    executionLocation = '<span class="task-node" style="color: #b91c1c;">⚠️ No provider</span>';
+  } else if (node) {
+    executionLocation = `<span class="task-node">on ${node.name}</span>`;
+  } else if (task.node_id) {
+    executionLocation = `<span class="task-node">node: ${task.node_id.slice(0, 8)}...</span>`;
+  } else {
+    executionLocation = '<span class="task-node text-muted">unassigned</span>';
+  }
 
   return `
     <div class="task-card card">
@@ -104,13 +124,13 @@ function renderTaskCard(task) {
           <h3 class="task-intent">${task.intent}</h3>
           <div class="task-meta">
             <span class="badge ${badge.class}">${badge.text}</span>
-            ${node ? `<span class="task-node">on ${node.name}</span>` : (task.node_id ? `<span class="task-node">node: ${task.node_id.slice(0, 8)}...</span>` : '<span class="task-node">unassigned</span>')}
+            ${executionLocation}
             <span class="task-time">${new Date(task.created_at).toLocaleString()}</span>
           </div>
         </div>
         <div class="task-actions">
           <a href="#/tasks/${task.id}" class="btn btn-small btn-secondary">View</a>
-          ${task.status === 'pending' && !task.node_id ? `
+          ${(task.status === 'pending' || task.status === 'planned') && !task.node_id && !task.status.startsWith('blocked') ? `
             <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-small btn-primary">Dispatch</button>
           ` : ''}
         </div>
@@ -235,31 +255,75 @@ export function renderTaskDetail(taskId) {
           </div>
           
           <div class="task-detail-sidebar">
+            <!-- EXECUTION PATH PANEL -->
             <div class="task-meta-card card">
-              <h3>Details</h3>
+              <h3>Execution Path</h3>
               <div class="meta-list">
-                <div class="meta-item">
-                  <span class="meta-label">Status</span>
-                  <span class="badge badge-${task.status === 'completed' ? 'success' : task.status === 'failed' ? 'error' : 'info'}">${task.status}</span>
-                </div>
-                <div class="meta-item">
-                  <span class="meta-label">Created</span>
-                  <span class="meta-value">${new Date(task.created_at).toLocaleString()}</span>
-                </div>
-
-                <!-- EXECUTION VISIBILITY FIELDS -->
+                <!-- Where it executes -->
                 <div class="meta-item">
                   <span class="meta-label">Assigned Node</span>
-                  <span class="meta-value">${node ? node.name : (task.node_id || 'unassigned')}</span>
+                  <span class="meta-value">
+                    ${node ? node.name : (task.node_id ? task.node_id.slice(0, 8) + '...' : '<span class="text-muted">unassigned</span>')}
+                    ${task.assignment_reason ? `<small class="text-muted">(${task.assignment_reason})</small>` : ''}
+                  </span>
                 </div>
 
-                ${task.routing_decision?.planner_provider ? `
-                  <div class="meta-item">
-                    <span class="meta-label">Planner Provider</span>
-                    <span class="meta-value">${task.routing_decision.planner_provider}</span>
+                <!-- Block reason if blocked -->
+                ${task.status === 'blocked_no_node' ? `
+                  <div class="meta-item" style="background: #fee2e2; padding: 0.5rem; border-radius: 4px;">
+                    <span class="meta-label" style="color: #b91c1c;">⚠️ Blocked</span>
+                    <span class="meta-value" style="color: #7f1d1d; font-size: 0.875rem;">
+                      No connected node available.<br>
+                      <a href="#/nodes" style="color: #b91c1c; text-decoration: underline;">Connect a node in Settings → Nodes</a>
+                    </span>
                   </div>
                 ` : ''}
 
+                ${task.status === 'blocked_no_provider' ? `
+                  <div class="meta-item" style="background: #fee2e2; padding: 0.5rem; border-radius: 4px;">
+                    <span class="meta-label" style="color: #b91c1c;">⚠️ Blocked</span>
+                    <span class="meta-value" style="color: #7f1d1d; font-size: 0.875rem;">
+                      No provider available for planning.
+                    </span>
+                  </div>
+                ` : ''}
+
+                <!-- Planner -->
+                <div class="meta-item">
+                  <span class="meta-label">Planner Provider</span>
+                  <span class="meta-value">${task.planner_provider || '<span class="text-muted">not planned yet</span>'}</span>
+                </div>
+
+                ${task.fallback_used ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Fallback Used</span>
+                    <span class="meta-value">Yes</span>
+                  </div>
+                ` : ''}
+
+                <!-- Execution settings -->
+                <div class="meta-item">
+                  <span class="meta-label">Execution Mode</span>
+                  <span class="meta-value">${task.execution_mode || 'risk_based'}</span>
+                </div>
+
+                ${task.priority ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Priority</span>
+                    <span class="meta-value">${task.priority}</span>
+                  </div>
+                ` : ''}
+
+                ${task.risk_level ? `
+                  <div class="meta-item">
+                    <span class="meta-label">Risk Level</span>
+                    <span class="meta-value">
+                      <span class="badge badge-${task.risk_level === 'high' ? 'error' : task.risk_level === 'medium' ? 'warning' : 'success'}">${task.risk_level}</span>
+                    </span>
+                  </div>
+                ` : ''}
+
+                <!-- Execution status -->
                 ${task.dispatch_time ? `
                   <div class="meta-item">
                     <span class="meta-label">Dispatched</span>
@@ -267,31 +331,62 @@ export function renderTaskDetail(taskId) {
                   </div>
                 ` : ''}
 
-                ${task.executor_status ? `
-                  <div class="meta-item">
-                    <span class="meta-label">Executor Status</span>
-                    <span class="meta-value">${task.executor_status}</span>
-                  </div>
-                ` : ''}
+                <div class="meta-item">
+                  <span class="meta-label">Executor Status</span>
+                  <span class="meta-value">${task.executor_status || '<span class="text-muted">idle</span>'}</span>
+                </div>
 
-                ${task.storage_mode ? `
-                  <div class="meta-item">
-                    <span class="meta-label">Storage Mode</span>
-                    <span class="meta-value">${task.storage_mode}</span>
-                  </div>
-                ` : ''}
+                <!-- Storage -->
+                <div class="meta-item">
+                  <span class="meta-label">Storage Mode</span>
+                  <span class="meta-value">${task.storage_mode || 'node_local'}</span>
+                </div>
 
-                ${task.storage_path ? `
+                <div class="meta-item">
+                  <span class="meta-label">Storage Path</span>
+                  <span class="meta-value" style="font-family: monospace; font-size: 0.75rem; word-break: break-all;">
+                    ${task.storage_path || '<span class="text-muted">Path will appear after dispatch</span>'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- TASK DETAILS PANEL -->
+            <div class="task-meta-card card" style="margin-top: 1rem;">
+              <h3>Details</h3>
+              <div class="meta-list">
+                <div class="meta-item">
+                  <span class="meta-label">Status</span>
+                  <span class="badge badge-${task.status === 'completed' ? 'success' : task.status === 'failed' ? 'error' : task.status === 'blocked_no_node' || task.status === 'blocked_no_provider' ? 'warning' : 'info'}">${task.status}</span>
+                </div>
+                <div class="meta-item">
+                  <span class="meta-label">Created</span>
+                  <span class="meta-value">${new Date(task.created_at).toLocaleString()}</span>
+                </div>
+                ${task.plan_version > 1 ? `
                   <div class="meta-item">
-                    <span class="meta-label">Storage Path</span>
-                    <span class="meta-value" style="font-family: monospace; font-size: 0.75rem; word-break: break-all;">${task.storage_path}</span>
+                    <span class="meta-label">Plan Version</span>
+                    <span class="meta-value">v${task.plan_version}</span>
                   </div>
                 ` : ''}
               </div>
             </div>
 
-            ${task.status === 'pending' && !task.node_id ? `
-              <div class="task-actions-card card">
+            ${task.status === 'awaiting_approval' ? `
+              <div class="task-actions-card card" style="margin-top: 1rem;">
+                <h3>Approval Required</h3>
+                <p class="text-muted" style="margin-bottom: 1rem;">This task requires approval before execution.</p>
+                <button onclick="approveTask('${task.id}')" class="btn btn-primary btn-full" style="margin-bottom: 0.5rem;">
+                  Approve
+                </button>
+                <button onclick="rejectTask('${task.id}')" class="btn btn-danger btn-full">
+                  Reject
+                </button>
+              </div>
+            ` : ''}
+
+            ${(task.status === 'pending' || task.status === 'planned') && !task.node_id && task.status !== 'blocked_no_node' && task.status !== 'blocked_no_provider' ? `
+              <div class="task-actions-card card" style="margin-top: 1rem;">
                 <h3>Actions</h3>
                 <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-primary btn-full">
                   Dispatch to Node
@@ -401,7 +496,7 @@ window.refreshTasks = function() {
 window.loadTaskEvents = async function(taskId) {
   const container = document.getElementById('task-events-list');
   container.innerHTML = '<p class="text-muted">Loading...</p>';
-  
+
   try {
     const events = await getTaskEvents(taskId);
     if (events.length === 0) {
@@ -421,5 +516,56 @@ window.loadTaskEvents = async function(taskId) {
     }
   } catch (err) {
     container.innerHTML = `<p class="text-error">Failed to load events: ${err.message}</p>`;
+  }
+};
+
+// Task approval/rejection
+window.approveTask = async function(taskId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/approve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('kdashx3-token')}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to approve task');
+    }
+
+    alert('Task approved successfully');
+    store.syncTasks();
+    window.navigate(`/tasks/${taskId}`);
+  } catch (err) {
+    alert('Failed to approve task: ' + err.message);
+  }
+};
+
+window.rejectTask = async function(taskId) {
+  const reason = prompt('Enter rejection reason (optional):');
+  if (reason === null) return; // Cancelled
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/reject`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('kdashx3-token')}`
+      },
+      body: JSON.stringify({ reason: reason || 'Rejected by user' })
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to reject task');
+    }
+
+    alert('Task rejected');
+    store.syncTasks();
+    window.navigate('/tasks');
+  } catch (err) {
+    alert('Failed to reject task: ' + err.message);
   }
 };
