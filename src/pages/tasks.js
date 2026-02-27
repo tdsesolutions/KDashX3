@@ -16,17 +16,31 @@ export function renderTasks() {
   const state = store.get();
   const tasks = state.tasks || [];
   const hasNodes = store.hasConnectedNodes();
-  
+  const connectedNodes = store.getConnectedNodes();
+  const providers = store.get('providers') || [];
+  const connectedProviders = providers.filter(p => p.status === 'configured');
+
+  // WORKSPACE DEBUG (for validation)
+  const workspaceDebug = state.workspace ? `
+    <div class="workspace-debug" style="background: #f3f4f6; padding: 0.75rem; border-radius: 4px; margin-bottom: 1rem; font-family: monospace; font-size: 0.75rem;">
+      <strong>Workspace Debug:</strong>
+      <span>ID: ${state.workspace.id?.slice(0, 8)}...</span> |
+      <span>Nodes: ${connectedNodes.length} connected</span> |
+      <span>Providers: ${connectedProviders.length} configured</span>
+    </div>
+  ` : '';
+
   return `
     <div class="tasks-page">
-      <header class="page-header">
+      <header class="page-page">
         <div class="container">
           <h1>Tasks</h1>
           <p class="text-muted">View and manage your tasks</p>
         </div>
       </header>
-      
+
       <main class="container">
+        ${workspaceDebug}
         ${renderTasksToolbar(hasNodes)}
         ${renderTasksList(tasks, hasNodes)}
       </main>
