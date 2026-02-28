@@ -217,7 +217,7 @@
                 <span class="info-icon">ℹ️</span>
               </button>
             `:""}
-            ${s?'<span class="status-check">✓</span>':e.name==="nodes"?`<button onclick="goToNodesAndAdd()" class="btn btn-primary btn-small">${S(e.name)}</button>`:e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${S(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${S(e.name)}</a>`}
+            ${s?'<span class="status-check">✓</span>':e.name==="nodes"?`<button onclick="goToNodesAndAdd()" class="btn btn-primary btn-small">${E(e.name)}</button>`:e.name==="routing"||e.name==="providers"?`<button onclick="showInstructionsForModule('${e.name}')" class="btn btn-primary btn-small">${E(e.name)}</button>`:`<a href="${t.route}" class="btn btn-primary btn-small">${E(e.name)}</a>`}
           </div>
         </div>
       </div>
@@ -506,7 +506,7 @@
           <strong>✨ Tip:</strong> Run health checks regularly to catch issues early.
         </div>
       </div>
-    `}[e]||""}function S(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function fe(){var t,s;const e=i.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
+    `}[e]||""}function E(e){return{workspace:"Create",nodes:"Add Node",storage:"Configure",providers:"Setup",routing:"Configure",healthChecks:"Run Checks"}[e]||"Start"}window.toggleInstructions=function(e){const t=document.getElementById(e);if(t){const s=t.style.display!=="none";t.style.display=s?"none":"block",s||setTimeout(()=>{t.scrollIntoView({behavior:"smooth",block:"nearest"})},100)}};window.showInstructionsForModule=function(e){const t=`instructions-${e}`,s=document.getElementById(t);s&&(s.style.display="block",setTimeout(()=>{s.scrollIntoView({behavior:"smooth",block:"center"})},100))};function fe(){var t,s;const e=i.get("setup.workspace.data")||{orgName:"",timezone:"UTC",notifications:{email:!0,webhook:!1}};return`
     <div class="setup-subpage">
       <header class="page-header">
         <div class="container">
@@ -898,7 +898,7 @@
           <button onclick="refreshDashboardNodes()" class="btn btn-secondary">Refresh Status</button>
         </div>
       </div>
-    `:""}function Ne(e){return{pending:"badge-warning",dispatched:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-warning"}function Ie(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Running",completed:"Done",failed:"Failed"}[e]||e}window.refreshDashboardNodes=async function(){await i.syncNodes(),window.navigate("/dashboard")};function Ee(){const e=i.get("nodes")||[],t=e.length>0;return i.syncNodes(),setTimeout(checkApiHealth,0),`
+    `:""}function Ne(e){return{pending:"badge-warning",dispatched:"badge-info",executing:"badge-info",completed:"badge-success",failed:"badge-error"}[e]||"badge-warning"}function Ie(e){return{pending:"Pending",dispatched:"Dispatched",executing:"Running",completed:"Done",failed:"Failed"}[e]||e}window.refreshDashboardNodes=async function(){await i.syncNodes(),window.navigate("/dashboard")};function Se(){const e=i.get("nodes")||[],t=e.length>0;return i.syncNodes(),setTimeout(checkApiHealth,0),`
     <div class="nodes-page">
       <header class="page-header">
         <div class="container">
@@ -935,13 +935,13 @@
           </button>
         </div>
         
-        ${t?H(e):U()}
+        ${t?H(e):j()}
       </main>
       
-      ${j()}
-      ${Se()}
+      ${U()}
+      ${Ee()}
     </div>
-  `}function Se(){return`
+  `}function Ee(){return`
     <div id="node-info-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideNodeInfoModal()"></div>
       <div class="modal-content" style="max-width: 700px; max-height: 80vh; overflow-y: auto;">
@@ -1083,7 +1083,7 @@
         `:""}
       </div>
     </div>
-  `}function U(){return`
+  `}function j(){return`
     <div class="empty-state card">
       <div class="empty-icon">🖥️</div>
       <h2 class="empty-title">No Nodes Yet</h2>
@@ -1094,7 +1094,7 @@
         Add Your First Node
       </button>
     </div>
-  `}function j(){return`
+  `}function U(){return`
     <div id="add-node-modal" class="modal hidden">
       <div class="modal-overlay" onclick="hideAddNodeModal()"></div>
       <div class="modal-content">
@@ -1426,6 +1426,9 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
         <div class="task-actions">
           <a href="#/tasks/${e.id}" class="btn btn-small btn-secondary">View</a>
+          ${e.status==="blocked_no_node"?`
+            <button onclick="retryDispatch('${e.id}')" class="btn btn-small btn-primary">Retry</button>
+          `:""}
           ${(e.status==="pending"||e.status==="planned")&&!e.node_id&&!e.status.startsWith("blocked")?`
             <button onclick="dispatchTaskToNode('${e.id}')" class="btn btn-small btn-primary">Dispatch</button>
           `:""}
@@ -1655,6 +1658,16 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
               </div>
             `:""}
 
+            ${s.status==="blocked_no_node"?`
+              <div class="task-actions-card card" style="margin-top: 1rem;">
+                <h3>Node Offline</h3>
+                <p class="text-muted" style="margin-bottom: 1rem;">${s.error||"Target node is offline"}</p>
+                <button onclick="retryDispatch('${s.id}')" class="btn btn-primary btn-full">
+                  Retry Dispatch
+                </button>
+              </div>
+            `:""}
+
             ${(s.status==="pending"||s.status==="planned")&&!s.node_id&&s.status!=="blocked_no_node"&&s.status!=="blocked_no_provider"?`
               <div class="task-actions-card card" style="margin-top: 1rem;">
                 <h3>Actions</h3>
@@ -1677,7 +1690,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
             </div>
           `).join("")}
         </div>
-      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};window.approveTask=async function(e){try{const t=await fetch(`${API_BASE_URL}/tasks/${e}/approve`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${localStorage.getItem("kdashx3-token")}`}});if(!t.ok){const s=await t.json();throw new Error(s.error||"Failed to approve task")}alert("Task approved successfully"),i.syncTasks(),window.navigate(`/tasks/${e}`)}catch(t){alert("Failed to approve task: "+t.message)}};window.rejectTask=async function(e){const t=prompt("Enter rejection reason (optional):");if(t!==null)try{const s=await fetch(`${API_BASE_URL}/tasks/${e}/reject`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${localStorage.getItem("kdashx3-token")}`},body:JSON.stringify({reason:t||"Rejected by user"})});if(!s.ok){const n=await s.json();throw new Error(n.error||"Failed to reject task")}alert("Task rejected"),i.syncTasks(),window.navigate("/tasks")}catch(s){alert("Failed to reject task: "+s.message)}};const We={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function A(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,o)=>{const a=A(n,t.items);a.valid||s.push(`Item ${o}: ${a.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,o]of Object.entries(t.properties))if(n in e){const a=A(e[n],o);a.valid||s.push(`${n}: ${a.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function Y(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(E=>setTimeout(E,800));const{intent:t,context:s,constraints:n}=e,o=(s==null?void 0:s.available_nodes)||[],a=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(o))throw new Error("Invalid input: available_nodes must be an array");if(o.length===0)throw new Error("No available nodes for routing");const r=He(t),d=o.filter(E=>Ke(E,r));if(d.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const l=d[0],c=Ue(t),p=Ye(a,c),v=je(t,n),$={type:"node_local",path:`${l.workspace_path||"./outputs"}/task-${Date.now()}`},T=Ge(t),Z=ze(T,c),P={selected_node_id:l.id,required_capabilities:r,provider_preference:c,fallback_order:p.length>0?p:["default"],output_location:$,risk_level:v,approval_required:v==="critical"||v==="high",estimated_tokens:T,estimated_cost:Z},I=A(P,We);if(!I.valid)throw console.error("[RoutingBrain] Invalid response schema:",I.errors),new Error(`Routing Brain returned invalid data: ${I.errors.join(", ")}`);return P}function He(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function Ue(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function je(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function Ge(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function ze(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function Ke(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Ye(e,t){if(!e||e.length===0)return[];const s=e.filter(o=>o.status==="configured");if(s.length===0)return[];const n=[...s].sort((o,a)=>(o.priority||99)-(a.priority||99));if(t&&t!=="auto"){const o=n.filter(r=>r.type===t),a=n.filter(r=>r.type!==t);return[...o,...a].map(r=>r.id)}return n.map(o=>o.id)}function Ve(){const e=i.hasConnectedNodes();return(i.get("nodes")||[]).length>0?e?`
+      `}catch(s){t.innerHTML=`<p class="text-error">Failed to load events: ${s.message}</p>`}};window.approveTask=async function(e){try{const t=await fetch(`${API_BASE_URL}/tasks/${e}/approve`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${localStorage.getItem("kdashx3-token")}`}});if(!t.ok){const s=await t.json();throw new Error(s.error||"Failed to approve task")}alert("Task approved successfully"),i.syncTasks(),window.navigate(`/tasks/${e}`)}catch(t){alert("Failed to approve task: "+t.message)}};window.rejectTask=async function(e){const t=prompt("Enter rejection reason (optional):");if(t!==null)try{const s=await fetch(`${API_BASE_URL}/tasks/${e}/reject`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${localStorage.getItem("kdashx3-token")}`},body:JSON.stringify({reason:t||"Rejected by user"})});if(!s.ok){const n=await s.json();throw new Error(n.error||"Failed to reject task")}alert("Task rejected"),i.syncTasks(),window.navigate("/tasks")}catch(s){alert("Failed to reject task: "+s.message)}};window.retryDispatch=async function(e){try{const t=await fetch(`${API_BASE_URL}/tasks/${e}/retry-dispatch`,{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${localStorage.getItem("kdashx3-token")}`}});if(!t.ok){const n=await t.json();throw new Error(n.error||"Failed to retry dispatch")}const s=await t.json();alert(`Task dispatched to node ${s.node_id.slice(0,8)}...`),i.syncTasks(),window.navigate(`/tasks/${e}`)}catch(t){alert("Failed to retry dispatch: "+t.message)}};const We={type:"object",required:["selected_node_id","required_capabilities","provider_preference","fallback_order","output_location","risk_level","approval_required","estimated_tokens","estimated_cost"],properties:{selected_node_id:{type:"string"},required_capabilities:{type:"array",items:{type:"string"}},provider_preference:{type:"string",enum:["openai","anthropic","google","local","auto"]},fallback_order:{type:"array",items:{type:"string"}},output_location:{type:"object",required:["type","path"],properties:{type:{type:"string",enum:["node_local","dashboard_temp"]},path:{type:"string"}}},risk_level:{type:"string",enum:["low","medium","high","critical"]},approval_required:{type:"boolean"},estimated_tokens:{type:"number",minimum:0},estimated_cost:{type:"number",minimum:0}}};function A(e,t){const s=[];if(t.type&&typeof e!==t.type&&(t.type==="array"&&!Array.isArray(e)?s.push(`Expected array, got ${typeof e}`):t.type==="number"&&typeof e!="number"?s.push(`Expected number, got ${typeof e}`):t.type==="boolean"&&typeof e!="boolean"?s.push(`Expected boolean, got ${typeof e}`):t.type==="object"&&(typeof e!="object"||Array.isArray(e))?s.push(`Expected object, got ${Array.isArray(e)?"array":typeof e}`):["array","number","boolean","object"].includes(t.type)||s.push(`Expected ${t.type}, got ${typeof e}`)),t.required&&typeof e=="object"&&!Array.isArray(e))for(const n of t.required)n in e||s.push(`Missing required field: ${n}`);if(t.enum&&!t.enum.includes(e)&&s.push(`Value must be one of: ${t.enum.join(", ")}`),t.type==="number"&&typeof e=="number"&&t.minimum!==void 0&&e<t.minimum&&s.push(`Value must be >= ${t.minimum}`),t.type==="array"&&Array.isArray(e)&&t.items&&e.forEach((n,o)=>{const a=A(n,t.items);a.valid||s.push(`Item ${o}: ${a.errors.join(", ")}`)}),t.properties&&typeof e=="object"&&!Array.isArray(e)){for(const[n,o]of Object.entries(t.properties))if(n in e){const a=A(e[n],o);a.valid||s.push(`${n}: ${a.errors.join(", ")}`)}}return{valid:s.length===0,errors:s}}async function Y(e){console.log("[RoutingBrain] Routing task:",e.intent),await new Promise(S=>setTimeout(S,800));const{intent:t,context:s,constraints:n}=e,o=(s==null?void 0:s.available_nodes)||[],a=(s==null?void 0:s.configured_providers)||[];if(!t||typeof t!="string")throw new Error("Invalid input: intent is required and must be a string");if(!Array.isArray(o))throw new Error("Invalid input: available_nodes must be an array");if(o.length===0)throw new Error("No available nodes for routing");const r=He(t),d=o.filter(S=>Ke(S,r));if(d.length===0)throw new Error(`No nodes found with required capabilities: ${r.join(", ")}`);const l=d[0],c=je(t),p=Ye(a,c),v=Ue(t,n),$={type:"node_local",path:`${l.workspace_path||"./outputs"}/task-${Date.now()}`},T=Ge(t),Z=ze(T,c),P={selected_node_id:l.id,required_capabilities:r,provider_preference:c,fallback_order:p.length>0?p:["default"],output_location:$,risk_level:v,approval_required:v==="critical"||v==="high",estimated_tokens:T,estimated_cost:Z},I=A(P,We);if(!I.valid)throw console.error("[RoutingBrain] Invalid response schema:",I.errors),new Error(`Routing Brain returned invalid data: ${I.errors.join(", ")}`);return P}function He(e){const t=[],s=e.toLowerCase();return/\b(docker|container|containerize|dockerize|kubernetes|k8s)\b/.test(s)&&t.push("docker"),/\b(gpu|cuda|nvidia|amd|rocm|ml|machine learning|deep learning|ai model|training)\b/.test(s)&&t.push("gpu"),/\b(python|pip|requirements\.txt|setup\.py|pyproject\.toml|django|flask|fastapi)\b/.test(s)&&t.push("python"),/\b(node|nodejs|npm|yarn|package\.json|express|react|vue|angular)\b/.test(s)&&t.push("nodejs"),/\b(golang|go\.mod|go module)\b/.test(s)&&t.push("go"),/\b(rust|cargo|\.rs)\b/.test(s)&&t.push("rust"),/\b(database|postgres|mysql|mongodb|redis|sqlite|sql)\b/.test(s)&&t.push("database"),/\b(server|web server|nginx|apache|http|api|rest|graphql)\b/.test(s)&&t.push("web-server"),/\b(deploy|deployment|production|release|publish|ci\/cd|pipeline)\b/.test(s)&&t.push("deployment"),t.length>0?t:["general"]}function je(e){const t=e.toLowerCase();return/\b(openai|gpt-?4|gpt-?3|chatgpt)\b/.test(t)?"openai":/\b(anthropic|claude)\b/.test(t)?"anthropic":/\b(google|gemini|bard|palm)\b/.test(t)?"google":/\b(local|ollama|llama|self-hosted|on-premise)\b/.test(t)?"local":"auto"}function Ue(e,t){const s=e.toLowerCase();return["delete","remove","drop","destroy","purge","production","live","main"].some(r=>s.includes(r))?"critical":["deploy","push","commit","merge","modify","change","update","migrate"].some(r=>s.includes(r))?"high":["create","add","install","build","generate","setup"].some(r=>s.includes(r))?"medium":(t==null?void 0:t.priority)==="critical"?"critical":(t==null?void 0:t.priority)==="high"?"high":"low"}function Ge(e){const t=Math.ceil(e.length/4);return Math.max(500,t+1e3)}function ze(e,t){const s={openai:.03,anthropic:.008,google:.005,local:0,auto:.02},n=s[t]||s.auto;return e/1e3*n}function Ke(e,t){return!t||t.length===0?!0:!e.capabilities||!Array.isArray(e.capabilities)?!1:t.includes("general")?!0:t.every(s=>e.capabilities.includes(s))}function Ye(e,t){if(!e||e.length===0)return[];const s=e.filter(o=>o.status==="configured");if(s.length===0)return[];const n=[...s].sort((o,a)=>(o.priority||99)-(a.priority||99));if(t&&t!=="auto"){const o=n.filter(r=>r.type===t),a=n.filter(r=>r.type!==t);return[...o,...a].map(r=>r.id)}return n.map(o=>o.id)}function Ve(){const e=i.hasConnectedNodes();return(i.get("nodes")||[]).length>0?e?`
     <div class="intent-page">
       <header class="page-header">
         <div class="container">
@@ -2397,11 +2410,11 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       `:`
         <div class="embedded-empty">
-          ${U()}
+          ${j()}
         </div>
       `}
       
-      ${j()}
+      ${U()}
     </div>
   `}function dt(){const e=i.getConnectedNodes(),t=i.get("nodes")||[];return i.hasConnectedNodes()?`
     <div class="embedded-panel">
@@ -2515,7 +2528,7 @@ If it still fails, check your network.`);return}if(confirm("Permanently remove t
         </div>
       </div>
     </div>
-  `}window.switchSettingsTab=function(e){var o;m=e,window.location.hash=`#/settings?tab=${e}`;const t=document.getElementById("app"),s=J(),n=((o=document.querySelector(".global-header"))==null?void 0:o.outerHTML)||"";t.innerHTML=n+s,attachNavHandlers()};window.refreshEmbeddedNodes=async function(){await i.syncNodes(),switchSettingsTab("nodes")};let x=null,O=null;const y={"/":{render:R,requiresAuth:!0},"/login":{render:pe,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:me,requiresAuth:!0},"/setup/workspace":{render:fe,requiresAuth:!0},"/setup/storage":{render:ke,requiresAuth:!0},"/setup/health":{render:we,requiresAuth:!0},"/dashboard":{render:R,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Ee,requiresAuth:!0},"/providers":{render:Pe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:_e,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:Fe,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>qe(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/intent":{render:Ve,requiresAuth:!0},"/execution":{render:Xe,requiresAuth:!0},"/execution/:id":{render:e=>Ze(e),requiresAuth:!0,dynamic:!0,onMount:st,onUnmount:nt},"/routing":{render:at,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:J,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:mt,requiresAuth:!0}};function pt(e){var o,a;const t=i.get("auth");return t.isAuthenticated?`
+  `}window.switchSettingsTab=function(e){var o;m=e,window.location.hash=`#/settings?tab=${e}`;const t=document.getElementById("app"),s=J(),n=((o=document.querySelector(".global-header"))==null?void 0:o.outerHTML)||"";t.innerHTML=n+s,attachNavHandlers()};window.refreshEmbeddedNodes=async function(){await i.syncNodes(),switchSettingsTab("nodes")};let x=null,O=null;const y={"/":{render:R,requiresAuth:!0},"/login":{render:pe,requiresAuth:!1,redirectIfAuthed:"/dashboard"},"/setup":{render:me,requiresAuth:!0},"/setup/workspace":{render:fe,requiresAuth:!0},"/setup/storage":{render:ke,requiresAuth:!0},"/setup/health":{render:we,requiresAuth:!0},"/dashboard":{render:R,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/nodes":{render:Se,requiresAuth:!0},"/providers":{render:Pe,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks":{render:_e,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/tasks/new":{render:Fe,requiresAuth:!0,blockedBy:["NODE_REQUIRED","PROVIDER_REQUIRED"]},"/tasks/:id":{render:e=>qe(e),requiresAuth:!0,blockedBy:["NODE_REQUIRED"],dynamic:!0},"/intent":{render:Ve,requiresAuth:!0},"/execution":{render:Xe,requiresAuth:!0},"/execution/:id":{render:e=>Ze(e),requiresAuth:!0,dynamic:!0,onMount:st,onUnmount:nt},"/routing":{render:at,requiresAuth:!0,blockedBy:["NODE_REQUIRED"]},"/settings":{render:J,requiresAuth:!0},"/billing":{render:()=>"<h1>Billing</h1><p>Coming soon.</p>",requiresAuth:!0},"/locked":{render:mt,requiresAuth:!0}};function pt(e){var o,a;const t=i.get("auth");return t.isAuthenticated?`
     <header class="global-header">
       <div class="container">
         <div class="header-brand">

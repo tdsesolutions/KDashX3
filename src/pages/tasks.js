@@ -144,6 +144,9 @@ function renderTaskCard(task) {
         </div>
         <div class="task-actions">
           <a href="#/tasks/${task.id}" class="btn btn-small btn-secondary">View</a>
+          ${task.status === 'blocked_no_node' ? `
+            <button onclick="retryDispatch('${task.id}')" class="btn btn-small btn-primary">Retry</button>
+          ` : ''}
           ${(task.status === 'pending' || task.status === 'planned') && !task.node_id && !task.status.startsWith('blocked') ? `
             <button onclick="dispatchTaskToNode('${task.id}')" class="btn btn-small btn-primary">Dispatch</button>
           ` : ''}
@@ -399,6 +402,16 @@ export function renderTaskDetail(taskId) {
               </div>
             ` : ''}
 
+            ${task.status === 'blocked_no_node' ? `
+              <div class="task-actions-card card" style="margin-top: 1rem;">
+                <h3>Node Offline</h3>
+                <p class="text-muted" style="margin-bottom: 1rem;">${task.error || 'Target node is offline'}</p>
+                <button onclick="retryDispatch('${task.id}')" class="btn btn-primary btn-full">
+                  Retry Dispatch
+                </button>
+              </div>
+            ` : ''}
+
             ${(task.status === 'pending' || task.status === 'planned') && !task.node_id && task.status !== 'blocked_no_node' && task.status !== 'blocked_no_provider' ? `
               <div class="task-actions-card card" style="margin-top: 1rem;">
                 <h3>Actions</h3>
@@ -581,5 +594,30 @@ window.rejectTask = async function(taskId) {
     window.navigate('/tasks');
   } catch (err) {
     alert('Failed to reject task: ' + err.message);
+  }
+};
+
+// Retry dispatch for blocked_no_node tasks
+window.retryDispatch = async function(taskId) {
+  try {
+    const response = await fetch(`${API_BASE_URL}/tasks/${taskId}/retry-dispatch`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('kdashx3-token')}`
+      }
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Failed to retry dispatch');
+    }
+
+    const result = await response.json();
+    alert(`Task dispatched to node ${result.node_id.slice(0, 8)}...`);
+    store.syncTasks();
+    window.navigate(`/tasks/${taskId}`);
+  } catch (err) {
+    alert('Failed to retry dispatch: ' + err.message);
   }
 };
